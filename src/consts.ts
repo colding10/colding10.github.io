@@ -28,7 +28,7 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/cold',
+    href: 'https://github.com/colding10',
     label: 'GitHub',
   },
   {
