@@ -3,8 +3,8 @@ import type { IconMap, SocialLink, Site } from '@/types'
 export const SITE: Site = {
   title: 'colin (cold)',
   description:
-    'i am a d1 goon and code monkey. write about my ctf solves and random yap here',
-  href: 'https://colding10.github.io',
+    'i am a code monkey. writing about my ctf solves and random yap here',
+  href: 'https://cold.is-a.dev',
   author: 'cold',
   locale: 'en-US',
   featuredPostCount: 2,
