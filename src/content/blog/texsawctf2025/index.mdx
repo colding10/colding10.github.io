@@ -1,13 +1,30 @@
 ---
 title: 'TexSAW CTF 2025'
-description: 'writing up some challenges from this ctf'
-date: 2025-08-08
-tags: ['rev', 'osint']
+description: 'some texsaw 2025 writeups'
+date: 2025-08-10
+tags: ['writeups', 'osint']
 authors: ['cold']
 image: ./logo.png
 ---
 
 
+# Introduction
+
 This CTF was one of the first CTFs I played with my high school team [Bing Chilling Academies](https://ctftime.org/team/283028). Such, it holds a couple of fond memories for me.
 
 Btw, @tien still owes me a Brawl Pass.
+
+## Scrambled Packets
+
+> I accidentally broke my message and it got all mixed up with everything else. Can you help me get it back?
+
+Loading the given pcap in wireshark to see that there are a lot of **ICMP** pings.
+looking through a few of them, we see that some of them have sussy **1 byte data** so we extract those using `tshark`, and realize that its junk :(.
+
+lmao it was scrambled, so we sort it by **sequence number** using this command:
+```bash
+tshark -r cap.pcap -Y "icmp && data.len == 1" -T fields -e icmp.seq -e data | sort -n -k1
+```
+
+And we get the flag: `TexSAW{not_the_fake_one}`
+
