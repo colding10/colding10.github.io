@@ -3,7 +3,7 @@ import type { IconMap, SocialLink, Site } from '@/types'
 export const SITE: Site = {
   title: 'colin (cold)',
   description:
-    'i am a code monkey. writing about my ctf solves and random yap here',
+    'some very cold ctf writeups and other stuff',
   href: 'https://cold.is-a.dev',
   author: 'cold',
   locale: 'en-US',
