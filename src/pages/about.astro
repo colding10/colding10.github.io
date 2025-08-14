@@ -1,0 +1,25 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Link from '@/components/Link.astro'
+import PageHead from '@/components/PageHead.astro'
+import ProjectCard from '@/components/ProjectCard.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getAllProjects } from '@/lib/data-utils'
+
+const projects = await getAllProjects()
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="About" />
+  <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
+
+  <section>
+    <div class="min-w-full">
+      <div class="prose mb-8">
+        <p class="mt-5 text-2xl">I'm Colin (aka cold)</p>
+        <p>I like computers and software. You may see me solving CTF challenges or doing other stuff.</p>
+        <p>In CTF I main reverse engineering, but I dabble in forensics or pwn too! I'm especially good at misc stuff and also OSINT.</p>
+      </div>
+    </div>
+  </section>
+</Layout>

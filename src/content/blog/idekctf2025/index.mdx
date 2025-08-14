@@ -1,0 +1,1144 @@
+---
+title: 'idekCTF 2025'
+description: 'a rev writeup (hermes runtime of react compiled app)'
+date: 2025-08-11
+tags: ['writeups', 'rev']
+authors: ['cold']
+image: ./logo.png
+---
+
+# Introduction
+
+in this ctf i played with merger [Cosmic Squid](https://ctftime.org/team/396585). another second place :sob:. imma write up a rev chall that i solved (almost all by myself), cuz this one i acc know enough about/contributed significantly towards lmao.
+
+somehow this one turned out to be the 4th hardest rev (apparently by solves)
+
+## Exposition
+
+> if i told you why it would be too easy (don't worry, the app works as intended)
+> by @flocto my goat
+
+we are given an `.apk` bundle. i like to use `apktool` to decompile these, so i went ahead and ran it.
+
+normally we look in smali code for the app logic, but all over the place we saw mentions to [Hermes](https://reactnative.dev/docs/hermes). Hermes compiles React apps into bytecode. So we need to decompile it.
+
+btw, the bytecode can be found at `assets/index.android.bundle`. i used [hermes-dec](https://github.com/P1sec/hermes-dec) to decompile it. it gave me around 200k lines of javascript.
+
+here is the section with a `checkFlag()` function: (the whole thing is included for ur reference)
+
+```js title="decompiled.js" collapse={2-14,16-973,975-1026} {"Moves ls and cat to /restricted-bin":12-15}
+r1 = function() { // Original name: App, environment: r1
+            _fun5359: for(var _fun5359_ip = 0; ; ) switch(_fun5359_ip) {
+case 0:
+                r0 = function(a0) { // Original name: checkFlag, environment: r21
+                    r0 = undefined;
+                    r3 = _closure2_slot15;
+                    r2 = r3.apply;
+                    r0 = arguments;
+                    r1 = r0;
+                    r0 = this;
+                    r0 = r2.bind(r3)(r0, r1);
+                    return r0;
+                };
+                var _closure2_slot14 = r0;
+                r0 = function() { // Original name: _checkFlag, environment: r21
+                    r3 = undefined;
+                    r0 = undefined;
+                    r1 = _closure1_slot3;
+                    r2 = r1.default;
+                    r1 = function* (a0) { // Environment: r1
+                        r0 = function* (a0) { // Original name: ?anon_0_, environment: r0
+                            _fun5363: for(var _fun5363_ip = 0; ; ) switch(_fun5363_ip) {
+case 0:
+                                StartGenerator();
+                                r2 = a0;
+                                ResumeGenerator(result_out_reg=0, return_bool_out_reg=1);
+                                if(r1) { _fun5363_ip = 614; continue _fun5363 }
+case 15:
+                                r9 = undefined;
+                                var _closure5_slot0 = r9;
+                                var _closure5_slot1 = r9;
+                                r1 = r2.trim;
+                                r5 = r1.bind(r2)();
+                                if(r5) { _fun5363_ip = 42; continue _fun5363 }
+case 37:
+                                r1 = false;
+                                return r1;
+case 42:
+                                r2 = r5.startsWith;
+                                r1 = 'idek{';
+                                r1 = r2.bind(r5)(r1);
+                                if(!r1) { _fun5363_ip = 77; continue _fun5363 }
+case 60:
+                                r2 = r5.endsWith;
+                                r1 = '}';
+                                r1 = r2.bind(r5)(r1);
+                                if(r1) { _fun5363_ip = 82; continue _fun5363 }
+case 77:
+                                r1 = false;
+                                return r1;
+case 82:
+                                r4 = r5.slice;
+                                r2 = 5;
+                                r1 = -1;
+                                r4 = r4.bind(r5)(r2, r1);
+                                r2 = /^[a-zA-Z0-9_]{61}$/;
+                                r1 = r2.test;
+                                r1 = r1.bind(r2)(r4);
+                                if(r1) { _fun5363_ip = 135; continue _fun5363 }
+case 130:
+                                r1 = false;
+                                return r1;
+case 135:
+                                r2 = 16;
+                                r1 = r4[r2];
+                                r5 = '_';
+                                if(!(r1 === r5)) { _fun5363_ip = 609; continue _fun5363 }
+case 153:
+                                r7 = 33;
+                                r1 = r4[r7];
+                                if(!(r1 === r5)) { _fun5363_ip = 609; continue _fun5363 }
+case 167:
+                                r1 = r4.slice;
+                                r6 = 0;
+                                r5 = r1.bind(r4)(r6, r2);
+                                _closure5_slot0 = r5;
+                                r2 = r4.slice;
+                                r1 = 17;
+                                r7 = r2.bind(r4)(r1, r7);
+                                r2 = r4.slice;
+                                r1 = 34;
+                                r8 = r2.bind(r4)(r1);
+                                r2 = global;
+                                r4 = r2.console;
+                                r1 = r4.log;
+                                r1 = r1.bind(r4)(r5, r7, r8);
+                                r4 = [true, true, true];
+                                _closure5_slot1 = r4;
+                                r5 = r6.toString;
+                                r1 = 10;
+                                r10 = r5.bind(r6)(r1);
+                                r6 = r10.padStart;
+                                r5 = 2;
+                                r1 = '0';
+                                r10 = r6.bind(r10)(r5, r1);
+                                r6 = _closure1_slot0;
+                                r11 = _closure1_slot1;
+                                r1 = 9;
+                                r1 = r11[r1];
+                                r1 = r6.bind(r9)(r1);
+                                r6 = r1.sha256;
+                                r11 = r2.Date;
+                                r1 = '2025-';
+                                r12 = r1 + r10;
+                                r1 = '-';
+                                r1 = r12 + r1;
+                                r19 = r1 + r10;
+                                r10 = r11.prototype;
+                                r10 = Object.create(r10, {constructor: {value: r11}});
+                                r20 = r10;
+                                r1 = new r20[r11](r19, r18);
+                                r10 = r1 instanceof Object ? r1 : r10;
+                                r1 = r10.toISOString;
+                                r1 = r1.bind(r10)();
+                                r10 = r6.bind(r9)(r1);
+                                r6 = r10.then;
+                                r1 = function(a0) { // Environment: r3
+                                    r1 = a0;
+                                    var _closure6_slot0 = r1;
+                                    r1 = [207, 143, 244, 109, 98, 219, 179, 20, 93, 64, 118, 3, 154, 106, 77, 248, 135, 143, 226, 26, 102, 102, 88, 231, 123, 239, 122, 77, 46, 235, 13, 227];
+                                    var _closure6_slot1 = r1;
+                                    r1 = global;
+                                    r3 = r1.Array;
+                                    r2 = r3.from;
+                                    r5 = r1.Array;
+                                    r4 = r5.from;
+                                    r1 = _closure5_slot0;
+                                    r6 = r4.bind(r5)(r1);
+                                    r5 = r6.reduce;
+                                    r4 = function(a0, a1) { // Environment: r0
+                                        r2 = a1;
+                                        r1 = r2.repeat;
+                                        r0 = 2;
+                                        r1 = r1.bind(r2)(r0);
+                                        r0 = a0;
+                                        r0 = r1 + r0;
+                                        return r0;
+                                    };
+                                    r1 = '';
+                                    r1 = r5.bind(r6)(r4, r1);
+                                    r2 = r2.bind(r3)(r1);
+                                    r1 = r2.forEach;
+                                    r0 = function(a0, a1) { // Environment: r0
+                                        _fun5368: for(var _fun5368_ip = 0; ; ) switch(_fun5368_ip) {
+case 0:
+                                            r8 = a0;
+                                            r7 = a1;
+                                            r0 = global;
+                                            r3 = r0.parseInt;
+                                            r5 = _closure6_slot0;
+                                            r2 = r5.slice;
+                                            r6 = 2;
+                                            r1 = r7 * r6;
+                                            r0 = r7 * r6;
+                                            r0 = r0 + r6;
+                                            r2 = r2.bind(r5)(r1, r0);
+                                            r0 = undefined;
+                                            r1 = 16;
+                                            r5 = r3.bind(r0)(r2, r1);
+                                            r3 = _closure5_slot1;
+                                            r2 = 0;
+                                            r1 = r3[r2];
+                                            if(!r1) { _fun5368_ip = 101; continue _fun5368 }
+case 74:
+                                            r6 = r8.charCodeAt;
+                                            r6 = r6.bind(r8)(r2);
+                                            r4 = _closure6_slot1;
+                                            r4 = r4[r7];
+                                            r4 = r6 ^ r4;
+                                            r1 = r5 === r4;
+case 101:
+                                            r3[r2] = r1;
+                                            return r0;
+                                        }
+                                    };
+                                    r0 = r1.bind(r2)(r0);
+                                    r0 = undefined;
+                                    return r0;
+                                };
+                                r1 = r6.bind(r10)(r1);
+                                SaveGenerator(address=385);
+case 383:
+                                return r1;
+case 385:
+                                ResumeGenerator(result_out_reg=1, return_bool_out_reg=6);
+                                if(r6) { _fun5363_ip = 606; continue _fun5363 }
+case 394:
+                                r6 = function(a0) { // Environment: r3
+                                    _fun5369: for(var _fun5369_ip = 0; ; ) switch(_fun5369_ip) {
+case 0:
+                                        r9 = a0;
+                                        r0 = undefined;
+                                        r5 = undefined;
+                                        r7 = function(a0, a1) { // Original name: apply, environment: r4
+                                            _fun5370: for(var _fun5370_ip = 0; ; ) switch(_fun5370_ip) {
+case 0:
+                                                r0 = a0;
+                                                r8 = undefined;
+                                                r9 = undefined;
+                                                r10 = undefined;
+                                                r7 = a1;
+                                                r2 = r7[Symbol.iterator];
+                                                r7 = r2().next;
+                                                r6 = 1;
+                                                r5 = 7;
+                                                r4 = 0;
+                                                r1 = 2;
+case 29:
+                                                r12 = r7().value;
+                                                r11 = r2;
+                                                if(!(r11 !== r8)) { _fun5370_ip = 244; continue _fun5370 }
+case 43: // try_start_0
+                                                r11 = _closure1_slot4;
+                                                r11 = r11.default;
+                                                r12 = r11.bind(r8)(r12, r1);
+                                                r11 = r12[r4];
+                                                r9 = r11;
+                                                r14 = r12[r6];
+                                                r10 = r14;
+                                                r12 = r0;
+                                                r13 = r12[r11];
+                                                r12 = r13[r14];
+                                                r12 = r12 ^ r6;
+                                                r13[r14] = r12;
+                                                if(!(r11 > r4)) { _fun5370_ip = 124; continue _fun5370 }
+case 95:
+                                                r12 = r0;
+                                                r11 = r9;
+                                                r11 = r11 - r6;
+                                                r13 = r12[r11];
+                                                r12 = r10;
+                                                r11 = r13[r12];
+                                                r11 = r11 ^ r6;
+                                                r13[r12] = r11;
+case 124:
+                                                r11 = r9;
+                                                if(!(r11 < r5)) { _fun5370_ip = 160; continue _fun5370 }
+case 131:
+                                                r12 = r0;
+                                                r11 = r9;
+                                                r11 = r11 + r6;
+                                                r13 = r12[r11];
+                                                r12 = r10;
+                                                r11 = r13[r12];
+                                                r11 = r11 ^ r6;
+                                                r13[r12] = r11;
+case 160:
+                                                r11 = r10;
+                                                if(!(r11 > r4)) { _fun5370_ip = 196; continue _fun5370 }
+case 167:
+                                                r12 = r0;
+                                                r11 = r9;
+                                                r13 = r12[r11];
+                                                r11 = r10;
+                                                r12 = r11 - r6;
+                                                r11 = r13[r12];
+                                                r11 = r11 ^ r6;
+                                                r13[r12] = r11;
+case 196:
+                                                r11 = r10;
+                                                if(!(r11 < r5)) { _fun5370_ip = 232; continue _fun5370 }
+case 203:
+                                                r12 = r0;
+                                                r11 = r9;
+                                                r13 = r12[r11];
+                                                r11 = r10;
+                                                r12 = r11 + r6;
+                                                r11 = r13[r12];
+                                                r11 = r11 ^ r6;
+                                                r13[r12] = r11;
+case 232: // try_end0
+                                                _fun5370_ip = 29; continue _fun5370;
+case 237: // catch_target0
+                                                CatchBlockStart(arg_register=1);
+                                                r2.return();
+                                                throw r1;
+case 244:
+                                                return r0;
+                                            }
+                                        };
+                                        r3 = new Array(33);
+                                        r1 = [2, 2];
+                                        r3[0] = r1;
+                                        r1 = [4, 0];
+                                        r3[1] = r1;
+                                        r1 = [2, 5];
+                                        r3[2] = r1;
+                                        r1 = [0, 0];
+                                        r3[3] = r1;
+                                        r1 = [5, 2];
+                                        r3[4] = r1;
+                                        r1 = [6, 0];
+                                        r3[5] = r1;
+                                        r1 = [3, 4];
+                                        r3[6] = r1;
+                                        r1 = [3, 0];
+                                        r3[7] = r1;
+                                        r1 = [5, 5];
+                                        r3[8] = r1;
+                                        r1 = [0, 6];
+                                        r3[9] = r1;
+                                        r1 = [4, 7];
+                                        r3[10] = r1;
+                                        r1 = [5, 6];
+                                        r3[11] = r1;
+                                        r1 = [1, 0];
+                                        r3[12] = r1;
+                                        r1 = [5, 0];
+                                        r3[13] = r1;
+                                        r1 = [6, 2];
+                                        r3[14] = r1;
+                                        r1 = [3, 6];
+                                        r3[15] = r1;
+                                        r1 = [0, 4];
+                                        r3[16] = r1;
+                                        r1 = [7, 0];
+                                        r3[17] = r1;
+                                        r1 = [5, 3];
+                                        r3[18] = r1;
+                                        r1 = [2, 0];
+                                        r3[19] = r1;
+                                        r1 = [1, 6];
+                                        r3[20] = r1;
+                                        r1 = [6, 7];
+                                        r3[21] = r1;
+                                        r1 = [6, 4];
+                                        r3[22] = r1;
+                                        r1 = [7, 7];
+                                        r3[23] = r1;
+                                        r1 = [5, 7];
+                                        r3[24] = r1;
+                                        r1 = [1, 7];
+                                        r3[25] = r1;
+                                        r1 = [1, 3];
+                                        r3[26] = r1;
+                                        r1 = [1, 5];
+                                        r3[27] = r1;
+                                        r1 = [7, 2];
+                                        r3[28] = r1;
+                                        r1 = [3, 1];
+                                        r3[29] = r1;
+                                        r1 = [2, 1];
+                                        r3[30] = r1;
+                                        r1 = [5, 4];
+                                        r3[31] = r1;
+                                        r1 = [0, 3];
+                                        r3[32] = r1;
+                                        r14 = new Array(36);
+                                        r1 = [7, 4];
+                                        r14[0] = r1;
+                                        r1 = [2, 6];
+                                        r14[1] = r1;
+                                        r1 = [2, 3];
+                                        r14[2] = r1;
+                                        r1 = [1, 3];
+                                        r14[3] = r1;
+                                        r1 = [6, 0];
+                                        r14[4] = r1;
+                                        r1 = [4, 0];
+                                        r14[5] = r1;
+                                        r1 = [3, 1];
+                                        r14[6] = r1;
+                                        r1 = [5, 4];
+                                        r14[7] = r1;
+                                        r1 = [7, 2];
+                                        r14[8] = r1;
+                                        r1 = [6, 6];
+                                        r14[9] = r1;
+                                        r1 = [4, 4];
+                                        r14[10] = r1;
+                                        r1 = [7, 1];
+                                        r14[11] = r1;
+                                        r1 = [1, 7];
+                                        r14[12] = r1;
+                                        r1 = [0, 6];
+                                        r14[13] = r1;
+                                        r1 = [4, 7];
+                                        r14[14] = r1;
+                                        r1 = [7, 6];
+                                        r14[15] = r1;
+                                        r1 = [1, 5];
+                                        r14[16] = r1;
+                                        r1 = [3, 2];
+                                        r14[17] = r1;
+                                        r1 = [0, 0];
+                                        r14[18] = r1;
+                                        r1 = [3, 0];
+                                        r14[19] = r1;
+                                        r1 = [1, 0];
+                                        r14[20] = r1;
+                                        r1 = [4, 2];
+                                        r14[21] = r1;
+                                        r1 = [3, 4];
+                                        r14[22] = r1;
+                                        r1 = [5, 5];
+                                        r14[23] = r1;
+                                        r1 = [0, 1];
+                                        r14[24] = r1;
+                                        r1 = [7, 7];
+                                        r14[25] = r1;
+                                        r1 = [0, 7];
+                                        r14[26] = r1;
+                                        r1 = [2, 0];
+                                        r14[27] = r1;
+                                        r1 = [7, 0];
+                                        r14[28] = r1;
+                                        r1 = [1, 6];
+                                        r14[29] = r1;
+                                        r1 = [4, 3];
+                                        r14[30] = r1;
+                                        r1 = [4, 1];
+                                        r14[31] = r1;
+                                        r1 = [5, 0];
+                                        r14[32] = r1;
+                                        r1 = [7, 3];
+                                        r14[33] = r1;
+                                        r1 = [5, 3];
+                                        r14[34] = r1;
+                                        r1 = [6, 4];
+                                        r14[35] = r1;
+                                        r1 = r9.slice;
+                                        r12 = 0;
+                                        r11 = 8;
+                                        r15 = r1.bind(r9)(r12, r11);
+                                        r6 = ['h', 'i', ' ', 't', 'h', 'e', 'r', 'e'];
+                                        r2 = r6.map;
+                                        r1 = function() { // Environment: r4
+                                            r0 = [0, 0, 0, 0, 0, 0, 0, 0];
+                                            return r0;
+                                        };
+                                        r5 = r2.bind(r6)(r1);
+                                        r1 = r3;
+                                        r2 = r1[Symbol.iterator];
+                                        r1 = r2().next;
+                                        r8 = 2;
+                                        r3 = 1;
+case 904:
+                                        r10 = r1().value;
+                                        r6 = r2;
+                                        if(!(r6 !== r0)) { _fun5369_ip = 958; continue _fun5369 }
+case 915: // try_start_0
+                                        r6 = _closure1_slot4;
+                                        r6 = r6.default;
+                                        r6 = r6.bind(r0)(r10, r8);
+                                        r16 = r6[r12];
+                                        r10 = r6[r3];
+                                        r6 = r5;
+                                        r6 = r6[r16];
+                                        r6[r10] = r3;
+case 949: // try_end0
+                                        _fun5369_ip = 904; continue _fun5369;
+case 951: // catch_target0
+                                        CatchBlockStart(arg_register=1);
+                                        r2.return();
+                                        throw r1;
+case 958:
+                                        r2 = new Array(0);
+                                        r1 = r15.length;
+                                        r1 = r12 < r1;
+                                        r10 = 7;
+                                        r6 = 0;
+                                        if(!r1) { _fun5369_ip = 1055; continue _fun5369 }
+case 979:
+                                        r1 = r15.charCodeAt;
+                                        r17 = r1.bind(r15)(r6);
+                                        r1 = r6;
+                                        r16 = 0;
+case 995:
+                                        r18 = r10 - r16;
+                                        r18 = r3 << r18;
+                                        r19 = r17 & r18;
+                                        r18 = r16;
+                                        if(!(r19 !== r12)) { _fun5369_ip = 1036; continue _fun5369 }
+case 1014:
+                                        r20 = r2.push;
+                                        r19 = new Array(2);
+                                        r19[0] = r1;
+                                        r19[1] = r18;
+                                        r19 = r20.bind(r2)(r19);
+case 1036:
+                                        r16 = r18 + 1;
+                                        if(r16 < r11) { _fun5369_ip = 995; continue _fun5369 }
+case 1043:
+                                        r6 = r1 + 1;
+                                        r1 = r15.length;
+                                        if(r6 < r1) { _fun5369_ip = 979; continue _fun5369 }
+case 1055:
+                                        r1 = r5;
+                                        r15 = r7.bind(r0)(r1, r2);
+                                        r5 = r15;
+                                        r6 = _closure5_slot1;
+                                        r2 = r15.flat;
+                                        r16 = r2.bind(r15)();
+                                        r15 = r16.every;
+                                        r2 = function(a0) { // Environment: r4
+                                            r1 = a0;
+                                            r0 = 0;
+                                            r0 = r1 === r0;
+                                            return r0;
+                                        };
+                                        r2 = r15.bind(r16)(r2);
+                                        r6[r3] = r2;
+                                        r6 = r9.slice;
+                                        r2 = 16;
+                                        r9 = r6.bind(r9)(r11, r2);
+                                        r15 = ['g', 'o', 'o', 'd', 'l', 'u', 'c', 'k'];
+                                        r6 = r15.map;
+                                        r2 = function() { // Environment: r4
+                                            r0 = [0, 0, 0, 0, 0, 0, 0, 0];
+                                            return r0;
+                                        };
+                                        r5 = r6.bind(r15)(r2);
+                                        r2 = r14;
+                                        r6 = r2[Symbol.iterator];
+                                        r2 = r6().next;
+case 1147:
+                                        r15 = r2().value;
+                                        r14 = r6;
+                                        if(!(r14 !== r0)) { _fun5369_ip = 1201; continue _fun5369 }
+case 1158: // try_start_1
+                                        r14 = _closure1_slot4;
+                                        r14 = r14.default;
+                                        r14 = r14.bind(r0)(r15, r8);
+                                        r16 = r14[r12];
+                                        r15 = r14[r3];
+                                        r14 = r5;
+                                        r14 = r14[r16];
+                                        r14[r15] = r3;
+case 1192: // try_end1
+                                        _fun5369_ip = 1147; continue _fun5369;
+case 1194: // catch_target1
+                                        CatchBlockStart(arg_register=2);
+                                        r6.return();
+                                        throw r2;
+case 1201:
+                                        r6 = new Array(0);
+                                        r2 = r9.length;
+                                        r2 = r12 < r2;
+                                        r8 = 0;
+                                        if(!r2) { _fun5369_ip = 1295; continue _fun5369 }
+case 1219:
+                                        r2 = r9.charCodeAt;
+                                        r14 = r2.bind(r9)(r8);
+                                        r2 = r8;
+                                        r13 = 0;
+case 1235:
+                                        r15 = r10 - r13;
+                                        r15 = r3 << r15;
+                                        r16 = r14 & r15;
+                                        r15 = r13;
+                                        if(!(r16 !== r12)) { _fun5369_ip = 1276; continue _fun5369 }
+case 1254:
+                                        r17 = r6.push;
+                                        r16 = new Array(2);
+                                        r16[0] = r2;
+                                        r16[1] = r15;
+                                        r16 = r17.bind(r6)(r16);
+case 1276:
+                                        r13 = r15 + 1;
+                                        if(r13 < r11) { _fun5369_ip = 1235; continue _fun5369 }
+case 1283:
+                                        r8 = r2 + 1;
+                                        r2 = r9.length;
+                                        if(r8 < r2) { _fun5369_ip = 1219; continue _fun5369 }
+case 1295:
+                                        r2 = r5;
+                                        r5 = r7.bind(r0)(r2, r6);
+                                        r2 = _closure5_slot1;
+                                        r1 = r2[r3];
+                                        if(!r1) { _fun5369_ip = 1344; continue _fun5369 }
+case 1315:
+                                        r6 = r5;
+                                        r5 = r6.flat;
+                                        r6 = r5.bind(r6)();
+                                        r5 = r6.every;
+                                        r4 = function(a0) { // Environment: r4
+                                            r1 = a0;
+                                            r0 = 0;
+                                            r0 = r1 === r0;
+                                            return r0;
+                                        };
+                                        r1 = r5.bind(r6)(r4);
+case 1344:
+                                        r2[r3] = r1;
+                                        return r0;
+                                    }
+                                };
+                                r6 = r6.bind(r9)(r7);
+                                r7 = _closure2_slot8;
+                                r7 = r7.current;
+                                r19 = r7.gravity;
+                                r7 = _closure2_slot8;
+                                r7 = r7.current;
+                                r18 = r7.airResistance;
+                                r7 = _closure2_slot8;
+                                r7 = r7.current;
+                                r17 = r7.bounceDamping;
+                                r7 = _closure2_slot8;
+                                r7 = r7.current;
+                                r16 = r7.collisionDamping;
+                                r6 = _closure2_slot8;
+                                r6 = r6.current;
+                                r15 = r6.zeroClampThreshold;
+                                r6 = r2.HermesInternal;
+                                r7 = r6.concat;
+                                r20 = '';
+                                r10 = r20[r7](r19, r18, r17, r16, r15, r14);
+                                r6 = r2.TextEncoder;
+                                r7 = r6.prototype;
+                                r7 = Object.create(r7, {constructor: {value: r6}});
+                                r20 = r7;
+                                r6 = new r20[r6](r19);
+                                r7 = r6 instanceof Object ? r6 : r7;
+                                r6 = r7.encode;
+                                r7 = r6.bind(r7)(r10);
+                                r6 = function(a0, a1) { // Original name: enc, environment: r3
+                                    _fun5364: for(var _fun5364_ip = 0; ; ) switch(_fun5364_ip) {
+case 0:
+                                        r3 = a1;
+                                        r7 = undefined;
+                                        r8 = undefined;
+                                        r9 = undefined;
+                                        r10 = undefined;
+                                        r0 = undefined;
+                                        r1 = global;
+                                        r11 = r1.Array;
+                                        r5 = r11.from;
+                                        r4 = {};
+                                        r6 = 256;
+                                        r4['length'] = r6;
+                                        r2 = function(a0, a1) { // Environment: r2
+                                            r0 = a1;
+                                            return r0;
+                                        };
+                                        r8 = r5.bind(r11)(r4, r2);
+                                        r5 = 0;
+                                        r9 = 0;
+                                        r4 = 1;
+                                        r2 = 0;
+case 60:
+                                        r12 = r9;
+                                        r13 = r8;
+                                        r11 = r13[r2];
+                                        r12 = r12 + r11;
+                                        r11 = r3.length;
+                                        r11 = r2 % r11;
+                                        r11 = r3[r11];
+                                        r11 = r12 + r11;
+                                        r12 = r11 % r6;
+                                        r9 = r12;
+                                        r14 = r13[r12];
+                                        r11 = new Array(2);
+                                        r11[0] = r14;
+                                        r14 = r13[r2];
+                                        r11[1] = r14;
+                                        r14 = r11[r5];
+                                        r13[r2] = r14;
+                                        r11 = r11[r4];
+                                        r13[r12] = r11;
+                                        r2 = r2 + 1;
+                                        if(r2 < r6) { _fun5364_ip = 60; continue _fun5364 }
+case 141:
+                                        r10 = 0;
+                                        r9 = 0;
+                                        r0 = new Array(0);
+                                        r2 = a0;
+                                        r3 = r2[Symbol.iterator];
+                                        r2 = r3().next;
+case 155:
+                                        r15 = r2().value;
+                                        r11 = r3;
+                                        if(!(r11 !== r7)) { _fun5364_ip = 300; continue _fun5364 }
+case 169: // try_start_0
+                                        r11 = r10;
+                                        r11 = r11 + r4;
+                                        r13 = r11 % r6;
+                                        r10 = r13;
+                                        r14 = r9;
+                                        r12 = r8;
+                                        r11 = r12[r13];
+                                        r11 = r14 + r11;
+                                        r11 = r11 % r6;
+                                        r9 = r11;
+                                        r16 = r12[r11];
+                                        r14 = new Array(2);
+                                        r14[0] = r16;
+                                        r16 = r12[r13];
+                                        r14[1] = r16;
+                                        r16 = r14[r5];
+                                        r12[r13] = r16;
+                                        r14 = r14[r4];
+                                        r12[r11] = r14;
+                                        r13 = r12[r13];
+                                        r11 = r12[r11];
+                                        r11 = r13 + r11;
+                                        r11 = r11 % r6;
+                                        r14 = r12[r11];
+                                        r13 = r0;
+                                        r12 = r13.push;
+                                        r11 = r15.charCodeAt;
+                                        r11 = r11.bind(r15)(r5);
+                                        r11 = r11 ^ r14;
+                                        r11 = r12.bind(r13)(r11);
+case 288: // try_end0
+                                        _fun5364_ip = 155; continue _fun5364;
+case 293: // catch_target0
+                                        CatchBlockStart(arg_register=2);
+                                        r3.return();
+                                        throw r2;
+case 300:
+                                        r2 = r1.Uint8Array;
+                                        r18 = r0;
+                                        r1 = r2.prototype;
+                                        r1 = Object.create(r1, {constructor: {value: r2}});
+                                        r19 = r1;
+                                        r0 = new r19[r2](r18, r17);
+                                        r0 = r0 instanceof Object ? r0 : r1;
+                                        return r0;
+                                    }
+                                };
+                                r7 = r6.bind(r9)(r8, r7);
+                                r6 = r7.every;
+                                r3 = function(a0, a1) { // Environment: r3
+                                    r1 = [134, 145, 231, 193, 40, 196, 78, 177, 206, 34, 168, 148, 66, 43, 66, 136, 194, 158, 195, 255, 243, 123, 190, 218, 173, 28, 3];
+                                    r0 = a1;
+                                    r1 = r1[r0];
+                                    r0 = a0;
+                                    r0 = r0 === r1;
+                                    return r0;
+                                };
+                                r3 = r6.bind(r7)(r3);
+                                r4[r5] = r3;
+                                r5 = r2.console;
+                                r3 = r5.log;
+                                r3 = r3.bind(r5)(r4);
+                                r3 = r4.every;
+                                r2 = r2.Boolean;
+                                r2 = r3.bind(r4)(r2);
+                                return r2;
+case 606:
+                                return r1;
+case 609:
+                                r1 = false;
+                                return r1;
+case 614:
+                                return r0;
+                            }
+                        };
+                        return r0;
+                    };
+                    r3 = r2.bind(r3)(r1);
+                    _closure2_slot15 = r3;
+                    r2 = r3.apply;
+                    r0 = arguments;
+                    r1 = r0;
+                    r0 = this;
+                    r0 = r2.bind(r3)(r0, r1);
+                    return r0;
+                };
+                var _closure2_slot15 = r0;
+                r0 = _closure1_slot6;
+                r1 = r0.useState;
+                r3 = undefined;
+                r0 = '';
+                r1 = r1.bind(r3)(r0);
+                r0 = _closure1_slot4;
+                r0 = r0.default;
+                r4 = 2;
+                r0 = r0.bind(r3)(r1, r4);
+                r8 = 0;
+                r23 = r0[r8];
+                var _closure2_slot0 = r23;
+                r1 = 1;
+                r22 = r0[r1];
+                var _closure2_slot1 = r22;
+                r0 = _closure1_slot6;
+                r0 = r0.useState;
+                r10 = false;
+                r2 = r0.bind(r3)(r10);
+                r0 = _closure1_slot4;
+                r0 = r0.default;
+                r0 = r0.bind(r3)(r2, r4);
+                r15 = r0[r8];
+                r0 = r0[r1];
+                var _closure2_slot2 = r0;
+                r0 = _closure1_slot6;
+                r0 = r0.useState;
+                r2 = r0.bind(r3)(r10);
+                r0 = _closure1_slot4;
+                r0 = r0.default;
+                r0 = r0.bind(r3)(r2, r4);
+                r16 = r0[r8];
+                r0 = r0[r1];
+                var _closure2_slot3 = r0;
+                r0 = _closure1_slot6;
+                r2 = r0.useState;
+                r0 = new Array(0);
+                r2 = r2.bind(r3)(r0);
+                r0 = _closure1_slot4;
+                r0 = r0.default;
+                r0 = r0.bind(r3)(r2, r4);
+                r17 = r0[r8];
+                var _closure2_slot4 = r17;
+                r0 = r0[r1];
+                var _closure2_slot5 = r0;
+                r0 = _closure1_slot6;
+                r1 = r0.useRef;
+                r0 = null;
+                r0 = r1.bind(r3)(r0);
+                var _closure2_slot6 = r0;
+                r0 = _closure1_slot6;
+                r0 = r0.useRef;
+                r0 = r0.bind(r3)(r8);
+                var _closure2_slot7 = r0;
+                r0 = _closure1_slot6;
+                r1 = r0.useRef;
+                r0 = _closure1_slot8;
+                r0 = r0.default;
+                r2 = r0.prototype;
+                r2 = Object.create(r2, {constructor: {value: r0}});
+                r27 = r2;
+                r0 = new r27[r0](r26);
+                r0 = r0 instanceof Object ? r0 : r2;
+                r0 = r1.bind(r3)(r0);
+                var _closure2_slot8 = r0;
+                r0 = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#FFAB40', '#FF6F61', '#6A0572', '#3B3B98', '#F7B7A3', '#C5CBE3', '#FF9AA2', '#B9FBC0'];
+                var _closure2_slot9 = r0;
+                r0 = function(a0) { // Original name: calculateTextDimensions, environment: r21
+                    r0 = global;
+                    r3 = r0.Math;
+                    r2 = r3.max;
+                    r0 = a0;
+                    r1 = r0.length;
+                    r0 = 10;
+                    r4 = r1 * r0;
+                    r1 = 80;
+                    r0 = 6;
+                    r0 = r4 + r0;
+                    r1 = r2.bind(r3)(r1, r0);
+                    r0 = {};
+                    r0['width'] = r1;
+                    r1 = 40;
+                    r0['height'] = r1;
+                    return r0;
+                };
+                var _closure2_slot10 = r0;
+                r0 = function() { // Environment: r21
+                    r1 = _closure1_slot3;
+                    r3 = r1.default;
+                    r2 = undefined;
+                    r1 = function* (a0) { // Environment: r0
+                        r0 = function* (a0) { // Original name: ?anon_0_, environment: r0
+                            _fun5379: for(var _fun5379_ip = 0; ; ) switch(_fun5379_ip) {
+case 0:
+                                StartGenerator();
+                                r4 = a0;
+                                ResumeGenerator(result_out_reg=0, return_bool_out_reg=1);
+                                if(r1) { _fun5379_ip = 576; continue _fun5379 }
+case 15:
+                                r2 = undefined;
+                                var _closure5_slot0 = r2;
+                                var _closure5_slot1 = r2;
+                                r1 = r4.trim;
+                                r1 = r1.bind(r4)();
+                                if(r1) { _fun5379_ip = 40; continue _fun5379 }
+case 37:
+                                return r2;
+case 40:
+                                r5 = _closure2_slot10;
+                                r6 = r5.bind(r2)(r4);
+                                r5 = _closure1_slot8;
+                                r5 = r5.PHYSICS_BOUNDS;
+                                r8 = r5.right;
+                                r5 = r6.width;
+                                r9 = r8 - r5;
+                                r5 = _closure1_slot8;
+                                r5 = r5.PHYSICS_BOUNDS;
+                                r8 = r5.bottom;
+                                r5 = r6.height;
+                                r10 = r8 - r5;
+                                r5 = {};
+                                r12 = _closure2_slot7;
+                                r8 = r12.current;
+                                r8 = parseFloat(r8);
+                                r11 = r8 + 1;
+                                r12['current'] = r11;
+                                r5['id'] = r8;
+                                r5['text'] = r4;
+                                r4 = _closure1_slot5;
+                                r4 = r4.Animated;
+                                r11 = r4.Value;
+                                r4 = global;
+                                r12 = r4.Math;
+                                r8 = r12.random;
+                                r8 = r8.bind(r12)();
+                                r13 = r8 * r9;
+                                r9 = r11.prototype;
+                                r9 = Object.create(r9, {constructor: {value: r11}});
+                                r14 = r9;
+                                r8 = new r14[r11](r13, r12);
+                                r8 = r8 instanceof Object ? r8 : r9;
+                                r5['x'] = r8;
+                                r7 = _closure1_slot5;
+                                r7 = r7.Animated;
+                                r9 = r7.Value;
+                                r8 = r4.Math;
+                                r7 = r8.random;
+                                r8 = r7.bind(r8)();
+                                r7 = 0.3;
+                                r7 = r10 * r7;
+                                r13 = r8 * r7;
+                                r8 = r9.prototype;
+                                r8 = Object.create(r8, {constructor: {value: r9}});
+                                r14 = r8;
+                                r7 = new r14[r9](r13, r12);
+                                r7 = r7 instanceof Object ? r7 : r8;
+                                r5['y'] = r7;
+                                r8 = r4.Math;
+                                r7 = r8.random;
+                                r7 = r7.bind(r8)();
+                                r8 = 0.5;
+                                r9 = r7 - r8;
+                                r7 = 4;
+                                r7 = r9 * r7;
+                                r5['vx'] = r7;
+                                r9 = r4.Math;
+                                r7 = r9.random;
+                                r7 = r7.bind(r9)();
+                                r8 = r7 - r8;
+                                r7 = 2;
+                                r7 = r8 * r7;
+                                r5['vy'] = r7;
+                                r8 = _closure2_slot9;
+                                r10 = r4.Math;
+                                r9 = r10.floor;
+                                r11 = r4.Math;
+                                r7 = r11.random;
+                                r11 = r7.bind(r11)();
+                                r7 = r8.length;
+                                r7 = r11 * r7;
+                                r7 = r9.bind(r10)(r7);
+                                r7 = r8[r7];
+                                r5['color'] = r7;
+                                r7 = r6.width;
+                                r5['width'] = r7;
+                                r6 = r6.height;
+                                r5['height'] = r6;
+                                _closure5_slot0 = r5;
+                                r6 = _closure2_slot5;
+                                r5 = function(a0) { // Environment: r3
+                                    r3 = new Array(0);
+                                    r2 = r3.concat;
+                                    r0 = _closure1_slot2;
+                                    r4 = r0.default;
+                                    r1 = undefined;
+                                    r0 = a0;
+                                    r1 = r4.bind(r1)(r0);
+                                    r4 = _closure5_slot0;
+                                    r0 = new Array(1);
+                                    r0[0] = r4;
+                                    r0 = r2.bind(r3)(r1, r0);
+                                    return r0;
+                                };
+                                r5 = r6.bind(r2)(r5);
+                                r5 = _closure2_slot4;
+                                r6 = r5.length;
+                                r5 = 3;
+                                if(!(r6 >= r5)) { _fun5379_ip = 570; continue _fun5379 }
+case 450:
+                                r7 = _closure2_slot4;
+                                r6 = r7.slice;
+                                r5 = -3;
+                                r7 = r6.bind(r7)(r5);
+                                r5 = ['The', 'flag', 'is'];
+                                _closure5_slot1 = r5;
+                                r6 = r4.Array;
+                                r5 = r6.from;
+                                r4 = r7.entries;
+                                r4 = r4.bind(r7)();
+                                r5 = r5.bind(r6)(r4);
+                                r4 = r5.every;
+                                r3 = function(a0) { // Environment: r3
+                                    r0 = _closure1_slot4;
+                                    r3 = r0.default;
+                                    r2 = undefined;
+                                    r1 = a0;
+                                    r0 = 2;
+                                    r1 = r3.bind(r2)(r1, r0);
+                                    r0 = 0;
+                                    r2 = r1[r0];
+                                    r0 = 1;
+                                    r0 = r1[r0];
+                                    r1 = r0.text;
+                                    r0 = _closure5_slot1;
+                                    r0 = r0[r2];
+                                    r0 = r1 === r0;
+                                    return r0;
+                                };
+                                r3 = r4.bind(r5)(r3);
+                                if(!r3) { _fun5379_ip = 570; continue _fun5379 }
+case 527:
+                                r4 = _closure2_slot2;
+                                r3 = true;
+                                r3 = r4.bind(r2)(r3);
+                                r3 = _closure2_slot3;
+                                r4 = _closure2_slot14;
+                                r1 = _closure2_slot0;
+                                r1 = r4.bind(r2)(r1);
+                                SaveGenerator(address=559);
+case 557:
+                                return r1;
+case 559:
+                                ResumeGenerator(result_out_reg=1, return_bool_out_reg=4);
+                                if(r4) { _fun5379_ip = 573; continue _fun5379 }
+case 565:
+                                r3 = r3.bind(r2)(r1);
+case 570:
+                                return r2;
+case 573:
+                                return r1;
+case 576:
+                                return r0;
+                            }
+                        };
+                        return r0;
+                    };
+```
+
+Now, reading through we can see an inital format check:
+
+```javascript
+                                r2 = r5.startsWith;
+                                r1 = 'idek{';
+                                r1 = r2.bind(r5)(r1);
+                                if(!r1) { _fun5363_ip = 77; continue _fun5363 }
+case 60:
+                                r2 = r5.endsWith;
+                                r1 = '}';
+                                r1 = r2.bind(r5)(r1);
+                                if(r1) { _fun5363_ip = 82; continue _fun5363 }
+case 77:
+                                r1 = false;
+                                return r1;
+case 82:
+                                r4 = r5.slice;
+                                r2 = 5;
+                                r1 = -1;
+                                r4 = r4.bind(r5)(r2, r1);
+                                r2 = /^[a-zA-Z0-9_]{61}$/;
+                                r1 = r2.test;
+                                r1 = r1.bind(r2)(r4);
+                                if(r1) { _fun5363_ip = 135; continue _fun5363 }
+case 130:
+                                r1 = false;
+                                return r1;
+case 135:
+                                r2 = 16;
+                                r1 = r4[r2];
+                                r5 = '_';
+                                if(!(r1 === r5)) { _fun5363_ip = 609; continue _fun5363 }
+case 153:
+                                r7 = 33;
+                                r1 = r4[r7];
+                                if(!(r1 === r5)) { _fun5363_ip = 609; continue _fun5363 }
+```
+
+this looks pretty bad since decompilation isnt perfect but it gives us this information
+- flag format is `idek{}`
+- the middle part in the `{}` is 61 characters and only letters, digits, or underscores
+- enforcing `_` at certain spots
+
+so we can guess the flag format can be like: `idek{<part1>_<part2>_<part3>}`
+
+where `part1 = 16 chars`, `part2 = 16 chars`, `part3 = 27 chars`
+
+#### Part 1
+
+its a PITA to copy over the decompiled code, but you can look at it (and maybe query a few LLMs) as i discuss the logic:
+
+the code calculats the **sha256 hash** of a *dynamically generated date string*. the date is hardcoded as `2025-00-00`, which `new Date()` will parse. this result is then converted to an ISO string and then hashed.
+
+this SHA256 hex digest is used as a OTP key. it just XORs it. it also does a "mangling" on it like this
+
+```javascript
+(c, p) => p.repeat(2) + c
+```
+
+A quick script gives us `d3spit3_th3_nam3`. Current flag: `idek{d3spit3_th3_nam3_<part2>_<part3>}`
+
+#### Part 2
+
+here there are some 8x8 grids, and using a hardcoded list of 36 coordinates (`r14` array at `case 394`) to set the "on" state of the "lights in this grid". this is the "lights out" game. we can use an online solver to solve it or do some Gaussian elimination over GF(2) to find the move set. the output is the 8x8 grid that solves the puzzle, and convert that to 8 bytes gives us the part2. (the first 8 bytes are from the `hi_there_coords` array)
+
+the output of the solver i wrote was this:
+
+```
+    -> Part 2a recovered: No_Expo_
+    -> Part 2b recovered: was_Used
+```
+
+Current flag: `idek{d3spit3_th3_nam3_No_Expo_was_Used}`
+
+*from here i actually made a few really close flag guesses :skull:.
+
+#### Part 3
+
+this part was instantly identified as RC4 decryption by LLMs. the ciphertext has hardcoded and easily extracted. the `r14` array was used as the key, whihc are some physics constants concat-ed. **we were stuck here since from the decompilation there appeared to be something else being added, but turns out that was just empty**.
+
+anyways the key was `0.150.9960.70.80.005` (thephysics constants). rc4 decryption gave us `in_the_cr34t10n_of_7hi5_4pp`
+
+Final flag: `idek{d3spit3_th3_nam3_No_Expo_was_Used_in_the_cr34t10n_of_7hi5_4pp}`
+
+#### Conclusion
+
+lmao i had it basically for a long time but the rc4 pmo. thx flocto for making a doable chall for me to be non useless on. also thanks dudcom for solving rc4 at the same time as me :).
