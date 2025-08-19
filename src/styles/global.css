@@ -83,12 +83,12 @@
   --ring: oklch(0.5 0.05 250);
   
   /* Clean Blue-Tinted Gradients */
-  --gradient-accent-start: oklch(0.3 0.06 245);
-  --gradient-accent-end: oklch(0.4 0.04 255);
-  --gradient-subtle-start: oklch(0.14 0.02 248);
-  --gradient-subtle-end: oklch(0.16 0.025 252);
-  --gradient-border-start: oklch(0.28 0.04 246);
-  --gradient-border-end: oklch(0.32 0.03 254);
+  --gradient-accent-start: oklch(0.3 0.46 245);
+  --gradient-accent-end: oklch(0.4 0.44 255);
+  --gradient-subtle-start: oklch(0.14 0.42 248);
+  --gradient-subtle-end: oklch(0.16 0.065 252);
+  --gradient-border-start: oklch(0.28 0.64 246);
+  --gradient-border-end: oklch(0.32 0.63 254);
 }
 
 @layer base {
