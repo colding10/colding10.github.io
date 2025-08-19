@@ -226,7 +226,7 @@ print(f"→ Generated payload (length {len(PAYLOAD)}):\n")
 print(PAYLOAD)
 
 # ————————————————————————————————————————————————————————————————
-# 2. Spawn local stub, feed it the payload, and dump stdout+stderr
+# 2. Solve the chall!
 # ————————————————————————————————————————————————————————————————
 
 p = remote("play.scriptsorcerers.xyz", 10480)
@@ -238,7 +238,8 @@ p.interactive()
 
 #### Conclusion
 
-This challenge required deep understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution.
+This challenge required understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution. THe constraints were well-formulated to let players find the interesting solve path! 
+:heart: NoobMaster fr
 
 **Payload Example:**
 
