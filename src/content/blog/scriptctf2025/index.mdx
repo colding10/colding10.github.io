@@ -68,17 +68,31 @@ Since only `c` is available and all other lowercase letters are blocked, direct 
 
 So our goal is to construct attribute names in the form of strings at runtime!
 
-#### Building Numbers and Strings
+#### Building Strings and Numbers
+
+##### Constructing Strings
+
+- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`. *This is the key of the challenge! Modulo operator being used to create characters!*
+- **Arbitrary Strings:** By chaining format strings, any string can be built: `'%c%c%c' % (65,66,67)` yields `'ABC'`.
+
+*So now we need numbers though...*
 
 ##### Constructing Integers
 
 - **Boolean Comparison:** The challenge allows one `<` or `>`, so `'@' < 'A'` yields `True` (which is `1` in Python).
 - **Unary Increment:** Using `-~x` repeatedly increments `x` by 1, so `-~I` is `2`, `-~-~I` is `3`, etc.
 
-##### Constructing Strings
+This is because 
 
-- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`. *This is the key of the challenge! Modulo operator being used to create characters!*
-- **Arbitrary Strings:** By chaining format strings, any string can be built: `'%c%c%c' % (65,66,67)` yields `'ABC'`.
+$$
+\begin{align*}
+\text{Let } x \text{ be an integer. \newline}
+\text{Bitwise NOT:} \quad & \sim x = -x - 1 \\
+\text{Negate:} \quad & -\sim x = -(-x - 1) \\
+& = x + 1
+\end{align*}
+$$
+
 
 #### Solve Process
 
