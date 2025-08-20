@@ -48,7 +48,7 @@ The provided `server.py` implements several layers of filtering:
 
 - **Character Blacklist:** All lowercase letters except `c` are forbidden, as well as digits, backslash, semicolon, period, and underscore.
 - **Operator Restrictions:** Only one `<` or `>` and one `=` are allowed in the payload.
-- **AST Filtering:** Only the modulo (`%`) binary operator is permitted; all other binary operations are blocked. However, unary operations (like `-~x`) are allowed.
+- **AST Filtering:** Only the modulo (`%`) binary operator is permitted; all other binary operations are blocked. This means we can't do things like `+` or `-`. However, unary operations (like `-~x`) are allowed.
 - **Builtins:** The only available builtin is `c`, which is set to `getattr`.
 
 These constraints severely limit the ability to use normal Python syntax, attribute access, and string/number literals.
@@ -58,13 +58,15 @@ These constraints severely limit the ability to use normal Python syntax, attrib
 ##### Available Primitives
 
 - **`c = getattr`:** This is the only accessible builtin, and it's crucial for dynamic attribute access.
-- **Uppercase Letters:** All uppercase letters are allowed, enabling variable names and string construction.
+- **Uppercase Letters:** All uppercase letters are allowed, enabling variable names and string construction. However, all lowercase letters are blocked, and pretty much every attribute needs a lowercase letter.
 - **Modulo Operator:** The `%` operator is allowed, which enables format string operations.
 - **Unary Operators:** Not filtered, so expressions like `-~x` (which increments `x` by 1) are usable.
 
 ##### Attribute Access
 
 Since only `c` is available and all other lowercase letters are blocked, direct access to most attributes is impossible. However, `getattr` can be used to dynamically access attributes if their names can be constructed at runtime.
+
+So our goal is to construct attribute names in the form of strings at runtime!
 
 #### Building Numbers and Strings
 
@@ -75,12 +77,12 @@ Since only `c` is available and all other lowercase letters are blocked, direct 
 
 ##### Constructing Strings
 
-- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`.
+- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`. *This is the key of the challenge! Modulo operator being used to create characters!*
 - **Arbitrary Strings:** By chaining format strings, any string can be built: `'%c%c%c' % (65,66,67)` yields `'ABC'`.
 
 #### Solve Process
 
-##### Step 1: Initialize a Variable to 1
+##### 1: Initialize a Variable to 1 (True)
 
 Since only one comparison is allowed, use the walrus operator to assign the result of `'@' < 'A'` (which is `True`, i.e., `1`) to a variable (`I`):
 
@@ -88,7 +90,7 @@ Since only one comparison is allowed, use the walrus operator to assign the resu
 (I := ('@' < 'A'))
 ```
 
-##### Step 2: Build Arbitrary Integers
+##### 2: Build Arbitrary Integers
 
 Define a helper function to construct any integer `n` using only `I` and unary increments:
 
@@ -97,7 +99,7 @@ def expr_for(n):
     return "-~" * (n-1) + "I"
 ```
 
-##### Step 3: Build Arbitrary Strings
+##### 3: Build Arbitrary Strings
 
 Use format strings and the integer builder to construct any string:
 
@@ -110,7 +112,7 @@ def string_expr(txt):
     return f"{fmt} % ({exprs})"
 ```
 
-##### Step 4: Dynamic Attribute Access
+##### 4: Dynamic Attribute Access
 
 Use `getattr` (`c`) to access attributes by dynamically built names:
 
@@ -119,7 +121,7 @@ def getattr_call(obj, attr):
     return f"c({obj},{string_expr(attr)})"
 ```
 
-##### Step 5: Chain Attribute Access to Reach `os.system`
+##### 5: Chain Attribute Access to Reach `os.system`
 
 - Get `__self__` from `c` to recover builtins.
 - Use `getattr` to get `__import__`.
@@ -127,7 +129,7 @@ def getattr_call(obj, attr):
 - Get `system` from `os`.
 - Call `system("/bin/sh")`.
 
-##### Step 6: Assemble the Final Payload
+##### 6: Assemble the Final Payload
 
 Combine all steps into a single payload tuple:
 
@@ -239,6 +241,7 @@ p.interactive()
 #### Conclusion
 
 This challenge required understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution. THe constraints were well-formulated to let players find the interesting solve path! 
+
 :heart: NoobMaster fr
 
 **Payload Example:**
