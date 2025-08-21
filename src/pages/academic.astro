@@ -1,0 +1,511 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import Link from '@/components/Link.astro'
+import { Badge } from '@/components/ui/badge'
+import { Icon } from 'astro-icon/components'
+
+type Experience = {
+  organization: string
+  role: string
+  start: string
+  end?: string
+  location?: string
+  description?: string
+  highlights?: string[]
+}
+
+type Award = {
+  name: string
+  date: string
+  category?: string
+  highlights?: string[]
+  place?: string
+}
+
+const education = {
+  institution: 'Bergen County Academies',
+  program: 'Academy for the Advancement of Science and Technology (AAST)',
+  location: 'Hackensack, NJ',
+  start: 'September 2024',
+  end: 'Present',
+  gpa: '4.00/4.00',
+  highlights: [
+    'Rigorous STEM-focused curriculum with advanced courses in mathematics, sciences, and technology',
+    'Research-based learning environment with access to university-level laboratories',
+    'Collaborative projects and interdisciplinary studies',
+  ]
+}
+
+const experiences: Experience[] = [
+  {
+    organization: 'Science Olympiad',
+    role: 'Assistant Head Coach',
+    start: 'Sep 2022',
+    end: 'Present',
+    location: 'New Jersey',
+    description: 'Leading and mentoring middle school students in competitive science events',
+    highlights: [
+      'Coached middle school team to 1st place at states and nationals qualification',
+      'Led dramatic team improvement from >10th to 1st place at state competition',
+      'Developed comprehensive study materials and practice problems for multiple events',
+      'Mentored individual students in specialized science disciplines',
+    ],
+  },
+  {
+    organization: 'Lu Lab @ Columbia University',
+    role: 'Research Intern',
+    start: 'Jun 2024',
+    end: 'Present',
+    location: 'New York, NY',
+    description: 'Conducting biomedical research in molecular biology and genetics',
+    highlights: [
+      'Performed advanced lab techniques: CRISPR screens, NGS/RNA-seq, immunostaining',
+      'Executed western blot, gel electrophoresis, and tissue culture procedures',
+      'Analyzed genomic data using R and Seurat for single-cell RNA sequencing',
+      'Contributed to ongoing research projects in cancer biology',
+    ],
+  },
+  {
+    organization: 'BCA CTF Club',
+    role: 'Club Leader / Director',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    description: 'Leading the school\'s cybersecurity club and organizing annual CTF competition',
+    highlights: [
+      'Direct BCACTF, one of the largest high school CTF competitions with 1000+ participants',
+      'Teach cybersecurity topics: reverse engineering, web exploitation, cryptography, binary exploitation',
+      'Authored 50%+ of BCACTF 6.0 challenges, ensuring educational value and appropriate difficulty',
+      'Coordinate with sponsors and manage logistics for annual competition',
+    ],
+  },
+  {
+    organization: 'Bing Chilling Academies',
+    role: 'CTF/Cybersecurity Team Captain',
+    start: 'Feb 2024',
+    end: 'Present',
+    location: 'Remote/New Jersey',
+    description: 'Leading competitive cybersecurity team in national and international competitions',
+    highlights: [
+      'Core member of globally ranked top 3 high school CTF team',
+      'Top 3 placement in New Jersey Cybersecurity & Communications Integration Cell (NJCCIC)',
+      'Specialized in penetration testing, incident response, and reverse engineering',
+      'Coordinate team strategy and task distribution during time-critical competitions',
+    ],
+  },
+  {
+    organization: 'BCA Science Olympiad',
+    role: 'Board Member & Competition Director',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    description: 'Managing high school Science Olympiad team and coordinating competitions',
+    highlights: [
+      'Led team to medals at Columbia, Yale, regional, and state competitions',
+      'Organized practice sessions and study materials for 23 competitive events',
+      'Managed team logistics, registration, and competition scheduling',
+      'Mentored teammates in specialized events (Astronomy, Disease Detectives, Forensics)',
+    ],
+  },
+  {
+    organization: 'BCA Biology Team',
+    role: 'Team Captain',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    description: 'Leading competitive biology team and preparing for USABO',
+    highlights: [
+      'Organize and attend weekly lectures on advanced biology topics',
+      'Prepare comprehensive study materials for USA Biology Olympiad',
+      'Scheduled to present lectures as board member in upcoming year',
+      'Achieved Honorable Mention (top 20%) in 2025 USABO',
+    ],
+  },
+  {
+    organization: 'BCA Math Team',
+    role: 'Competitor',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    highlights: [
+      'Compete in prestigious math contests (ARML, CMIMC, AMC)',
+      'Attend weekend problem-solving sessions and lectures',
+      'Collaborate on proof-based problems and advanced topics',
+    ],
+  },
+  {
+    organization: 'BCA Research Club',
+    role: 'Instructor',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    highlights: [
+      'Train students in research presentation and scientific communication',
+      'Prepare students for International Research Olympiad competition',
+      'Review and provide feedback on research papers and presentations',
+    ],
+  },
+  {
+    organization: 'Bergen County Academies Orchestra',
+    role: 'Violinist',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County Academies',
+    highlights: [
+      'Perform in school concerts and regional competitions',
+      'Collaborate with diverse musicians in symphonic repertoire',
+    ],
+  },
+  {
+    organization: 'HuaXia Chinese School @ Bergen',
+    role: 'Instructor / Volunteer',
+    start: 'Sep 2024',
+    end: 'Present',
+    location: 'Bergen County',
+    highlights: [
+      'Teach mathematics and chess to elementary and middle school students',
+      'Accumulated 75+ volunteer hours this academic year',
+      'Develop curriculum and engaging teaching materials',
+    ],
+  },
+]
+
+const awards: Award[] = [
+  {
+    name: 'International Research Olympiad',
+    date: 'April 2025',
+    place: 'Finalist & Silver Medalist',
+    category: 'Research',
+    highlights: [
+      'Top 15 of >3000 participants (top 0.5%) in Open & Semi rounds',
+      'Invited to finals at Harvard University',
+      '3rd place out of 15 finalists at Harvard finals',
+      'Presented original research in biomedical sciences',
+    ],
+  },
+  {
+    name: 'USA Biology Olympiad (USABO)',
+    date: 'March 2025',
+    place: 'Honorable Mention',
+    category: 'Biology',
+    highlights: [
+      'Top 20% nationally in prestigious biology competition',
+      'Demonstrated mastery of college-level biology concepts',
+    ],
+  },
+  {
+    name: 'Canadian Computing Competition',
+    date: 'April 2025',
+    place: 'Perfect Score',
+    category: 'Computer Science',
+    highlights: [
+      'Achieved perfect score (75/75) in Junior Division',
+      'Top placement among Junior division participants',
+    ],
+  },
+  {
+    name: 'ACSL (American Computer Science League)',
+    date: 'May 2025',
+    place: 'Finalist & Silver Medalist',
+    category: 'Computer Science',
+    highlights: [
+      'Qualified for ACSL finals two consecutive years',
+      'Silver medal at national finals',
+      'Competed in programming and computer science theory',
+    ],
+  },
+  {
+    name: 'AAPT Physics Bowl',
+    date: 'May 2025',
+    place: '1st Place Team (Regional)',
+    category: 'Physics',
+    highlights: [
+      'First place team regionally',
+      'Top 3 individual scorer on team',
+      'Competed against thousands of students nationwide',
+    ],
+  },
+  {
+    name: 'USA Computing Olympiad (USACO)',
+    date: 'February 2023',
+    place: 'Silver Division',
+    category: 'Computer Science',
+    highlights: [
+      'Scored perfect 1000/1000 in Bronze Division',
+      'Promoted to Silver Division',
+      'Solved algorithmic programming challenges',
+    ],
+  },
+  {
+    name: 'USA Math Talent Search (USAMTS)',
+    date: 'January 2025',
+    place: 'Top 20%',
+    category: 'Mathematics',
+    highlights: [
+      'Top 20% in monthly proof-based mathematics contest',
+      'Submitted rigorous mathematical proofs',
+    ],
+  },
+  {
+    name: 'Science Olympiad State Championship',
+    date: '2023-2024',
+    place: '1st Place (Coaching)',
+    category: 'Science',
+    highlights: [
+      'Coached middle school team to state championship',
+      'Team qualified for national competition',
+    ],
+  },
+]
+
+const skills = {
+  'Programming': ['Python', 'C++', 'x86_64 Assembly', 'JavaScript/TypeScript', 'LaTeX', 'R'],
+  'Data Science': ['R/Seurat', 'Excel', 'Matplotlib', 'ggplot2', 'Machine Learning', 'Single-cell RNA-seq analysis'],
+  'Laboratory': ['CRISPR', 'NGS/RNA-seq', 'Western Blot', 'Gel Electrophoresis', 'Tissue Culture', 'Immunostaining'],
+  'Leadership': ['Team Management', 'Event Organization', 'Curriculum Development', 'Public Speaking', 'Mentoring'],
+  'Academic': ['Research Presentation', 'Scientific Writing', 'Data Analysis', 'Problem Solving', 'Critical Thinking'],
+}
+
+const researchInterests = [
+  'Computational Biology & Bioinformatics',
+  'Cancer Biology & Genomics',
+  'Machine Learning in Healthcare',
+  'Cybersecurity & Cryptography',
+  'Algorithm Design & Optimization',
+]
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="Academic Resume" />
+  <Breadcrumbs items={[{ label: 'Academic', icon: 'lucide:graduation-cap' }]} />
+
+  <!-- Header Section -->
+  <section>
+    <div class="card-subtle rounded-lg">
+      <div class="flex flex-col space-y-1.5 p-6">
+        <h1 class="text-3xl leading-none font-medium">Colin Ding - Academic Resume</h1>
+      </div>
+      <div class="p-6 pt-0">
+        <p class="text-muted-foreground text-base mb-3">
+          Student researcher and competitor at Bergen County Academies, passionate about science, 
+          mathematics, and computer science. Experienced in leading teams, conducting research, 
+          and mentoring students across multiple disciplines.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <Link href="mailto:colinding10@gmail.com" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+            <Icon name="lucide:mail" class="size-4" />
+            colinding10@gmail.com
+          </Link>
+          <Link href="tel:+12013109504" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+            <Icon name="lucide:phone" class="size-4" />
+            (201) 310-9504
+          </Link>
+          <Link href="https://linkedin.com/in/colin-ding-4b7147305" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+            <Icon name="lucide:linkedin" class="size-4" />
+            LinkedIn
+          </Link>
+          <Link href="https://github.com/colding10" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+            <Icon name="lucide:github" class="size-4" />
+            GitHub
+          </Link>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Education</h2>
+    <div class="rounded-xl border p-4 sm:p-6">
+      <div class="flex flex-col gap-y-2">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div>
+            <h3 class="text-lg font-medium">{education.institution}</h3>
+            <p class="text-muted-foreground text-sm">{education.program}</p>
+          </div>
+          <div class="flex flex-col sm:items-end gap-1">
+            <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+              <Icon name="lucide:calendar" class="size-3" />
+              <span>{education.start} → {education.end}</span>
+            </span>
+            <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+              <Icon name="lucide:map-pin" class="size-3" />
+              <span>{education.location}</span>
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-1">
+          <Badge variant="secondary" class="font-semibold">GPA: {education.gpa}</Badge>
+        </div>
+        {education.highlights && (
+          <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-1 mt-2">
+            {education.highlights.map((highlight) => <li>{highlight}</li>)}
+          </ul>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Awards & Achievements Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Awards & Achievements</h2>
+    <div class="grid grid-cols-1 gap-4">
+      {
+        awards.map((award) => (
+          <div class="rounded-xl border p-4 hover:bg-secondary/50 transition-colors duration-300">
+            <div class="flex flex-col gap-y-2">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div>
+                  <h3 class="text-base font-medium">
+                    {award.name}
+                    {award.place && <span class="text-primary ml-2">· {award.place}</span>}
+                  </h3>
+                  {award.category && (
+                    <Badge variant="outline" class="mt-1">{award.category}</Badge>
+                  )}
+                </div>
+                <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+                  <Icon name="lucide:trophy" class="size-3" />
+                  <span>{award.date}</span>
+                </span>
+              </div>
+              {award.highlights && (
+                <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                  {award.highlights.map((highlight) => <li>{highlight}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Leadership & Activities Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Leadership & Activities</h2>
+    <ul class="flex flex-col gap-y-4">
+      {
+        experiences.map((exp) => (
+          <li>
+            <div class="hover:bg-secondary/50 rounded-xl border p-4 sm:p-6 transition-colors duration-300 ease-in-out">
+              <div class="flex flex-col gap-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div>
+                    <h3 class="text-lg font-medium">{exp.role}</h3>
+                    <p class="text-muted-foreground text-sm mt-0.5">{exp.organization}</p>
+                  </div>
+                  <div class="flex flex-col sm:items-end gap-1">
+                    <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+                      <Icon name="lucide:calendar" class="size-3" />
+                      <span>{exp.start} {exp.end ? `→ ${exp.end}` : '→ Present'}</span>
+                    </span>
+                    {exp.location && (
+                      <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+                        <Icon name="lucide:map-pin" class="size-3" />
+                        <span>{exp.location}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {exp.description && (
+                  <p class="text-muted-foreground text-sm italic">{exp.description}</p>
+                )}
+                {exp.highlights && exp.highlights.length > 0 && (
+                  <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+                    {exp.highlights.map((highlight) => <li>{highlight}</li>)}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Skills & Competencies</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {
+        Object.entries(skills).map(([category, items]) => (
+          <div class="rounded-xl border p-4">
+            <h3 class="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {category}
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              {items.map((skill) => <Badge variant="secondary">{skill}</Badge>)}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Research Interests Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Research Interests</h2>
+    <div class="rounded-xl border p-4 sm:p-6">
+      <div class="flex flex-wrap gap-2">
+        {researchInterests.map((interest) => (
+          <Badge variant="outline" class="py-1.5 px-3">
+            <Icon name="lucide:sparkles" class="size-3 mr-1.5" />
+            {interest}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Volunteer & Community Service -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Volunteer & Community Service</h2>
+    <div class="rounded-xl border p-4 sm:p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-medium">Community Impact</h3>
+        <Badge variant="secondary" class="font-semibold">75+ Hours This Year</Badge>
+      </div>
+      <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-2">
+        <li>Mathematics and chess instruction at HuaXia Chinese School</li>
+        <li>Science Olympiad coaching for middle school students</li>
+        <li>Mentoring students in research and competitive programming</li>
+        <li>Organizing educational workshops and competitions</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Quick Stats Section -->
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Quick Stats</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="rounded-xl border p-4 text-center">
+        <p class="text-2xl font-bold text-primary">4.00</p>
+        <p class="text-xs text-muted-foreground mt-1">GPA</p>
+      </div>
+      <div class="rounded-xl border p-4 text-center">
+        <p class="text-2xl font-bold text-primary">10+</p>
+        <p class="text-xs text-muted-foreground mt-1">Leadership Roles</p>
+      </div>
+      <div class="rounded-xl border p-4 text-center">
+        <p class="text-2xl font-bold text-primary">8+</p>
+        <p class="text-xs text-muted-foreground mt-1">Major Awards</p>
+      </div>
+      <div class="rounded-xl border p-4 text-center">
+        <p class="text-2xl font-bold text-primary">75+</p>
+        <p class="text-xs text-muted-foreground mt-1">Volunteer Hours</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Note -->
+  <section>
+    <div class="text-center py-4">
+      <p class="text-muted-foreground text-xs">
+        Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+      </p>
+    </div>
+  </section>
+</Layout>

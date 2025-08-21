@@ -27,6 +27,10 @@ export const NAV_LINKS: SocialLink[] = [
     href: '/resume',
     label: 'resume',
   },
+  {
+    href: '/academic',
+    label: 'academic',
+  },
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [
