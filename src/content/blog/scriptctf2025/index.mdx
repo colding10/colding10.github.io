@@ -126,13 +126,13 @@ def expr_for(n):
     return "-~" * (n-1) + "I"
 ```
 
-By simply chaining 
+By simply chaining `n-1` copies of `-~` before the boolean `True == 1` we can build any number `n`!
 
 ##### 3: Build Arbitrary Strings
 
 Use format strings and the integer builder to construct any string:
 
-```python title=solve.py
+```python 
 def string_expr(txt):
     fmt = "'" + "%c" * len(txt) + "'"
     exprs = ",".join(expr_for(ord(c)) for c in txt)
@@ -140,6 +140,8 @@ def string_expr(txt):
         exprs += ","
     return f"{fmt} % ({exprs})"
 ```
+
+*This just brings together the `%c%c%c` and the tuples of numbers.*
 
 ##### 4: Dynamic Attribute Access
 
@@ -269,7 +271,7 @@ p.interactive()
 
 #### Conclusion
 
-This challenge required understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution. THe constraints were well-formulated to let players find the interesting solve path! 
+This pyjail required understanding of Python's syntax and runtime behavior, creative use of allowed operators, and dynamic construction of both numbers and strings. The solution leveraged the walrus operator, unary increments, and format strings to bypass severe restrictions and achieve arbitrary code execution. The constraints were well-formulated to let players find the interesting solve path! 
 
 :heart: NoobMaster fr
 
