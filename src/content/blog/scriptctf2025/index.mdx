@@ -96,14 +96,12 @@ getattr(os, 'system') == os.system
 This is because 
 
 $$
-\[
 \begin{array}{l r c l}
 \text{Let } x \text{ be an integer.} \\
 \text{Bitwise NOT:} & \sim x   & = & -x - 1 \\
 \text{Negate:}      & -\sim x  & = & -(-x - 1) \\
                     &          & = & x + 1
 \end{array}
-\]
 $$
 
 
@@ -117,6 +115,8 @@ Since only one comparison is allowed, use the walrus operator to assign the resu
 (I := ('@' < 'A'))
 ```
 
+Note that this works because in Python, `True == 1`.
+
 ##### 2: Build Arbitrary Integers
 
 Define a helper function to construct any integer `n` using only `I` and unary increments:
@@ -125,6 +125,8 @@ Define a helper function to construct any integer `n` using only `I` and unary i
 def expr_for(n):
     return "-~" * (n-1) + "I"
 ```
+
+By simply chaining 
 
 ##### 3: Build Arbitrary Strings
 
