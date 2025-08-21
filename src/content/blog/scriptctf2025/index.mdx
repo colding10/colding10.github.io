@@ -53,6 +53,12 @@ The provided `server.py` implements several layers of filtering:
 
 These constraints severely limit the ability to use normal Python syntax, attribute access, and string/number literals.
 
+If we had zero restrictions, we could do something like:
+```python
+__import__('os').system('/bin/sh')
+```
+
+to pop a shell! We'll need to work around the restrictions though.
 #### Initial Reconnaissance
 
 ##### Available Primitives
@@ -66,13 +72,18 @@ These constraints severely limit the ability to use normal Python syntax, attrib
 
 Since only `c` is available and all other lowercase letters are blocked, direct access to most attributes is impossible. However, `getattr` can be used to dynamically access attributes if their names can be constructed at runtime.
 
-So our goal is to construct attribute names in the form of strings at runtime!
+For example:
+```python
+getattr(os, 'system') == os.system
+```
+
+*So our goal is to construct attribute names in the form of strings at runtime!*
 
 #### Building Strings and Numbers
 
 ##### Constructing Strings
 
-- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`. *This is the key of the challenge! Modulo operator being used to create characters!*
+- **Format Strings:** The `%` operator allows constructing single characters: `'%c' % 65` yields `'A'`. *This is the key of the challenge! Modulo operator being used to create characters!* It's quite similar to C-style format strings.
 - **Arbitrary Strings:** By chaining format strings, any string can be built: `'%c%c%c' % (65,66,67)` yields `'ABC'`.
 
 *So now we need numbers though...*
@@ -85,12 +96,14 @@ So our goal is to construct attribute names in the form of strings at runtime!
 This is because 
 
 $$
-\begin{align*}
-\text{Let } x \text{ be an integer. \newline}
-\text{Bitwise NOT:} \quad & \sim x = -x - 1 \\
-\text{Negate:} \quad & -\sim x = -(-x - 1) \\
-& = x + 1
-\end{align*}
+\[
+\begin{array}{l r c l}
+\text{Let } x \text{ be an integer.} \\
+\text{Bitwise NOT:} & \sim x   & = & -x - 1 \\
+\text{Negate:}      & -\sim x  & = & -(-x - 1) \\
+                    &          & = & x + 1
+\end{array}
+\]
 $$
 
 
