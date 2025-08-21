@@ -1,9 +1,9 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import PageHead from '@/components/PageHead.astro'
-import Layout from '@/layouts/Layout.astro'
 import Link from '@/components/Link.astro'
+import PageHead from '@/components/PageHead.astro'
 import { Badge } from '@/components/ui/badge'
+import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
 
 type Experience = {
@@ -25,7 +25,8 @@ const experiences: Experience[] = [
     start: '2022',
     end: 'Present',
     location: 'Remote',
-    description: 'Active competitor focusing on reverse engineering, forensics, and pwn challenges.',
+    description:
+      'Active competitor focusing on reverse engineering, forensics, and pwn challenges.',
     bullets: [
       'Specialized in reverse engineering with Ghidra, radare2, and IDA Pro',
       'Developed automated analysis scripts for malware and CTF challenges',
@@ -33,7 +34,18 @@ const experiences: Experience[] = [
       'Collaborated with international teams to solve time-critical challenges',
       'Achieved top rankings in multiple CTF competitions',
     ],
-    technologies: ['Ghidra', 'IDA Pro', 'radare2', 'x64dbg', 'GDB', 'pwntools', 'angr', 'Python', 'C', 'Assembly'],
+    technologies: [
+      'Ghidra',
+      'IDA Pro',
+      'radare2',
+      'x64dbg',
+      'GDB',
+      'pwntools',
+      'angr',
+      'Python',
+      'C',
+      'Assembly',
+    ],
   },
   {
     company: 'Open Source Projects',
@@ -48,7 +60,14 @@ const experiences: Experience[] = [
       'Reviewed pull requests and provided constructive feedback',
       'Created GitHub Actions workflows for automated testing and deployment',
     ],
-    technologies: ['Git', 'GitHub Actions', 'TypeScript', 'Python', 'Docker', 'CI/CD'],
+    technologies: [
+      'Git',
+      'GitHub Actions',
+      'TypeScript',
+      'Python',
+      'Docker',
+      'CI/CD',
+    ],
   },
   {
     company: 'Independent Projects',
@@ -56,24 +75,84 @@ const experiences: Experience[] = [
     start: '2020',
     end: 'Present',
     location: 'Remote',
-    description: 'Building tools and applications for security research and web development.',
+    description:
+      'Building tools and applications for security research and web development.',
     bullets: [
       'Developed web applications using modern frameworks like Astro and Next.js',
       'Created automation tools for CTF challenge solving and analysis',
       'Built custom Docker containers for isolated security testing environments',
       'Implemented RESTful APIs and microservices architectures',
     ],
-    technologies: ['TypeScript', 'React', 'Next.js', 'Astro', 'Node.js', 'PostgreSQL', 'Docker', 'AWS'],
+    technologies: [
+      'TypeScript',
+      'React',
+      'Next.js',
+      'Astro',
+      'Node.js',
+      'PostgreSQL',
+      'Docker',
+      'AWS',
+    ],
   },
 ]
 
 const skills: Record<string, string[]> = {
-  'Languages': ['Python', 'TypeScript/JavaScript', 'C/C++', 'Go', 'Rust', 'Assembly (x86/x64)', 'Bash', 'SQL'],
-  'Reverse Engineering': ['Ghidra', 'IDA Pro', 'radare2', 'x64dbg', 'GDB', 'angr', 'Binary Ninja', 'Frida'],
-  'Security & CTF': ['Pwn/Binary Exploitation', 'Forensics', 'OSINT', 'Cryptography', 'Web Security', 'Malware Analysis'],
-  'Web Development': ['React', 'Next.js', 'Astro', 'Node.js', 'Express', 'FastAPI', 'PostgreSQL', 'MongoDB'],
-  'Tools & Platforms': ['Docker', 'Kubernetes', 'Git', 'Linux', 'Windows Internals', 'Wireshark', 'Burp Suite'],
-  'Cloud & DevOps': ['AWS', 'GitHub Actions', 'CI/CD', 'Terraform', 'Nginx', 'Vercel', 'Netlify'],
+  Languages: [
+    'Python',
+    'TypeScript/JavaScript',
+    'C/C++',
+    'Go',
+    'Rust',
+    'Assembly (x86/x64)',
+    'Bash',
+    'SQL',
+  ],
+  'Reverse Engineering': [
+    'Ghidra',
+    'IDA Pro',
+    'radare2',
+    'x64dbg',
+    'GDB',
+    'angr',
+    'Binary Ninja',
+    'Frida',
+  ],
+  'Security & CTF': [
+    'Pwn/Binary Exploitation',
+    'Forensics',
+    'OSINT',
+    'Cryptography',
+    'Web Security',
+    'Malware Analysis',
+  ],
+  'Web Development': [
+    'React',
+    'Next.js',
+    'Astro',
+    'Node.js',
+    'Express',
+    'FastAPI',
+    'PostgreSQL',
+    'MongoDB',
+  ],
+  'Tools & Platforms': [
+    'Docker',
+    'Kubernetes',
+    'Git',
+    'Linux',
+    'Windows Internals',
+    'Wireshark',
+    'Burp Suite',
+  ],
+  'Cloud & DevOps': [
+    'AWS',
+    'GitHub Actions',
+    'CI/CD',
+    'Terraform',
+    'Nginx',
+    'Vercel',
+    'Netlify',
+  ],
 }
 
 const education = [
@@ -81,11 +160,17 @@ const education = [
     school: 'Self-Directed Learning',
     degree: 'Computer Science, Security, and Software Engineering',
     dates: '2020 - Present',
-    notes: 'Focused study through online courses, CTF competitions, security research, and practical projects',
+    notes:
+      'Focused study through online courses, CTF competitions, security research, and practical projects',
   },
 ]
 
-const certifications: { name: string; issuer: string; date?: string; link?: string }[] = [
+const certifications: {
+  name: string
+  issuer: string
+  date?: string
+  link?: string
+}[] = [
   // Add your certifications here if you have any
   // Example:
   // { name: 'Certified Ethical Hacker', issuer: 'EC-Council', date: '2023' },
@@ -95,25 +180,29 @@ const projects = [
   {
     name: 'CTF Writeups & Security Research',
     link: '/blog',
-    description: 'Detailed technical writeups documenting solutions to complex CTF challenges, reverse engineering techniques, and security research findings.',
+    description:
+      'Detailed technical writeups documenting solutions to complex CTF challenges, reverse engineering techniques, and security research findings.',
     tags: ['CTF', 'Reverse Engineering', 'Security', 'Technical Writing'],
   },
   {
     name: 'Amcache Evil Hunter',
     link: 'https://github.com/colding10/amcache-evilhunter',
-    description: 'Forensics tool for analyzing Windows Amcache artifacts to detect malicious activity and track program execution.',
+    description:
+      'Forensics tool for analyzing Windows Amcache artifacts to detect malicious activity and track program execution.',
     tags: ['Forensics', 'Python', 'Windows', 'Security'],
   },
   {
     name: 'Personal Website & Blog',
     link: 'https://cold.is-a.dev',
-    description: 'Built with Astro and TypeScript, featuring a custom theme, MDX support, and optimized performance.',
+    description:
+      'Built with Astro and TypeScript, featuring a custom theme, MDX support, and optimized performance.',
     tags: ['Astro', 'TypeScript', 'Web Development', 'JAMstack'],
   },
   {
     name: 'Security Tools Collection',
     link: 'https://github.com/colding10',
-    description: 'Various security tools and scripts for CTF challenges, reverse engineering, and vulnerability research.',
+    description:
+      'Various security tools and scripts for CTF challenges, reverse engineering, and vulnerability research.',
     tags: ['Python', 'Security', 'Automation', 'Tools'],
   },
 ]
@@ -137,22 +226,37 @@ const achievements = [
         <h1 class="text-3xl leading-none font-medium">Colin "cold" - Resume</h1>
       </div>
       <div class="p-6 pt-0">
-        <p class="text-muted-foreground text-base mb-3">
-        THIS IS ALL CHATGPT GENERATED NONE OF THIS IS MY ACTUAL RESUME :skull:
-          Security researcher and software developer specializing in reverse engineering, CTF competitions, 
-          and building modern web applications. Passionate about low-level systems, binary analysis, and creating tools 
-          that help the security community.
+        <p class="text-muted-foreground mb-3 text-base">
+          THIS IS ALL CHATGPT GENERATED NONE OF THIS IS MY ACTUAL RESUME :skull:
+          Security researcher and software developer specializing in reverse
+          engineering, CTF competitions, and building modern web applications.
+          Passionate about low-level systems, binary analysis, and creating
+          tools that help the security community.
         </p>
         <div class="flex flex-wrap gap-3">
-          <Link href="https://github.com/colding10" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+          <Link
+            href="https://github.com/colding10"
+            class="text-foreground inline-flex items-center gap-x-1.5"
+            underline
+            external
+          >
             <Icon name="lucide:github" class="size-4" />
             GitHub
           </Link>
-          <Link href="/blog" class="text-foreground inline-flex items-center gap-x-1.5" underline>
+          <Link
+            href="/blog"
+            class="text-foreground inline-flex items-center gap-x-1.5"
+            underline
+          >
             <Icon name="lucide:book-open" class="size-4" />
             Blog & Writeups
           </Link>
-          <Link href="mailto:contact@cold.is-a.dev" class="text-foreground inline-flex items-center gap-x-1.5" underline external>
+          <Link
+            href="mailto:contact@cold.is-a.dev"
+            class="text-foreground inline-flex items-center gap-x-1.5"
+            underline
+            external
+          >
             <Icon name="lucide:mail" class="size-4" />
             Contact
           </Link>
@@ -168,51 +272,47 @@ const achievements = [
       {
         experiences.map((exp) => (
           <li>
-            <div class="hover:bg-secondary/50 rounded-xl border p-4 sm:p-6 transition-colors duration-300 ease-in-out">
+            <div class="hover:bg-secondary/50 rounded-xl border p-4 transition-colors duration-300 ease-in-out sm:p-6">
               <div class="flex flex-col gap-y-3">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h3 class="text-lg font-medium">
-                      {exp.role}
-                    </h3>
-                    <p class="text-muted-foreground text-sm mt-0.5">
+                    <h3 class="text-lg font-medium">{exp.role}</h3>
+                    <p class="text-muted-foreground mt-0.5 text-sm">
                       {exp.company}
                     </p>
                   </div>
-                  <div class="flex flex-col sm:items-end gap-1">
-                    <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
+                  <div class="flex flex-col gap-1 sm:items-end">
+                    <span class="text-muted-foreground flex items-center gap-x-1.5 text-xs sm:text-sm">
                       <Icon name="lucide:calendar" class="size-3" />
-                      <span>{exp.start} {exp.end ? `→ ${exp.end}` : '→ Present'}</span>
+                      <span>
+                        {exp.start} {exp.end ? `→ ${exp.end}` : '→ Present'}
+                      </span>
                     </span>
-                    {
-                      exp.location && (
-                        <span class="text-muted-foreground text-xs sm:text-sm flex items-center gap-x-1.5">
-                          <Icon name="lucide:map-pin" class="size-3" />
-                          <span>{exp.location}</span>
-                        </span>
-                      )
-                    }
+                    {exp.location && (
+                      <span class="text-muted-foreground flex items-center gap-x-1.5 text-xs sm:text-sm">
+                        <Icon name="lucide:map-pin" class="size-3" />
+                        <span>{exp.location}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
-                {
-                  exp.description && (
-                    <p class="text-muted-foreground text-sm">{exp.description}</p>
-                  )
-                }
-                {
-                  exp.bullets && exp.bullets.length > 0 && (
-                    <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-1">
-                      {exp.bullets.map((bullet) => <li>{bullet}</li>)}
-                    </ul>
-                  )
-                }
-                {
-                  exp.technologies && exp.technologies.length > 0 && (
-                    <div class="flex flex-wrap gap-2 pt-1">
-                      {exp.technologies.map((tech) => <Badge variant="secondary">{tech}</Badge>)}
-                    </div>
-                  )
-                }
+                {exp.description && (
+                  <p class="text-muted-foreground text-sm">{exp.description}</p>
+                )}
+                {exp.bullets && exp.bullets.length > 0 && (
+                  <ul class="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
+                    {exp.bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+                {exp.technologies && exp.technologies.length > 0 && (
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    {exp.technologies.map((tech) => (
+                      <Badge variant="secondary">{tech}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </li>
@@ -224,15 +324,17 @@ const achievements = [
   <!-- Skills Section -->
   <section class="flex flex-col gap-y-4">
     <h2 class="text-2xl font-medium">Technical Skills</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {
         Object.entries(skills).map(([category, items]) => (
           <div class="rounded-xl border p-4">
-            <h3 class="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <h3 class="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
               {category}
             </h3>
             <div class="flex flex-wrap gap-2">
-              {items.map((skill) => <Badge variant="secondary">{skill}</Badge>)}
+              {items.map((skill) => (
+                <Badge variant="secondary">{skill}</Badge>
+              ))}
             </div>
           </div>
         ))
@@ -247,30 +349,30 @@ const achievements = [
       {
         projects.map((project) => (
           <li>
-            <div class="rounded-xl border p-4 sm:p-6 hover:bg-secondary/50 transition-colors duration-300 ease-in-out">
+            <div class="hover:bg-secondary/50 rounded-xl border p-4 transition-colors duration-300 ease-in-out sm:p-6">
               <div class="flex flex-col gap-y-2">
                 <div class="flex items-start justify-between gap-2">
                   <h3 class="text-lg font-medium">{project.name}</h3>
-                  {
-                    project.link && (
-                      <Link 
-                        href={project.link} 
-                        class="text-muted-foreground hover:text-foreground transition-colors" 
-                        external={project.link.startsWith('http')}
-                      >
-                        <Icon name="lucide:external-link" class="size-4" />
-                      </Link>
-                    )
-                  }
+                  {project.link && (
+                    <Link
+                      href={project.link}
+                      class="text-muted-foreground hover:text-foreground transition-colors"
+                      external={project.link.startsWith('http')}
+                    >
+                      <Icon name="lucide:external-link" class="size-4" />
+                    </Link>
+                  )}
                 </div>
-                <p class="text-muted-foreground text-sm">{project.description}</p>
-                {
-                  project.tags && (
-                    <div class="flex flex-wrap gap-2">
-                      {project.tags.map((tag) => <Badge variant="secondary">{tag}</Badge>)}
-                    </div>
-                  )
-                }
+                <p class="text-muted-foreground text-sm">
+                  {project.description}
+                </p>
+                {project.tags && (
+                  <div class="flex flex-wrap gap-2">
+                    {project.tags.map((tag) => (
+                      <Badge variant="secondary">{tag}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </li>
@@ -291,14 +393,16 @@ const achievements = [
               <p class="text-muted-foreground text-sm">
                 {edu.school} · {edu.dates}
               </p>
-              {edu.notes && <p class="text-muted-foreground text-sm">{edu.notes}</p>}
+              {edu.notes && (
+                <p class="text-muted-foreground text-sm">{edu.notes}</p>
+              )}
             </div>
           ))
         }
         {
           certifications.length > 0 && (
             <>
-              <div class="my-2 h-px bg-border"></div>
+              <div class="bg-border my-2 h-px" />
               <div class="flex flex-col gap-y-3">
                 <h4 class="text-sm font-medium">Certifications</h4>
                 <ul class="flex flex-col gap-y-2">
@@ -306,13 +410,25 @@ const achievements = [
                     <li class="flex items-center justify-between">
                       <span class="text-sm">
                         {cert.link ? (
-                          <Link href={cert.link} class="text-foreground" underline external>
+                          <Link
+                            href={cert.link}
+                            class="text-foreground"
+                            underline
+                            external
+                          >
                             {cert.name}
                           </Link>
-                        ) : cert.name}
-                        {' '}· <span class="text-muted-foreground">{cert.issuer}</span>
+                        ) : (
+                          cert.name
+                        )}{' '}
+                        ·{' '}
+                        <span class="text-muted-foreground">{cert.issuer}</span>
                       </span>
-                      {cert.date && <span class="text-muted-foreground text-xs">{cert.date}</span>}
+                      {cert.date && (
+                        <span class="text-muted-foreground text-xs">
+                          {cert.date}
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -328,7 +444,7 @@ const achievements = [
   <section class="flex flex-col gap-y-4">
     <h2 class="text-2xl font-medium">Key Achievements</h2>
     <div class="rounded-xl border p-4 sm:p-6">
-      <ul class="list-disc pl-5 text-sm text-muted-foreground space-y-2">
+      <ul class="text-muted-foreground list-disc space-y-2 pl-5 text-sm">
         {achievements.map((achievement) => <li>{achievement}</li>)}
       </ul>
     </div>
@@ -336,9 +452,14 @@ const achievements = [
 
   <!-- Footer Note -->
   <section>
-    <div class="text-center py-4">
+    <div class="py-4 text-center">
       <p class="text-muted-foreground text-xs">
-        Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        Last updated: {
+          new Date().toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric',
+          })
+        }
       </p>
     </div>
   </section>
