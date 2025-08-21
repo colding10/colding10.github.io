@@ -1,8 +1,6 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
-import ProjectCard from '@/components/ProjectCard.astro'
 import Layout from '@/layouts/Layout.astro'
 import { getAllProjects } from '@/lib/data-utils'
 
@@ -17,8 +15,14 @@ const projects = await getAllProjects()
     <div class="min-w-full">
       <div class="prose mb-8">
         <h1 class="mt-5 text-3xl font-bold">About Colin (aka "cold")</h1>
-        <p>I like computers and software. You may see me solving CTF challenges or doing other stuff.</p>
-        <p>In CTF I main reverse engineering, but I dabble in forensics or pwn too! I'm especially good at misc stuff and also OSINT.</p>
+        <p>
+          I like computers and software. You may see me solving CTF challenges
+          or doing other stuff.
+        </p>
+        <p>
+          In CTF I main reverse engineering, but I dabble in forensics or pwn
+          too! I'm especially good at misc stuff and also OSINT.
+        </p>
       </div>
     </div>
   </section>

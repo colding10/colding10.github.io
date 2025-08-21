@@ -81,7 +81,7 @@
   --destructive: oklch(0.6 0.2 15);
   --border: oklch(0.25 0.02 250);
   --ring: oklch(0.5 0.05 250);
-  
+
   /* Clean Blue-Tinted Gradients */
   --gradient-accent-start: oklch(0.3 0.46 245);
   --gradient-accent-end: oklch(0.4 0.44 255);
@@ -109,36 +109,45 @@
 @layer utilities {
   /* Minimal Gradient Utilities - High Contrast */
   .bg-gradient-subtle {
-    background: linear-gradient(135deg, 
-      var(--gradient-subtle-start), 
-      var(--gradient-subtle-end));
+    background: linear-gradient(
+      135deg,
+      var(--gradient-subtle-start),
+      var(--gradient-subtle-end)
+    );
   }
-  
+
   .bg-gradient-accent {
-    background: linear-gradient(135deg, 
-      var(--gradient-accent-start), 
-      var(--gradient-accent-end));
+    background: linear-gradient(
+      135deg,
+      var(--gradient-accent-start),
+      var(--gradient-accent-end)
+    );
   }
-  
+
   /* Subtle border gradients */
   .border-gradient {
-    border-image: linear-gradient(90deg, 
-      var(--gradient-border-start), 
-      var(--gradient-border-end)) 1;
+    border-image: linear-gradient(
+        90deg,
+        var(--gradient-border-start),
+        var(--gradient-border-end)
+      )
+      1;
   }
-  
+
   /* Minimal text accent - only for special cases */
   .text-accent-gradient {
-    background: linear-gradient(90deg, 
-      var(--gradient-accent-start), 
-      var(--gradient-accent-end));
+    background: linear-gradient(
+      90deg,
+      var(--gradient-accent-start),
+      var(--gradient-accent-end)
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     /* Fallback for better accessibility */
     color: var(--foreground);
   }
-  
+
   @supports not (-webkit-background-clip: text) {
     .text-accent-gradient {
       color: var(--foreground);
