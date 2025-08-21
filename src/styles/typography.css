@@ -89,8 +89,18 @@
     }
 
     :where(code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-      @apply bg-muted/50 text-foreground relative rounded-sm px-[0.3rem] py-[0.2rem] text-sm font-medium break-words;
+      @apply bg-muted/60 text-foreground relative rounded-sm px-[0.3rem] py-[0.2rem] text-sm font-semibold break-words;
+      letter-spacing: 0.005em;
       @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
+    }
+
+    /* Code blocks - use medium weight for better readability in long code */
+    :where(pre code, .expressive-code code):not(
+        :where([class~='not-prose'], [class~='not-prose'] *)
+      ) {
+      font-weight: 500 !important;
+      letter-spacing: 0;
+      font-feature-settings: 'calt' 0; /* disable contextual alternates for consistency */
     }
 
     :where(blockquote):not(
