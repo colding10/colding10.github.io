@@ -14,85 +14,61 @@ type CTFEntry = {
 }
 
 const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 // Simple, easy-to-extend data array.
 // Add new results by pushing new objects here.
 const entries: CTFEntry[] = [
-  { 
-    name: 'BYUCTF 2025', 
-    url: 'https://ctf.byu.edu/', 
-    team: 'solo', 
-    placement: '42/1200', 
-    description: 'Great challenges, solved crypto and rev', 
-    month: 1, 
-    year: 2025 
+  {
+    name: 'UTCTF 2025',
+    url: 'https://ctftime.org/event/2641',
+    description:
+      'i am pretty sure i was on a trip during this. a lot of challenges were solved on a bus using hotspot :). also first started "maining" rev here',
+    placement: '151th',
+    month: 3,
+    year: 2025,
   },
-  { 
-    name: 'CubeCTF 2025', 
-    url: 'https://2025.cube.ctf.team/', 
-    team: 'cold_squad', 
-    placement: '15/800', 
-    description: 'Team effort, focused on pwn and web', 
-    month: 1, 
-    year: 2025 
+  {
+    name: 'PicoCTF 2025',
+    url: 'https://play.picoctf.org/events/74/scoreboards#4878',
+    description: 'im still very new to ctf but solved some challs',
+    placement: '29th (hs)',
+    month: 3,
+    year: 2025,
   },
-  { 
-    name: 'idekCTF 2025', 
-    url: 'https://ctf.idek.team/', 
-    placement: '128/2400', 
-    description: 'Tough competition, learned a lot', 
-    month: 1, 
-    year: 2025 
+  {
+    name: 'PwnMe CTF Quals 2025',
+    url: 'https://ctftime.org/event/2658',
+    description:
+      'hmm we did not play too hard and kinda gave up cuz at this point i didnt know anything abt pwn',
+    placement: '219th',
+    month: 2,
+    year: 2025,
   },
-  { 
-    name: 'NahamCon CTF 2025', 
-    url: 'https://ctf.nahamcon.com/', 
-    team: 'cold_squad', 
-    placement: '89/3200', 
-    description: 'Fun beginner-friendly challenges', 
-    month: 1, 
-    year: 2025 
-  },
-  { 
-    name: 'ScriptCTF 2025', 
-    url: 'https://script.cf/', 
-    placement: '201/1100', 
-    month: 1, 
-    year: 2025 
-  },
-  { 
-    name: 'SDCTF 2025', 
-    url: 'https://sdctf.sdc.tf/', 
-    team: 'solo', 
-    placement: '67/900', 
-    description: 'Strong forensics and OSINT categories', 
-    month: 1, 
-    year: 2025 
-  },
-  { 
-    name: 'TexSaw CTF 2025', 
-    url: 'https://texsaw.ctf.tamu.edu/', 
-    team: 'cold_squad', 
-    placement: '23/1500', 
-    description: 'Amazing team coordination, great result!', 
-    month: 1, 
-    year: 2025 
-  },
-  { 
-    name: 'UMDCTF 2025', 
-    url: 'https://umdctf.io/', 
-    placement: '156/2100', 
-    description: 'Solid challenges across all categories', 
-    month: 1, 
-    year: 2025 
+  {
+    name: 'Garden State CTF',
+    url: 'https://www.cyber.nj.gov/Home/Components/News/News/1598/186',
+    description: 'my first ever ctf (thanks @tien for recruiting me)',
+    placement: '2nd',
+    month: 2,
+    year: 2025,
   },
 ]
 
 // Sort newest first
-const sorted = [...entries].sort((a, b) => (b.year - a.year) || (b.month - a.month))
+const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
 
 // Group by month-year for monthly markers on the timeline
 type Group = { year: number; month: number; items: CTFEntry[] }
@@ -100,87 +76,91 @@ type Group = { year: number; month: number; items: CTFEntry[] }
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
   const key = `${e.year}-${String(e.month).padStart(2, '0')}`
-  if (!groupsMap.has(key)) groupsMap.set(key, { year: e.year, month: e.month, items: [] })
+  if (!groupsMap.has(key))
+    groupsMap.set(key, { year: e.year, month: e.month, items: [] })
   groupsMap.get(key)!.items.push(e)
 }
-const groups = Array.from(groupsMap.values()).sort((a, b) => (b.year - a.year) || (b.month - a.month))
+const groups = Array.from(groupsMap.values()).sort(
+  (a, b) => b.year - a.year || b.month - a.month,
+)
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="CTF History" description="Timeline of CTF competitions and results" />
+  <PageHead
+    slot="head"
+    title="CTF History"
+    description="Timeline of CTF competitions and results"
+  />
   <Breadcrumbs items={[{ label: 'History', icon: 'lucide:calendar' }]} />
 
   <section aria-labelledby="ctf-history-title" class="font-mono">
-    <h1 id="ctf-history-title" class="mt-5 text-3xl font-bold">
-      CTF History
-    </h1>
-    <p class="mt-2 text-muted-foreground">
-      Competition results over time, newest first. 
+    <h1 id="ctf-history-title" class="mt-5 text-3xl font-bold">CTF History</h1>
+    <p class="text-muted-foreground mt-2">
+      Competition results over time, newest first.
     </p>
 
-    <div class="mt-8 relative">
-      <!-- Vertical timeline spine -->
-      <div class="absolute left-4 top-0 bottom-0 w-px bg-border"></div>
+    <div class="relative mt-8">
+      <div class="bg-border absolute top-0 bottom-0 left-4 w-px"></div>
 
       <div class="space-y-10">
-        {groups.map((group) => (
-          <div>
-            <!-- Monthly marker -->
-            <div class="relative pl-10">
-              <div class="absolute left-4 top-2 h-3 w-3 rounded-full bg-primary ring-2 ring-background"></div>
-              <p class="text-xs uppercase tracking-wider text-muted-foreground">
-                {MONTHS[group.month - 1]} {group.year}
-              </p>
-            </div>
+        {
+          groups.map((group) => (
+            <div>
+              <div class="relative pl-10">
+                <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2" />
+                <p class="text-muted-foreground text-xs tracking-wider uppercase">
+                  {MONTHS[group.month - 1]} {group.year}
+                </p>
+              </div>
 
-            <!-- Entries for this month -->
-            <ul class="mt-4 space-y-3">
-              {group.items.map((e) => (
-                <li class="relative pl-10">
-                  <div class="absolute left-4 top-2 h-2 w-2 rounded-full bg-accent ring-2 ring-background"></div>
-                  <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <!-- CTF name -->
-                    <a
-                      href={e.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-primary hover:underline font-medium"
-                    >
-                      {e.name}
-                    </a>
-                    
-                    <!-- Placement -->
-                    <span class="text-sm text-muted-foreground font-medium">
-                      {e.placement}
-                    </span>
-                    
-                    <!-- Team badge -->
-                    {e.team && (
-                      <span class="text-xs bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded font-medium">
-                        {e.team}
+              <ul class="mt-4 space-y-3">
+                {group.items.map((e) => (
+                  <li class="relative pl-10">
+                    <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2" />
+                    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <a
+                        href={e.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-primary font-medium hover:underline"
+                      >
+                        {e.name}
+                      </a>
+
+                      <span class="text-muted-foreground text-sm font-medium">
+                        {e.placement}
                       </span>
-                    )}
-                    
-                    <!-- Description -->
-                    {e.description && (
-                      <span class="text-sm text-muted-foreground italic flex-shrink-0">
-                        — {e.description}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+
+                      {e.team && (
+                        <span class="bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-xs font-medium">
+                          {e.team}
+                        </span>
+                      )}
+
+                      {e.description && (
+                        <span class="text-muted-foreground flex-shrink-0 text-sm italic">
+                          — {e.description}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </div>
 
       <!-- Empty state message if no entries -->
-      {groups.length === 0 && (
-        <div class="text-center py-12">
-          <p class="text-muted-foreground">No CTF entries yet. Add some to the entries array!</p>
-        </div>
-      )}
+      {
+        groups.length === 0 && (
+          <div class="py-12 text-center">
+            <p class="text-muted-foreground">
+              No CTF entries yet. Add some to the entries array!
+            </p>
+          </div>
+        )
+      }
     </div>
   </section>
 </Layout>
