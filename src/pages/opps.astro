@@ -24,33 +24,36 @@ const opps: OppEntry[] = [
     reasons: [
       'shared account in scriptCTF 2025 (and tried to get prizes)',
       'lost anyways to a team of 4 ppl',
-      'yapped too hard trying to defend themselves with stupid logic'
+      'yapped too hard trying to defend themselves with stupid logic',
     ],
     artifacts: [
       {
         type: 'quote',
-        content: '"The problem isn\'t with you all having >4 people -- UofT did this (they weren\'t playing for prizes, and were fine not receiving prizes), it\'s that your team member count isn\'t transparent, and seemingly your team is trying to get a high school division prize while having >4 people would disallow that"',
-        description: 'well said by my goat cbass'
+        content:
+          "\"The problem isn't with you all having >4 people -- UofT did this (they weren't playing for prizes, and were fine not receiving prizes), it's that your team member count isn't transparent, and seemingly your team is trying to get a high school division prize while having >4 people would disallow that\"",
+        description: 'well said by my goat cbass',
       },
       {
-      type: 'quote',
-      content: 'more than 6 ips with different locations',
-      description: 'from the admins about the shared team account'
+        type: 'quote',
+        content: 'more than 6 ips with different locations',
+        description: 'from the admins about the shared team account',
       },
       {
-      type: 'quote',
-      content: '<@947505557844135977> <@762607955949649941> <@131614435067297792> <@324183834935689236> <@732127498019799041> <@748467604531839039>  <@519736601262424090> <@867057455560261663> hello >4 players on BlitzHack 💀  (not saying all of these players here played, but >>>4 of them are being active/implying that they are solving or working on challs, and there is no indication that they are on another team that isnt BlitzHack) all but 1nvi5!bl3 and demonster clearly demonstrated that they are looking at/working on challenges',
-      description: 'from me, a lot of these ppl got real quiet. the others gave bad logic. i am sorry to the few (<2) ppl who i may have falsely accused, but the others (which is way more than 4) did not defend themselves or gave terrible arguments'
+        type: 'quote',
+        content:
+          '<@947505557844135977> <@762607955949649941> <@131614435067297792> <@324183834935689236> <@732127498019799041> <@748467604531839039>  <@519736601262424090> <@867057455560261663> hello >4 players on BlitzHack 💀  (not saying all of these players here played, but >>>4 of them are being active/implying that they are solving or working on challs, and there is no indication that they are on another team that isnt BlitzHack) all but 1nvi5!bl3 and demonster clearly demonstrated that they are looking at/working on challenges',
+        description:
+          'from me, a lot of these ppl got real quiet. the others gave bad logic. i am sorry to the few (<2) ppl who i may have falsely accused, but the others (which is way more than 4) did not defend themselves or gave terrible arguments',
       },
       {
         type: 'link',
         url: 'https://github.com/example',
         content: 'Their sus repository',
-        description: 'Evidence of their crimes'
-      }
+        description: 'Evidence of their crimes',
+      },
     ],
     rant: 'i dont have a problem with the team playing with >4 players, or with any of the members of the team indivdually. instead, my issue is that when accused/questioned about a potential shared account, instead of defending themselves with valid arugments/evidence, they instead accused others and tried to use the logic "well if im cheating you could be too", or "where is your proof that these guys (who are in the server, solving challenges, and ADDED TO TEAM WEBSITE DURING CTF) are actually solving for us?". this is makes us suspicisou taht they are 1) not legit (having >4 players) 2) having something to hide. anyways, none of this would not have been an issue if the team said "ok, we have >4 players, we will not get prizes". instead, they tried to get prizes, which is an issue',
-    severity: 'medium'
+    severity: 'medium',
   },
 ]
 
@@ -84,18 +87,21 @@ const getSeverityColor = (severity: string) => {
       My enemies list (totally joking, please don't sue me)
     </p>
 
-    <!-- Disclaimer -->
-    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+    {/* Disclaimer */}
+    <div
+      class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20"
+    >
       <h2 class="mb-2 text-sm font-semibold text-red-800 dark:text-red-200">
         ⚠️ DISCLAIMER
       </h2>
       <p class="text-xs text-red-700 dark:text-red-300">
-        This is all in good fun! These are not real enemies and this is purely comedic content.
-        If you're mentioned here, it's probably because I like you enough to roast you. 😄
+        This is all in good fun! These are not real enemies and this is purely
+        comedic content. If you're mentioned here, it's probably because I like
+        you enough to roast you. 😄
       </p>
     </div>
 
-    <!-- Statistics -->
+    {/* Statistics */}
     <div class="bg-secondary/30 mt-4 rounded-lg border p-4">
       <div class="flex flex-wrap gap-6 text-sm">
         <div>
@@ -105,138 +111,144 @@ const getSeverityColor = (severity: string) => {
       </div>
     </div>
 
-    {opps.length === 0 ? (
-      <div class="py-12 text-center">
-        <div class="text-6xl mb-4">🕊️</div>
-        <h2 class="text-xl font-semibold mb-2">No Enemies Found</h2>
-        <p class="text-muted-foreground">
-          Surprisingly, I'm at peace with everyone right now. This is suspicious...
-        </p>
-      </div>
-    ) : (
-      <div class="mt-8 space-y-8">
-        {opps.map((opp, index) => (
-          <div class="border rounded-lg p-6 bg-card">
-            <!-- Header -->
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <h2 class="text-xl font-bold">{opp.name}</h2>
-                {opp.alias && (
-                  <p class="text-muted-foreground text-sm italic">
-                    aka "{opp.alias}"
-                  </p>
-                )}
+    {
+      opps.length === 0 ? (
+        <div class="py-12 text-center">
+          <div class="mb-4 text-6xl">🕊️</div>
+          <h2 class="mb-2 text-xl font-semibold">No Enemies Found</h2>
+          <p class="text-muted-foreground">
+            Surprisingly, I'm at peace with everyone right now. This is
+            suspicious...
+          </p>
+        </div>
+      ) : (
+        <div class="mt-8 space-y-8">
+          {opps.map((opp, index) => (
+            <div class="bg-card rounded-lg border p-6">
+              {/* Header */}
+              <div class="mb-4 flex items-start justify-between">
+                <div>
+                  <h2 class="text-xl font-bold">{opp.name}</h2>
+                  {opp.alias && (
+                    <p class="text-muted-foreground text-sm italic">
+                      aka "{opp.alias}"
+                    </p>
+                  )}
+                </div>
+                <span
+                  class={`rounded-full border px-2 py-1 text-xs font-medium ${getSeverityColor(opp.severity)}`}
+                >
+                  {opp.severity.toUpperCase()}
+                </span>
               </div>
-              <span class={`px-2 py-1 rounded-full text-xs font-medium border ${getSeverityColor(opp.severity)}`}>
-                {opp.severity.toUpperCase()}
-              </span>
-            </div>
 
-            <!-- Reasons -->
-            <div class="mb-6">
-              <h3 class="text-lg font-semibold mb-3 flex items-center">
-                <span class="mr-2">🚩</span>
-                Crimes Against Humanity
-              </h3>
-              <ul class="space-y-2">
-                {opp.reasons.map((reason) => (
-                  <li class="flex items-start">
-                    <span class="text-red-500 mr-2 mt-1 text-xs">●</span>
-                    <span class="text-sm">{reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <!-- Artifacts -->
-            {opp.artifacts && opp.artifacts.length > 0 && (
+              {/* Reasons */}
               <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-3 flex items-center">
-                  <span class="mr-2">📁</span>
-                  Evidence Locker
+                <h3 class="mb-3 flex items-center text-lg font-semibold">
+                  <span class="mr-2">🚩</span>
+                  Crimes Against Humanity
                 </h3>
-                <div class="space-y-3">
-                  {opp.artifacts.map((artifact) => (
-                    <div class="border rounded-lg p-3 bg-secondary/30">
-                      {artifact.type === 'quote' && (
-                        <div>
-                          <div class="bg-muted rounded p-2 text-sm font-mono mb-2">
-                            <pre class="whitespace-pre-wrap">{artifact.content}</pre>
-                          </div>
-                          {artifact.description && (
-                            <p class="text-xs text-muted-foreground italic">
-                              {artifact.description}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      
-                      {artifact.type === 'link' && (
-                        <div>
-                          <a 
-                            href={artifact.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            class="text-primary hover:underline text-sm font-medium"
-                          >
-                            🔗 {artifact.content}
-                          </a>
-                          {artifact.description && (
-                            <p class="text-xs text-muted-foreground mt-1">
-                              {artifact.description}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      
-                      {artifact.type === 'image' && (
-                        <div>
-                          <img 
-                            src={artifact.url} 
-                            alt={artifact.description || artifact.content}
-                            class="rounded border max-w-full h-auto mb-2"
-                          />
-                          <p class="text-xs text-muted-foreground">
-                            {artifact.description || artifact.content}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                <ul class="space-y-2">
+                  {opp.reasons.map((reason) => (
+                    <li class="flex items-start">
+                      <span class="mt-1 mr-2 text-xs text-red-500">●</span>
+                      <span class="text-sm">{reason}</span>
+                    </li>
                   ))}
+                </ul>
+              </div>
+
+              {/* Artifacts */}
+              {opp.artifacts && opp.artifacts.length > 0 && (
+                <div class="mb-6">
+                  <h3 class="mb-3 flex items-center text-lg font-semibold">
+                    <span class="mr-2">📁</span>
+                    Evidence Locker
+                  </h3>
+                  <div class="space-y-3">
+                    {opp.artifacts.map((artifact) => (
+                      <div class="bg-secondary/30 rounded-lg border p-3">
+                        {artifact.type === 'quote' && (
+                          <div>
+                            <div class="bg-muted mb-2 rounded p-2 font-mono text-sm">
+                              <pre class="whitespace-pre-wrap">
+                                {artifact.content}
+                              </pre>
+                            </div>
+                            {artifact.description && (
+                              <p class="text-muted-foreground text-xs italic">
+                                {artifact.description}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {artifact.type === 'link' && (
+                          <div>
+                            <a
+                              href={artifact.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-primary text-sm font-medium hover:underline"
+                            >
+                              🔗 {artifact.content}
+                            </a>
+                            {artifact.description && (
+                              <p class="text-muted-foreground mt-1 text-xs">
+                                {artifact.description}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {artifact.type === 'image' && (
+                          <div>
+                            <img
+                              src={artifact.url}
+                              alt={artifact.description || artifact.content}
+                              class="mb-2 h-auto max-w-full rounded border"
+                            />
+                            <p class="text-muted-foreground text-xs">
+                              {artifact.description || artifact.content}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 class="mb-3 flex items-center text-lg font-semibold">
+                  <span class="mr-2">💭</span>
+                  My Thoughts
+                </h3>
+                <div class="bg-muted/50 border-primary rounded-lg border-l-4 p-4">
+                  <p class="text-sm leading-relaxed italic">"{opp.rant}"</p>
                 </div>
               </div>
-            )}
 
-            <!-- Rant -->
-            <div>
-              <h3 class="text-lg font-semibold mb-3 flex items-center">
-                <span class="mr-2">💭</span>
-                My Thoughts
-              </h3>
-              <div class="bg-muted/50 rounded-lg p-4 border-l-4 border-primary">
-                <p class="text-sm leading-relaxed italic">
-                  "{opp.rant}"
-                </p>
+              <div class="text-muted-foreground mt-4 border-t pt-4 text-right text-xs">
+                Opp #{index + 1} • Added to the list with 💔
               </div>
             </div>
+          ))}
+        </div>
+      )
+    }
 
-            <!-- Footer -->
-            <div class="mt-4 pt-4 border-t text-xs text-muted-foreground text-right">
-              Opp #{index + 1} • Added to the list with 💔
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-
-    <!-- Call to Action -->
+    {/* Call to Action */}
     <div class="mt-12 text-center">
       <div class="bg-secondary/30 rounded-lg border p-6">
-        <h2 class="text-lg font-semibold mb-2">Think you belong on this list?</h2>
-        <p class="text-muted-foreground text-sm mb-4">
-          DM me @cold10 on Discord if you've done something particularly heinous recently.
+        <h2 class="mb-2 text-lg font-semibold">
+          Think you belong on this list?
+        </h2>
+        <p class="text-muted-foreground mb-4 text-sm">
+          DM me @cold10 on Discord if you've done something particularly heinous
+          recently.
         </p>
-        <p class="text-xs text-muted-foreground italic">
+        <p class="text-muted-foreground text-xs italic">
           (Or if you want to be removed from it... we can negotiate 👀)
         </p>
       </div>
