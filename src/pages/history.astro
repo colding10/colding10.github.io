@@ -6,10 +6,10 @@ import Layout from '@/layouts/Layout.astro'
 type CTFEntry = {
   name: string
   url: string
-  team?: string // Team name (optional)
+  team?: string 
   placement: string
-  description?: string // Quick description/notes (optional)
-  month: number // 1-12
+  description?: string 
+  month: number
   year: number
 }
 
@@ -28,8 +28,6 @@ const MONTHS = [
   'December',
 ]
 
-// Simple, easy-to-extend data array.
-// Add new results by pushing new objects here.
 const entries: CTFEntry[] = [
   {
     name: 'BDSec CTF 2025',
