@@ -6,9 +6,9 @@ import Layout from '@/layouts/Layout.astro'
 type CTFEntry = {
   name: string
   url: string
-  team?: string 
+  team?: string
   placement: string
-  description?: string 
+  description?: string
   month: number
   year: number
 }
@@ -30,7 +30,43 @@ const MONTHS = [
 
 const entries: CTFEntry[] = [
   {
-    name: 'BDSec CTF 2025',
+    name: 'idekCTF 2025',
+    url: 'https://ctftime.org/event/2746',
+    description: 'cosmic squid 2nd again :(',
+    placement: '2nd',
+    team: 'Cosmic Squid',
+    month: 8,
+    year: 2025,
+  },
+  {
+    name: 'DeadSec CTF 2025',
+    url: 'https://ctftime.org/event/2631',
+    description: 'quite hard ctf lmao (i get carried)',
+    placement: '2nd',
+    team: 'Cosmic Squid',
+    month: 7,
+    year: 2025,
+  },
+  {
+    name: 'World Wide CTF 2025',
+    url: 'https://ctftime.org/event/2753',
+    description: 'get carrried by tien yay',
+    placement: '22th',
+    team: 'BCA',
+    month: 7,
+    year: 2025,
+  },
+  {
+    name: 'DownUnderCTF 2025',
+    url: 'https://ctftime.org/event/2669',
+    description: 'spl nice place, i cheese hard chall (forengolf)',
+    placement: '8th',
+    team: 'SPL',
+    month: 7,
+    year: 2025,
+  },
+  {
+    name: 'Shakti CTF 2025',
     url: 'https://ctftime.org/event/2803',
     description: 'women orz (solved some vm rev)',
     placement: '12th',
@@ -65,6 +101,16 @@ const entries: CTFEntry[] = [
     description: 'blooded some rev then gave up (smiley orz)',
     placement: '79th',
     team: 'BCA',
+    month: 6,
+    year: 2025,
+  },
+
+  {
+    name: 'TJCTF 2025',
+    url: 'https://ctftime.org/event/2809',
+    description: 'played with high schoolers from SPL',
+    placement: '24th',
+    team: 'SPL',
     month: 6,
     year: 2025,
   },
