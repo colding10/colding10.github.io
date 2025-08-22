@@ -1,0 +1,257 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+
+type OppEntry = {
+  name: string
+  alias?: string
+  reasons: string[]
+  artifacts?: {
+    type: 'image' | 'link' | 'quote'
+    url?: string
+    content: string
+    description?: string
+  }[]
+  rant: string
+  severity: 'low' | 'medium' | 'high' | 'maximum'
+}
+
+const opps: OppEntry[] = [
+  {
+    name: 'Example Enemy #1',
+    alias: 'The Betrayer',
+    reasons: [
+      'Used my code without attribution',
+      'Said pineapple belongs on pizza',
+      'Always leaves merge conflicts'
+    ],
+    artifacts: [
+      {
+        type: 'quote',
+        content: '"I totally wrote this myself"',
+        description: 'What they said about MY code'
+      },
+      {
+        type: 'link',
+        url: 'https://github.com/example',
+        content: 'Their sus repository',
+        description: 'Evidence of their crimes'
+      }
+    ],
+    rant: 'This person really thought they could get away with it. The audacity! Not only did they steal my perfectly crafted algorithm, but they had the nerve to claim it as their own original work. And don\'t even get me started on their food opinions...',
+    severity: 'medium'
+  },
+  {
+    name: 'Example Enemy #2', 
+    alias: 'Tab Monster',
+    reasons: [
+      'Uses tabs instead of spaces',
+      'Never closes their PRs',
+      'Writes code in Comic Sans'
+    ],
+    artifacts: [
+      {
+        type: 'quote',
+        content: 'function() {\n\treturn true;\n}',
+        description: 'Actual code they submitted (note the tabs 🤢)'
+      }
+    ],
+    rant: 'I mean, come on. It\'s 2025 and we\'re still having the tabs vs spaces debate? But this person takes it to another level. Not only do they use tabs, but they use them INCONSISTENTLY. Sometimes 4 spaces, sometimes 2, sometimes actual tabs. It\'s chaos!',
+    severity: 'high'
+  }
+]
+
+const getSeverityColor = (severity: string) => {
+  switch (severity) {
+    case 'low':
+      return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-200 dark:border-green-800'
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-200 dark:border-yellow-800'
+    case 'high':
+      return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-200 dark:border-orange-800'
+    case 'maximum':
+      return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700'
+  }
+}
+---
+
+<Layout class="max-w-4xl">
+  <PageHead
+    slot="head"
+    title="Opps"
+    description="My list of enemies (jokingly, of course)"
+  />
+  <Breadcrumbs items={[{ label: 'Opps', icon: 'lucide:skull' }]} />
+
+  <section aria-labelledby="opps-title" class="font-mono">
+    <h1 id="opps-title" class="mt-5 text-3xl font-bold">💀 Opps List</h1>
+    <p class="text-muted-foreground mt-2">
+      My enemies list (totally joking, please don't sue me)
+    </p>
+
+    <!-- Disclaimer -->
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
+      <h2 class="mb-2 text-sm font-semibold text-red-800 dark:text-red-200">
+        ⚠️ DISCLAIMER
+      </h2>
+      <p class="text-xs text-red-700 dark:text-red-300">
+        This is all in good fun! These are not real enemies and this is purely comedic content.
+        If you're mentioned here, it's probably because I like you enough to roast you. 😄
+      </p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="bg-secondary/30 mt-4 rounded-lg border p-4">
+      <div class="flex flex-wrap gap-6 text-sm">
+        <div>
+          <span class="text-muted-foreground">Total Opps:</span>
+          <span class="ml-1 font-semibold">{opps.length}</span>
+        </div>
+        <div>
+          <span class="text-muted-foreground">Threat Level:</span>
+          <span class="ml-1 font-semibold text-red-500">MAXIMUM CHAOS</span>
+        </div>
+      </div>
+    </div>
+
+    {opps.length === 0 ? (
+      <div class="py-12 text-center">
+        <div class="text-6xl mb-4">🕊️</div>
+        <h2 class="text-xl font-semibold mb-2">No Enemies Found</h2>
+        <p class="text-muted-foreground">
+          Surprisingly, I'm at peace with everyone right now. This is suspicious...
+        </p>
+      </div>
+    ) : (
+      <div class="mt-8 space-y-8">
+        {opps.map((opp, index) => (
+          <div class="border rounded-lg p-6 bg-card">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h2 class="text-xl font-bold">{opp.name}</h2>
+                {opp.alias && (
+                  <p class="text-muted-foreground text-sm italic">
+                    aka "{opp.alias}"
+                  </p>
+                )}
+              </div>
+              <span class={`px-2 py-1 rounded-full text-xs font-medium border ${getSeverityColor(opp.severity)}`}>
+                {opp.severity.toUpperCase()}
+              </span>
+            </div>
+
+            <!-- Reasons -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-3 flex items-center">
+                <span class="mr-2">🚩</span>
+                Crimes Against Humanity
+              </h3>
+              <ul class="space-y-2">
+                {opp.reasons.map((reason) => (
+                  <li class="flex items-start">
+                    <span class="text-red-500 mr-2 mt-1 text-xs">●</span>
+                    <span class="text-sm">{reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Artifacts -->
+            {opp.artifacts && opp.artifacts.length > 0 && (
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 flex items-center">
+                  <span class="mr-2">📁</span>
+                  Evidence Locker
+                </h3>
+                <div class="space-y-3">
+                  {opp.artifacts.map((artifact) => (
+                    <div class="border rounded-lg p-3 bg-secondary/30">
+                      {artifact.type === 'quote' && (
+                        <div>
+                          <div class="bg-muted rounded p-2 text-sm font-mono mb-2">
+                            <pre class="whitespace-pre-wrap">{artifact.content}</pre>
+                          </div>
+                          {artifact.description && (
+                            <p class="text-xs text-muted-foreground italic">
+                              {artifact.description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {artifact.type === 'link' && (
+                        <div>
+                          <a 
+                            href={artifact.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="text-primary hover:underline text-sm font-medium"
+                          >
+                            🔗 {artifact.content}
+                          </a>
+                          {artifact.description && (
+                            <p class="text-xs text-muted-foreground mt-1">
+                              {artifact.description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {artifact.type === 'image' && (
+                        <div>
+                          <img 
+                            src={artifact.url} 
+                            alt={artifact.description || artifact.content}
+                            class="rounded border max-w-full h-auto mb-2"
+                          />
+                          <p class="text-xs text-muted-foreground">
+                            {artifact.description || artifact.content}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <!-- Rant -->
+            <div>
+              <h3 class="text-lg font-semibold mb-3 flex items-center">
+                <span class="mr-2">💭</span>
+                My Thoughts
+              </h3>
+              <div class="bg-muted/50 rounded-lg p-4 border-l-4 border-primary">
+                <p class="text-sm leading-relaxed italic">
+                  "{opp.rant}"
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-4 pt-4 border-t text-xs text-muted-foreground text-right">
+              Opp #{index + 1} • Added to the list with 💔
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    <!-- Call to Action -->
+    <div class="mt-12 text-center">
+      <div class="bg-secondary/30 rounded-lg border p-6">
+        <h2 class="text-lg font-semibold mb-2">Think you belong on this list?</h2>
+        <p class="text-muted-foreground text-sm mb-4">
+          DM me @cold10 on Discord if you've done something particularly heinous recently.
+        </p>
+        <p class="text-xs text-muted-foreground italic">
+          (Or if you want to be removed from it... we can negotiate 👀)
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
