@@ -46,4 +46,17 @@ const projects = defineCollection({
     }),
 })
 
-export const collections = { blog, authors, projects }
+const ctfs = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/ctfs' }),
+  schema: z.object({
+    name: z.string(),
+    url: z.string().url(),
+    team: z.string().optional(),
+    placement: z.string(),
+    description: z.string().optional(),
+    month: z.number().min(1).max(12),
+    year: z.number(),
+  }),
+})
+
+export const collections = { blog, authors, projects, ctfs }
