@@ -91,7 +91,7 @@ const totalMonths = uniqueMonthsSet.size
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-mono hover:underline"
+                    class="font-mono hover:underline transition-colors duration-200"
                   >
                     {team}
                   </a>
@@ -122,11 +122,11 @@ const totalMonths = uniqueMonthsSet.size
             type="text"
             id="search"
             placeholder="Search CTF names..."
-            class="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+            class="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
           />
           <select
             id="yearFilter"
-            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
           >
             <option value="">All Years</option>
             {
@@ -137,7 +137,7 @@ const totalMonths = uniqueMonthsSet.size
           </select>
           <select
             id="teamFilter"
-            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
           >
             <option value="">All Teams</option>
             {
@@ -152,7 +152,7 @@ const totalMonths = uniqueMonthsSet.size
         <div class="text-muted-foreground flex items-center gap-2 text-xs">
           <span id="resultCount">{entries.length} CTFs</span>
           <span>•</span>
-          <button id="clearFilters" class="hover:text-foreground underline">
+          <button id="clearFilters" class="hover:text-foreground underline transition-colors duration-200">
             Clear filters
           </button>
         </div>
@@ -166,12 +166,12 @@ const totalMonths = uniqueMonthsSet.size
         {
           groups.map((group) => (
             <div
-              class="month-group"
+              class="month-group transition-all duration-300 ease-in-out"
               data-month={group.month}
               data-year={group.year}
             >
               <div class="relative pl-10">
-                <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2" />
+                <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2 transition-all duration-200" />
                 <p class="text-muted-foreground text-xs tracking-wider uppercase">
                   {MONTHS[group.month - 1]} {group.year}
                 </p>
@@ -180,16 +180,16 @@ const totalMonths = uniqueMonthsSet.size
               <ul class="mt-4 space-y-3">
                 {group.items.map((e) => (
                   <li
-                    class="timeline-item relative pl-10"
+                    class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
                     data-name={e.name}
                     data-year={e.year}
                     data-team={e.team || ''}
                   >
-                    <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2" />
+                    <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
                     <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <a
                         href={`/history/${encodeURIComponent(e.id)}`}
-                        class="text-primary font-medium hover:underline"
+                        class="text-primary font-medium hover:underline transition-colors duration-200"
                       >
                         {e.name}
                       </a>
@@ -199,7 +199,7 @@ const totalMonths = uniqueMonthsSet.size
                       </span>
 
                       {e.team && (
-                        <span class="bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-xs font-medium">
+                        <span class="bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200 hover:bg-secondary/80">
                           {e.team}
                         </span>
                       )}
