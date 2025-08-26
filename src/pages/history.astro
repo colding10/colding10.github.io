@@ -1,8 +1,8 @@
 ---
-import { getCollection } from 'astro:content'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
+import { getCollection } from 'astro:content'
 
 const MONTHS = [
   'January',
@@ -21,7 +21,7 @@ const MONTHS = [
 
 // Get all CTF entries from the content collection
 const ctfCollection = await getCollection('ctfs')
-const entries = ctfCollection.map(entry => entry.data)
+const entries = ctfCollection.map((entry) => entry.data)
 
 // Sort newest first
 const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)

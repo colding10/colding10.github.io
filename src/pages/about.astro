@@ -1,8 +1,8 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
-import Link from '@/components/Link.astro'
 import { getAllProjects } from '@/lib/data-utils'
 
 const projects = await getAllProjects()
@@ -17,13 +17,31 @@ const projects = await getAllProjects()
       <div class="prose mb-8">
         <h1 class="mt-5 text-3xl font-bold">About Me</h1>
         <p>
-        Hi there! I'm <b>cold</b>. I like computers whether hard or soft. This means hardware and
-        software. Right now, I study at the <Link href="https://www.bergen.org/bergencountyacademies" external>Bergen County Academies</Link>. You may see me solving CTF challenges or doing other stuff like coding or problem solving.
+          Hi there! I'm <b>cold</b>. I like computers whether hard or soft. This
+          means hardware and software. Right now, I study at the <Link
+            href="https://www.bergen.org/bergencountyacademies"
+            external>Bergen County Academies</Link
+          >. You may see me solving CTF challenges or doing other stuff like
+          coding or problem solving.
         </p>
         <p>
-        In CTF, I main <Link href="https://ctf101.org/reverse-engineering/overview/">reverse engineering</Link>, but I mess around with forensics and <Link href="https://ctf101.org/binary-exploitation/overview/">pwn</Link> too! To be honest, I have spent too much of my life staring at <Link href="https://hex-rays.com/">IDA</Link> or <Link href="https://github.com/pwndbg/pwndbg">pwndbg</Link>. I'm especially good at misc stuff and also OSINT. I have an external 1TB SSD filled with CTF stuff and VM images with various tools lol.
+          In CTF, I main <Link
+            href="https://ctf101.org/reverse-engineering/overview/"
+            >reverse engineering</Link
+          >, but I mess around with forensics and <Link
+            href="https://ctf101.org/binary-exploitation/overview/">pwn</Link
+          > too! To be honest, I have spent too much of my life staring at <Link
+            href="https://hex-rays.com/">IDA</Link
+          > or <Link href="https://github.com/pwndbg/pwndbg">pwndbg</Link>. I'm
+          especially good at misc stuff and also OSINT. I have an external 1TB
+          SSD filled with CTF stuff and VM images with various tools lol.
         </p>
-        <p>Feel free to dm me on discord <b>@cold10</b> if you have any questions! You can find my <Link href="https://github.com/colding10" external>GitHub</Link> liked at the bottom of the page too.</p>
+        <p>
+          Feel free to dm me on discord <b>@cold10</b> if you have any questions!
+          You can find my <Link href="https://github.com/colding10" external
+            >GitHub</Link
+          > liked at the bottom of the page too.
+        </p>
       </div>
     </div>
   </section>
