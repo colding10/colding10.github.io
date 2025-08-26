@@ -1,0 +1,14 @@
+name = "coldblog"
+compatibility_date = "2025-08-08"
+
+[build]
+command = "bun install && bun run build"
+cwd = "."
+watch_dir = "."
+
+[build.environment]
+BUN_VERSION = "1.2.21"
+SKIP_INSTALL_DEPS = "true"
+
+[site]
+bucket = "./dist"
