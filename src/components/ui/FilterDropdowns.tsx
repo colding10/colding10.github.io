@@ -53,12 +53,19 @@ const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => 
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[120px]">
-          <DropdownMenuItem onClick={() => handleYearChange('')}>
+        <DropdownMenuContent align="end" className="w-[120px] z-50">
+          <DropdownMenuItem 
+            onClick={() => handleYearChange('')}
+            className={selectedYear === '' ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+          >
             All Years
           </DropdownMenuItem>
           {uniqueYears.map((year) => (
-            <DropdownMenuItem key={year} onClick={() => handleYearChange(year.toString())}>
+            <DropdownMenuItem 
+              key={year} 
+              onClick={() => handleYearChange(year.toString())}
+              className={selectedYear === year.toString() ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+            >
               {year}
             </DropdownMenuItem>
           ))}
@@ -73,12 +80,19 @@ const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => 
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[120px]">
-          <DropdownMenuItem onClick={() => handleTeamChange('')}>
+        <DropdownMenuContent align="end" className="w-[120px] z-50">
+          <DropdownMenuItem 
+            onClick={() => handleTeamChange('')}
+            className={selectedTeam === '' ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+          >
             All Teams
           </DropdownMenuItem>
           {uniqueTeams.map((team) => (
-            <DropdownMenuItem key={team} onClick={() => handleTeamChange(team)}>
+            <DropdownMenuItem 
+              key={team} 
+              onClick={() => handleTeamChange(team)}
+              className={selectedTeam === team ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+            >
               {team}
             </DropdownMenuItem>
           ))}
