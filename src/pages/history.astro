@@ -27,7 +27,7 @@ const entries = ctfCollection.map((entry) => entry.data)
 const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
 
 // Group by month-year for monthly markers on the timeline
-type Group = { year: number; month: number; items: CTFEntry[] }
+type Group = { year: number; month: number; items: typeof entries }
 
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
