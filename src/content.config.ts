@@ -32,7 +32,6 @@ const authors = defineCollection({
   }),
 })
 
-
 const ctfs = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/ctfs' }),
   schema: z.object({

@@ -43,8 +43,21 @@ export const SOCIAL_LINKS: SocialLink[] = [
     label: 'CTFTime',
   },
   {
+    href: 'https://cold.is-a.dev',
+    label: 'Website',
+  },
+  {
     href: 'https://github.com/colding10',
     label: 'GitHub',
+  },
+
+  {
+    href: 'https://www.linkedin.com/in/colin-ding-4b7147305/',
+    label: 'LinkedIn',
+  },
+  {
+    href: 'mailto:colder@duck.com',
+    label: 'Email',
   },
   {
     href: '/rss.xml',
