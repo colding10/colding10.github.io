@@ -110,7 +110,8 @@ const totalMonths = uniqueMonthsSet.size
       <div class="mb-3 flex items-center gap-3">
         <div class="text-muted-foreground text-lg">💡</div>
         <div class="text-sm">
-          <strong>Tip:</strong> Click a CTF name to open its detail page. You can also search & filter here.
+          <strong>Tip:</strong> Click a CTF name to open its detail page. You can
+          also search & filter here.
         </div>
       </div>
 
@@ -164,7 +165,11 @@ const totalMonths = uniqueMonthsSet.size
       <div class="space-y-10">
         {
           groups.map((group) => (
-            <div class="month-group" data-month={group.month} data-year={group.year}>
+            <div
+              class="month-group"
+              data-month={group.month}
+              data-year={group.year}
+            >
               <div class="relative pl-10">
                 <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2" />
                 <p class="text-muted-foreground text-xs tracking-wider uppercase">
@@ -265,7 +270,9 @@ const totalMonths = uniqueMonthsSet.size
 
     // Then, hide/show month groups based on whether they have visible items
     monthGroups.forEach((group) => {
-      const visibleItemsInGroup = group.querySelectorAll('.timeline-item:not(.hidden)')
+      const visibleItemsInGroup = group.querySelectorAll(
+        '.timeline-item:not(.hidden)',
+      )
       if (visibleItemsInGroup.length === 0) {
         group.classList.add('hidden')
       } else {
