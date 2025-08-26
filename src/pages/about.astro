@@ -3,7 +3,6 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import AvatarComponent from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
@@ -21,7 +20,7 @@ import { Icon } from 'astro-icon/components'
         src="/static/logo.png"
         alt="Profile picture of cold"
         fallback="C"
-        className="size-24 rounded-full ring-4 ring-primary/20 transition-all duration-300 hover:ring-primary/40 shrink-0"
+        className="ring-primary/20 hover:ring-primary/40 size-24 shrink-0 rounded-full ring-4 transition-all duration-300"
       />
       <div class="space-y-4">
         <h1 class="text-4xl font-bold">About Me</h1>
@@ -48,15 +47,14 @@ import { Icon } from 'astro-icon/components'
         > too! To be honest, I have spent too much of my life staring at <Link
           href="https://hex-rays.com/"
           external>IDA</Link
-        > or <Link href="https://github.com/pwndbg/pwndbg" external
-          >pwndbg</Link
+        > or <Link href="https://github.com/pwndbg/pwndbg" external>pwndbg</Link
         >. I'm especially good at misc stuff and also <Link
           href="https://en.wikipedia.org/wiki/Open-source_intelligence"
           external>OSINT</Link
         >. I have an external 1TB SSD filled with CTF stuff and VM images with
         various tools lol.
       </p>
-      
+
       <p>
         I am a <Link href="https://ctftime.org/team/222966" external
           >Squid Proxy Lover</Link
@@ -65,22 +63,26 @@ import { Icon } from 'astro-icon/components'
           external>tien</Link
         > and <Link href="https://ctftime.org/team/283028" external
           >some people from my school</Link
-        >. <Link href="https://ctftime.org/team/372043/">Cosmic Bit Flip</Link> is another really cool team I play with too. You can find the CTFs I've played + which team I played on <Link
-          href="/history">here</Link
-        >.
+        >. <Link href="https://ctftime.org/team/372043/">Cosmic Bit Flip</Link> is
+        another really cool team I play with too. You can find the CTFs I've played
+        + which team I played on <Link href="/history">here</Link>.
       </p>
     </div>
 
     <!-- Contact -->
     <div class="space-y-4">
       <p class="text-muted-foreground">
-        Feel free to DM me on discord <b>@cold10</b> if you have any questions!
-        You can find my <Link href="https://github.com/colding10" external
+        Feel free to DM me on discord <b>@cold10</b> if you have any questions! You
+        can find my <Link href="https://github.com/colding10" external
           >GitHub</Link
         > and other socials linked at the bottom of the page too.
       </p>
       <div class="flex gap-3">
-        <Link href="https://github.com/colding10" class={buttonVariants({ variant: 'outline' })} external>
+        <Link
+          href="https://github.com/colding10"
+          class={buttonVariants({ variant: 'outline' })}
+          external
+        >
           <Icon name="lucide:github" class="size-4" />
           GitHub
         </Link>

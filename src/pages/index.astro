@@ -3,26 +3,25 @@ import BlogCard from '@/components/BlogCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import { buttonVariants } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
-import { Icon } from 'astro-icon/components'
 
 const blog = await getRecentPosts(SITE.featuredPostCount)
 ---
 
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="Home" />
-  
+
   <!-- Hero Section -->
   <section class="mt-8 mb-16">
     <div class="space-y-6">
       <h1 class="text-4xl font-bold">Hi! I'm cold</h1>
       <p class="text-muted-foreground text-lg">
-        This is my site where I'll put occasional CTF writeups, things I learn, and other random stuff! 
-        You may find an occasional gem in this vast heap of yap here.
+        This is my site where I'll put occasional CTF writeups, things I learn,
+        and other random stuff! You may find an occasional gem in this vast heap
+        of yap here.
       </p>
     </div>
   </section>
@@ -35,10 +34,13 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
         href="/blog"
         class={buttonVariants({ variant: 'outline', size: 'sm' }) + ' group'}
       >
-        View all <span class="ml-1.5 transition-transform group-hover:translate-x-1">&rarr;</span>
+        View all <span
+          class="ml-1.5 transition-transform group-hover:translate-x-1"
+          >&rarr;</span
+        >
       </Link>
     </div>
-    
+
     <div class="space-y-6">
       {
         blog.map((post) => (
@@ -53,18 +55,20 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
   <!-- Info Section -->
   <section class="mt-16">
     <Separator className="mb-6" />
-    <div class="text-muted-foreground text-sm space-y-2">
+    <div class="text-muted-foreground space-y-2 text-sm">
       <p>
         Check out this page for a <Link
           href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
-          class="text-foreground underline hover:text-primary transition-colors"
-          external>explanation of what CTFs are</Link>.
+          class="text-foreground hover:text-primary underline transition-colors"
+          external>explanation of what CTFs are</Link
+        >.
       </p>
       <p>
         This site uses the theme <Link
           href="https://github.com/jktrn/astro-erudite"
-          class="text-foreground underline hover:text-primary transition-colors"
-          external>astro-erudite</Link>.
+          class="text-foreground hover:text-primary underline transition-colors"
+          external>astro-erudite</Link
+        >.
       </p>
     </div>
   </section>

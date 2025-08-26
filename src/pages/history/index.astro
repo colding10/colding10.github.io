@@ -1,10 +1,10 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
+import FilterDropdowns from '@/components/ui/FilterDropdowns'
 import Layout from '@/layouts/Layout.astro'
 import { TEAM_URLS } from '@/lib/team-utils'
 import { getCollection } from 'astro:content'
-import FilterDropdowns from '@/components/ui/FilterDropdowns'
 
 const MONTHS = [
   'January',
@@ -44,8 +44,12 @@ const uniqueMonthsSet = new Set(entries.map((e) => `${e.year}-${e.month}`))
 const totalMonths = uniqueMonthsSet.size
 
 // Get unique years and teams for filters
-const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort((a, b) => b - a)
-const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => e.team))).sort()
+const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort(
+  (a, b) => b - a,
+)
+const uniqueTeams = Array.from(
+  new Set(entries.filter((e) => e.team).map((e) => e.team)),
+).sort()
 ---
 
 <Layout class="max-w-3xl">
@@ -96,7 +100,7 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-mono hover:underline transition-colors duration-200"
+                    class="font-mono transition-colors duration-200 hover:underline"
                   >
                     {team}
                   </a>
@@ -127,19 +131,24 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
             type="text"
             id="search"
             placeholder="Search CTF names..."
-            class="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
+            class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
           />
-          
-          <FilterDropdowns 
+
+          <FilterDropdowns
             client:load
-            uniqueYears={uniqueYears.filter((y) => typeof y === "string" || typeof y === "number")}
-            uniqueTeams={uniqueTeams.filter((t) => typeof t === "string")}
+            uniqueYears={uniqueYears.filter(
+              (y) => typeof y === 'string' || typeof y === 'number',
+            )}
+            uniqueTeams={uniqueTeams.filter((t) => typeof t === 'string')}
           />
         </div>
         <div class="text-muted-foreground flex items-center gap-2 text-xs">
           <span id="resultCount">{entries.length} CTFs</span>
           <span>•</span>
-          <button id="clearFilters" class="hover:text-foreground underline transition-colors duration-200">
+          <button
+            id="clearFilters"
+            class="hover:text-foreground underline transition-colors duration-200"
+          >
             Clear filters
           </button>
         </div>
@@ -176,7 +185,7 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
                     <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <a
                         href={`/history/${encodeURIComponent(e.id)}`}
-                        class="text-primary font-medium hover:underline transition-colors duration-200"
+                        class="text-primary font-medium transition-colors duration-200 hover:underline"
                       >
                         {e.name}
                       </a>
@@ -186,7 +195,7 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
                       </span>
 
                       {e.team && (
-                        <span class="bg-secondary text-secondary-foreground rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200 hover:bg-secondary/80">
+                        <span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
                           {e.team}
                         </span>
                       )}
@@ -221,7 +230,9 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
 <script>
   // Search and filter functionality
   const searchInput = document.getElementById('search') as HTMLInputElement
-  const clearFilters = document.getElementById('clearFilters') as HTMLButtonElement
+  const clearFilters = document.getElementById(
+    'clearFilters',
+  ) as HTMLButtonElement
   const resultCount = document.getElementById('resultCount') as HTMLSpanElement
   const timelineItems = document.querySelectorAll('.timeline-item')
   const monthGroups = document.querySelectorAll('.month-group')
@@ -283,10 +294,10 @@ const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => 
     searchInput.value = ''
     selectedYear = ''
     selectedTeam = ''
-    
+
     // Dispatch events to reset dropdowns
     document.dispatchEvent(new CustomEvent('clearFilters'))
-    
+
     filterItems()
   }
 

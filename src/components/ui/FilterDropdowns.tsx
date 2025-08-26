@@ -13,7 +13,10 @@ interface FilterDropdownsProps {
   uniqueTeams: string[]
 }
 
-const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => {
+const FilterDropdowns = ({
+  uniqueYears,
+  uniqueTeams,
+}: FilterDropdownsProps) => {
   const [selectedYear, setSelectedYear] = useState('')
   const [selectedTeam, setSelectedTeam] = useState('')
 
@@ -32,14 +35,14 @@ const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => 
   const handleYearChange = (year: string) => {
     setSelectedYear(year)
     document.dispatchEvent(
-      new CustomEvent('yearFilterChange', { detail: { value: year } })
+      new CustomEvent('yearFilterChange', { detail: { value: year } }),
     )
   }
 
   const handleTeamChange = (team: string) => {
     setSelectedTeam(team)
     document.dispatchEvent(
-      new CustomEvent('teamFilterChange', { detail: { value: team } })
+      new CustomEvent('teamFilterChange', { detail: { value: team } }),
     )
   }
 
@@ -48,23 +51,31 @@ const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => 
       {/* Custom Year Filter */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="justify-between min-w-[120px]">
+          <Button variant="outline" className="min-w-[120px] justify-between">
             <span>{selectedYear || 'All Years'}</span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[120px] z-50">
-          <DropdownMenuItem 
+        <DropdownMenuContent align="end" className="z-50 w-[120px]">
+          <DropdownMenuItem
             onClick={() => handleYearChange('')}
-            className={selectedYear === '' ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+            className={
+              selectedYear === ''
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-background text-foreground'
+            }
           >
             All Years
           </DropdownMenuItem>
           {uniqueYears.map((year) => (
-            <DropdownMenuItem 
-              key={year} 
+            <DropdownMenuItem
+              key={year}
               onClick={() => handleYearChange(year.toString())}
-              className={selectedYear === year.toString() ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+              className={
+                selectedYear === year.toString()
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-background text-foreground'
+              }
             >
               {year}
             </DropdownMenuItem>
@@ -75,23 +86,31 @@ const FilterDropdowns = ({ uniqueYears, uniqueTeams }: FilterDropdownsProps) => 
       {/* Custom Team Filter */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="justify-between min-w-[120px]">
+          <Button variant="outline" className="min-w-[120px] justify-between">
             <span>{selectedTeam || 'All Teams'}</span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[120px] z-50">
-          <DropdownMenuItem 
+        <DropdownMenuContent align="end" className="z-50 w-[120px]">
+          <DropdownMenuItem
             onClick={() => handleTeamChange('')}
-            className={selectedTeam === '' ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+            className={
+              selectedTeam === ''
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-background text-foreground'
+            }
           >
             All Teams
           </DropdownMenuItem>
           {uniqueTeams.map((team) => (
-            <DropdownMenuItem 
-              key={team} 
+            <DropdownMenuItem
+              key={team}
               onClick={() => handleTeamChange(team)}
-              className={selectedTeam === team ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'}
+              className={
+                selectedTeam === team
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-background text-foreground'
+              }
             >
               {team}
             </DropdownMenuItem>
