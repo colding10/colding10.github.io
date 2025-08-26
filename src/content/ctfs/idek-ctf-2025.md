@@ -12,4 +12,5 @@ quality: 9/10
 wouldPlayAgain: yes
 notes: |
   - I worked on some of the medium-hard rev like Exposition then just did random shit like OSINT + misc. The NPMZ Geoguessr OSINT was rlly cool and i solved one with overpass turbo
+writeupURL: /blog/idekctf2025
 ---
