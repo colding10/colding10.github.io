@@ -6,4 +6,11 @@ placement: '87th'
 description: 'idk, solved some pretty cool rev i think'
 month: 5
 year: 2025
+review: |
+  Pretty good i guess, dont remember enough
+quality: 7/10
+wouldPlayAgain: yes
+notes: |
+  - There was this one rev which was pretty cool.
+writeupUrl: /blog/nahamcon2025
 ---

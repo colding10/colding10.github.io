@@ -6,4 +6,10 @@ placement: '6th'
 description: 'random lockin on small ctf'
 month: 4
 year: 2025
+review: |
+  Pretty bad ngl, challs are all "ROT13" or audio stuff.
+quality: 4/10
+wouldPlayAgain: no
+notes: |
+  - tien and i played this while in school and stuff
 ---

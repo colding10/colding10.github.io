@@ -1,0 +1,110 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getCollection } from 'astro:content'
+
+export async function getStaticPaths() {
+  const entries = await getCollection('ctfs')
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }))
+}
+
+const { entry } = Astro.props
+const data = entry.data
+---
+
+<Layout class="max-w-4xl">
+  <PageHead
+    slot="head"
+    title={`${data.name} (${data.year})`}
+    description={data.description || 'CTF details'}
+  />
+  <Breadcrumbs
+    items={[
+      { href: '/history', label: 'History', icon: 'lucide:calendar' },
+      { label: data.name, icon: 'lucide:flag' },
+    ]}
+  />
+
+  <section>
+    <div class="rounded-lg border p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="font-mono text-3xl font-bold">{data.name}</h1>
+          <p class="text-muted-foreground mt-1 text-sm">{data.month}/{data.year}</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <span class="bg-secondary text-secondary-foreground inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium">
+            <span class="mr-2">🏁</span> {data.placement}
+          </span>
+          {data.team && (
+            <span class="bg-secondary text-secondary-foreground inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium">
+              <span class="mr-2">👥</span> {data.team}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-4">
+        <a href={data.url} target="_blank" rel="noopener noreferrer" class="text-primary inline-flex items-center gap-1 underline">
+          <span>CTFTime link</span> ↗
+        </a>
+        {data.writeupUrl && (
+          <a 
+            href={data.writeupUrl} 
+            {...(data.writeupUrl.startsWith('/') ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+            class="text-primary inline-flex items-center gap-1 underline"
+          >
+            <span>Writeup</span> ↗{data.writeupUrl && !data.writeupUrl.startsWith('/') && '↗'}
+          </a>
+        )}
+      </div>
+    </div>
+
+    {data.description && (
+      <div class="mt-6 rounded-lg border p-5">
+        <h2 class="font-mono text-xl font-semibold">Summary</h2>
+        <p class="text-muted-foreground mt-2">{data.description}</p>
+      </div>
+    )}
+
+    {(data.quality !== undefined || data.wouldPlayAgain !== undefined) && (
+      <div class="mt-6 grid gap-4 sm:grid-cols-2">
+        {data.quality !== undefined && (
+          <div class="rounded-lg border p-5">
+            <div class="text-muted-foreground text-sm">Quality</div>
+            <div class="text-2xl font-semibold">{String(data.quality)}</div>
+          </div>
+        )}
+        {data.wouldPlayAgain !== undefined && (
+          <div class="rounded-lg border p-5">
+            <div class="text-muted-foreground text-sm">Would play again</div>
+            <div class="text-2xl font-semibold">{String(data.wouldPlayAgain)}</div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {(data.review || data.notes) && (
+      <div class="mt-6 grid gap-6 md:grid-cols-2">
+        {data.review && (
+          <div class="rounded-lg border p-5">
+            <h2 class="font-mono text-xl font-semibold">Review</h2>
+            <p class="mt-2 whitespace-pre-wrap leading-7">{data.review}</p>
+          </div>
+        )}
+        {data.notes && (
+          <div class="rounded-lg border p-5">
+            <h2 class="font-mono text-xl font-semibold">Notes</h2>
+            <p class="mt-2 whitespace-pre-wrap leading-7">{data.notes}</p>
+          </div>
+        )}
+      </div>
+    )}
+  </section>
+</Layout>
+
+

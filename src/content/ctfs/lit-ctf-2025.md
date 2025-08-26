@@ -6,4 +6,10 @@ placement: '14th (eligible)'
 description: 'me & tien & shubuntu, was busy this weekend'
 month: 8
 year: 2025
+review: |
+  Pretty good high school ctf, many challs were easy/cookiecutter but some were pretty good and we didn't even solve them
+quality: 7/10
+wouldPlayAgain: yes
+notes: |
+  - I kinda didn't play ctf at all this weekend (and i should have been doing hitcon mb), but for what it's worth i wasn't doing LIT either tbh
 ---

@@ -19,28 +19,23 @@ const MONTHS = [
   'December',
 ]
 
-// Get all CTF entries from the content collection
 const ctfCollection = await getCollection('ctfs')
-const entries = ctfCollection.map((entry) => entry.data)
+const entries = ctfCollection.map((entry) => ({ id: entry.id, ...entry.data }))
 
-// Sort newest first
 const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
 
-// Group by month-year for monthly markers on the timeline
 type Group = { year: number; month: number; items: typeof entries }
 
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
   const key = `${e.year}-${String(e.month).padStart(2, '0')}`
-  if (!groupsMap.has(key))
-    groupsMap.set(key, { year: e.year, month: e.month, items: [] })
+  if (!groupsMap.has(key)) groupsMap.set(key, { year: e.year, month: e.month, items: [] })
   groupsMap.get(key)!.items.push(e)
 }
 const groups = Array.from(groupsMap.values()).sort(
   (a, b) => b.year - a.year || b.month - a.month,
 )
 
-// Calculate statistics
 const totalCTFs = entries.length
 const uniqueMonthsSet = new Set(entries.map((e) => `${e.year}-${e.month}`))
 const totalMonths = uniqueMonthsSet.size
@@ -60,7 +55,6 @@ const totalMonths = uniqueMonthsSet.size
       Competition results over time, newest first.
     </p>
 
-    <!-- Statistics -->
     <div class="bg-secondary/30 mt-4 rounded-lg border p-4">
       <div class="flex flex-wrap gap-6 text-sm">
         <div>
@@ -74,13 +68,10 @@ const totalMonths = uniqueMonthsSet.size
       </div>
     </div>
 
-    <!-- Disclaimer and Teams -->
     <div
       class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/20"
     >
-      <h2
-        class="mb-2 text-sm font-semibold text-yellow-800 dark:text-yellow-200"
-      >
+      <h2 class="mb-2 text-sm font-semibold text-yellow-800 dark:text-yellow-200">
         📝 Note
       </h2>
       <div class="space-y-2 text-xs text-yellow-700 dark:text-yellow-300">
@@ -90,39 +81,20 @@ const totalMonths = uniqueMonthsSet.size
         </p>
         <p>
           <strong>Teams:</strong>
-          <a
-            href="https://ctftime.org/team/283028"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">BCA</a
-          >,
-          <a
-            href="https://ctftime.org/team/222966"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">SPL</a
-          >,
-          <a
-            href="https://ctftime.org/team/372043"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">CBF</a
-          >,
-          <a
-            href="https://ctftime.org/team/396585"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">Cosmic Squid</a
-          >,
-          <a
-            href="https://ctftime.org/team/375355"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline"
-            >[:]
+          <a href="https://ctftime.org/team/283028" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">BCA</a>,
+          <a href="https://ctftime.org/team/222966" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">SPL</a>,
+          <a href="https://ctftime.org/team/372043" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">CBF</a>,
+          <a href="https://ctftime.org/team/396585" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">Cosmic Squid</a>,
+          <a href="https://ctftime.org/team/375355" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">[:]
           </a>
         </p>
       </div>
+    </div>
+
+    <div
+      class="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200"
+    >
+      <strong>Tip:</strong> Click a CTF name to open its detail page.
     </div>
 
     <div class="relative mt-8">
@@ -145,9 +117,7 @@ const totalMonths = uniqueMonthsSet.size
                     <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2" />
                     <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <a
-                        href={e.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/history/${encodeURIComponent(e.id)}`}
                         class="text-primary font-medium hover:underline"
                       >
                         {e.name}
@@ -177,16 +147,13 @@ const totalMonths = uniqueMonthsSet.size
         }
       </div>
 
-      <!-- Empty state message if no entries -->
-      {
-        groups.length === 0 && (
-          <div class="py-12 text-center">
-            <p class="text-muted-foreground">
-              No CTF entries yet. Add some to the entries array!
-            </p>
-          </div>
-        )
-      }
+      {groups.length === 0 && (
+        <div class="py-12 text-center">
+          <p class="text-muted-foreground">No CTF entries yet. Add some to the entries array!</p>
+        </div>
+      )}
     </div>
   </section>
 </Layout>
+
+

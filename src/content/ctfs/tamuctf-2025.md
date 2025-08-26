@@ -6,4 +6,10 @@ placement: '46th'
 description: 'i dont remember tbh'
 month: 3
 year: 2025
+review: |
+  Do not remember enough to give a good review. Sorry
+quality: 7/10
+wouldPlayAgain: yes
+notes: |
+  - Idk tbh
 ---

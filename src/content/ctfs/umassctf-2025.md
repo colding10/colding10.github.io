@@ -6,4 +6,10 @@ placement: '37th'
 description: 'started using ida, more rev'
 month: 4
 year: 2025
+review: |
+  Pretty good stuff, another college CTF
+quality: 7/10
+wouldPlayAgain: yes
+notes: |
+  - pretty fun i think
 ---

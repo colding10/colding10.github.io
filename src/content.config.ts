@@ -42,6 +42,12 @@ const ctfs = defineCollection({
     description: z.string().optional(),
     month: z.number().min(1).max(12),
     year: z.number(),
+    // Optional extended review fields for detail pages
+    review: z.string().optional(),
+    quality: z.union([z.number(), z.string()]).optional(),
+    wouldPlayAgain: z.union([z.boolean(), z.string()]).optional(),
+    notes: z.string().optional(),
+    writeupUrl: z.union([z.string().url(), z.string().startsWith('/')]).optional(),
   }),
 })
 
