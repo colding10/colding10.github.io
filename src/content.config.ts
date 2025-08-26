@@ -47,7 +47,9 @@ const ctfs = defineCollection({
     quality: z.union([z.number(), z.string()]).optional(),
     wouldPlayAgain: z.union([z.boolean(), z.string()]).optional(),
     notes: z.string().optional(),
-    writeupUrl: z.union([z.string().url(), z.string().startsWith('/')]).optional(),
+    writeupUrl: z
+      .union([z.string().url(), z.string().startsWith('/')])
+      .optional(),
   }),
 })
 

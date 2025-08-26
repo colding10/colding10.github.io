@@ -29,7 +29,8 @@ type Group = { year: number; month: number; items: typeof entries }
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
   const key = `${e.year}-${String(e.month).padStart(2, '0')}`
-  if (!groupsMap.has(key)) groupsMap.set(key, { year: e.year, month: e.month, items: [] })
+  if (!groupsMap.has(key))
+    groupsMap.set(key, { year: e.year, month: e.month, items: [] })
   groupsMap.get(key)!.items.push(e)
 }
 const groups = Array.from(groupsMap.values()).sort(
@@ -71,7 +72,9 @@ const totalMonths = uniqueMonthsSet.size
     <div
       class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/20"
     >
-      <h2 class="mb-2 text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+      <h2
+        class="mb-2 text-sm font-semibold text-yellow-800 dark:text-yellow-200"
+      >
         📝 Note
       </h2>
       <div class="space-y-2 text-xs text-yellow-700 dark:text-yellow-300">
@@ -81,11 +84,36 @@ const totalMonths = uniqueMonthsSet.size
         </p>
         <p>
           <strong>Teams:</strong>
-          <a href="https://ctftime.org/team/283028" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">BCA</a>,
-          <a href="https://ctftime.org/team/222966" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">SPL</a>,
-          <a href="https://ctftime.org/team/372043" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">CBF</a>,
-          <a href="https://ctftime.org/team/396585" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">Cosmic Squid</a>,
-          <a href="https://ctftime.org/team/375355" target="_blank" rel="noopener noreferrer" class="font-mono hover:underline">[:]
+          <a
+            href="https://ctftime.org/team/283028"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline">BCA</a
+          >,
+          <a
+            href="https://ctftime.org/team/222966"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline">SPL</a
+          >,
+          <a
+            href="https://ctftime.org/team/372043"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline">CBF</a
+          >,
+          <a
+            href="https://ctftime.org/team/396585"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline">Cosmic Squid</a
+          >,
+          <a
+            href="https://ctftime.org/team/375355"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono hover:underline"
+            >[:]
           </a>
         </p>
       </div>
@@ -147,13 +175,15 @@ const totalMonths = uniqueMonthsSet.size
         }
       </div>
 
-      {groups.length === 0 && (
-        <div class="py-12 text-center">
-          <p class="text-muted-foreground">No CTF entries yet. Add some to the entries array!</p>
-        </div>
-      )}
+      {
+        groups.length === 0 && (
+          <div class="py-12 text-center">
+            <p class="text-muted-foreground">
+              No CTF entries yet. Add some to the entries array!
+            </p>
+          </div>
+        )
+      }
     </div>
   </section>
 </Layout>
-
-
