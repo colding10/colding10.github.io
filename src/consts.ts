@@ -43,10 +43,6 @@ export const SOCIAL_LINKS: SocialLink[] = [
     label: 'CTFTime',
   },
   {
-    href: 'https://cold.is-a.dev',
-    label: 'Website',
-  },
-  {
     href: 'https://github.com/colding10',
     label: 'GitHub',
   },
