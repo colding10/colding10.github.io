@@ -2,8 +2,8 @@
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getCollection } from 'astro:content'
 import { TEAM_URLS } from '@/lib/team-utils'
+import { getCollection } from 'astro:content'
 
 const MONTHS = [
   'January',
@@ -57,7 +57,9 @@ const totalMonths = uniqueMonthsSet.size
       Competition results over time, newest first.
     </p>
 
-    <div class="bg-blue-50/80 dark:bg-blue-950/40 mt-4 rounded-lg border border-blue-200/70 dark:border-blue-800/50 p-4">
+    <div
+      class="mt-4 rounded-lg border border-blue-200/70 bg-blue-50/80 p-4 dark:border-blue-800/50 dark:bg-blue-950/40"
+    >
       <div class="flex flex-wrap gap-6 text-sm">
         <div>
           <span class="text-muted-foreground">Total CTFs:</span>
@@ -70,42 +72,48 @@ const totalMonths = uniqueMonthsSet.size
       </div>
     </div>
 
-    <div class="bg-amber-50/80 dark:bg-amber-950/40 mt-4 rounded-lg border border-amber-200/70 dark:border-amber-800/50 p-4">
+    <div
+      class="mt-4 rounded-lg border border-amber-200/70 bg-amber-50/80 p-4 dark:border-amber-800/50 dark:bg-amber-950/40"
+    >
       <div class="flex items-start gap-3">
         <div class="text-muted-foreground text-lg">ℹ️</div>
         <div class="space-y-2 text-sm">
           <p>
-            <strong>Sorting:</strong> CTFs are sorted by month/year, but probably not
-            within each month.
+            <strong>Sorting:</strong> CTFs are sorted by month/year, but probably
+            not within each month.
           </p>
           <p>
             <strong>Teams:</strong>
-            {Object.entries(TEAM_URLS).map(([team, url], index) => (
-              <>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-mono hover:underline"
-                >
-                  {team}
-                </a>
-                {index < Object.keys(TEAM_URLS).length - 1 && ', '}
-              </>
-            ))}
+            {
+              Object.entries(TEAM_URLS).map(([team, url], index) => (
+                <>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-mono hover:underline"
+                  >
+                    {team}
+                  </a>
+                  {index < Object.keys(TEAM_URLS).length - 1 && ', '}
+                </>
+              ))
+            }
           </p>
         </div>
       </div>
     </div>
 
-    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 mt-4 rounded-lg border border-emerald-200/70 dark:border-emerald-800/50 p-4">
-      <div class="flex items-center gap-3 mb-3">
+    <div
+      class="mt-4 rounded-lg border border-emerald-200/70 bg-emerald-50/80 p-4 dark:border-emerald-800/50 dark:bg-emerald-950/40"
+    >
+      <div class="mb-3 flex items-center gap-3">
         <div class="text-muted-foreground text-lg">💡</div>
         <div class="text-sm">
           <strong>Tip:</strong> Click a CTF name to open its detail page.
         </div>
       </div>
-      
+
       <!-- Search and Filter -->
       <div class="space-y-3">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -113,34 +121,37 @@ const totalMonths = uniqueMonthsSet.size
             type="text"
             id="search"
             placeholder="Search CTF names..."
-            class="flex-1 rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            class="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
           />
           <select
             id="yearFilter"
-            class="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
           >
             <option value="">All Years</option>
-            {Array.from(new Set(entries.map(e => e.year))).sort((a, b) => b - a).map(year => (
-              <option value={year}>{year}</option>
-            ))}
+            {
+              Array.from(new Set(entries.map((e) => e.year)))
+                .sort((a, b) => b - a)
+                .map((year) => <option value={year}>{year}</option>)
+            }
           </select>
           <select
             id="teamFilter"
-            class="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
           >
             <option value="">All Teams</option>
-            {Array.from(new Set(entries.filter(e => e.team).map(e => e.team))).sort().map(team => (
-              <option value={team}>{team}</option>
-            ))}
+            {
+              Array.from(
+                new Set(entries.filter((e) => e.team).map((e) => e.team)),
+              )
+                .sort()
+                .map((team) => <option value={team}>{team}</option>)
+            }
           </select>
         </div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+        <div class="text-muted-foreground flex items-center gap-2 text-xs">
           <span id="resultCount">{entries.length} CTFs</span>
           <span>•</span>
-          <button
-            id="clearFilters"
-            class="hover:text-foreground underline"
-          >
+          <button id="clearFilters" class="hover:text-foreground underline">
             Clear filters
           </button>
         </div>
@@ -163,8 +174,8 @@ const totalMonths = uniqueMonthsSet.size
 
               <ul class="mt-4 space-y-3">
                 {group.items.map((e) => (
-                  <li 
-                    class="relative pl-10 timeline-item"
+                  <li
+                    class="timeline-item relative pl-10"
                     data-name={e.name}
                     data-year={e.year}
                     data-team={e.team || ''}
@@ -220,7 +231,9 @@ const totalMonths = uniqueMonthsSet.size
   const searchInput = document.getElementById('search') as HTMLInputElement
   const yearFilter = document.getElementById('yearFilter') as HTMLSelectElement
   const teamFilter = document.getElementById('teamFilter') as HTMLSelectElement
-  const clearFilters = document.getElementById('clearFilters') as HTMLButtonElement
+  const clearFilters = document.getElementById(
+    'clearFilters',
+  ) as HTMLButtonElement
   const resultCount = document.getElementById('resultCount') as HTMLSpanElement
   const timelineItems = document.querySelectorAll('.timeline-item')
 
