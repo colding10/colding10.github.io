@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 import { getCollection } from 'astro:content'
+import { TEAM_URLS } from '@/lib/team-utils'
 
 const MONTHS = [
   'January',
@@ -84,37 +85,19 @@ const totalMonths = uniqueMonthsSet.size
         </p>
         <p>
           <strong>Teams:</strong>
-          <a
-            href="https://ctftime.org/team/283028"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">BCA</a
-          >,
-          <a
-            href="https://ctftime.org/team/222966"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">SPL</a
-          >,
-          <a
-            href="https://ctftime.org/team/372043"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">CBF</a
-          >,
-          <a
-            href="https://ctftime.org/team/396585"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline">Cosmic Squid</a
-          >,
-          <a
-            href="https://ctftime.org/team/375355"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-mono hover:underline"
-            >[:]
-          </a>
+          {Object.entries(TEAM_URLS).map(([team, url], index) => (
+            <>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-mono hover:underline"
+              >
+                {team}
+              </a>
+              {index < Object.keys(TEAM_URLS).length - 1 && ', '}
+            </>
+          ))}
         </p>
       </div>
     </div>
