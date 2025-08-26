@@ -39,8 +39,8 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-      href: 'https://ctftime.org/user/218696',
-      label: 'CTFTime',
+    href: 'https://ctftime.org/user/218696',
+    label: 'CTFTime',
   },
   {
     href: 'https://github.com/colding10',
