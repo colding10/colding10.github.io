@@ -164,7 +164,7 @@ const totalMonths = uniqueMonthsSet.size
       <div class="space-y-10">
         {
           groups.map((group) => (
-            <div>
+            <div class="month-group" data-month={group.month} data-year={group.year}>
               <div class="relative pl-10">
                 <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2" />
                 <p class="text-muted-foreground text-xs tracking-wider uppercase">
@@ -236,6 +236,7 @@ const totalMonths = uniqueMonthsSet.size
   ) as HTMLButtonElement
   const resultCount = document.getElementById('resultCount') as HTMLSpanElement
   const timelineItems = document.querySelectorAll('.timeline-item')
+  const monthGroups = document.querySelectorAll('.month-group')
 
   function filterItems() {
     const searchTerm = searchInput.value.toLowerCase()
@@ -244,6 +245,7 @@ const totalMonths = uniqueMonthsSet.size
 
     let visibleCount = 0
 
+    // First, filter individual items
     timelineItems.forEach((item) => {
       const name = item.getAttribute('data-name')?.toLowerCase() || ''
       const year = item.getAttribute('data-year') || ''
@@ -258,6 +260,16 @@ const totalMonths = uniqueMonthsSet.size
         visibleCount++
       } else {
         item.classList.add('hidden')
+      }
+    })
+
+    // Then, hide/show month groups based on whether they have visible items
+    monthGroups.forEach((group) => {
+      const visibleItemsInGroup = group.querySelectorAll('.timeline-item:not(.hidden)')
+      if (visibleItemsInGroup.length === 0) {
+        group.classList.add('hidden')
+      } else {
+        group.classList.remove('hidden')
       }
     })
 
