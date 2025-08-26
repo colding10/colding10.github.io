@@ -39,6 +39,10 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
+      href: 'https://ctftime.org/user/218696',
+      label: 'CTFTime',
+  },
+  {
     href: 'https://github.com/colding10',
     label: 'GitHub',
   },
@@ -49,6 +53,7 @@ export const SOCIAL_LINKS: SocialLink[] = [
 ]
 
 export const ICON_MAP: IconMap = {
+  CTFTime: 'lucide:flag',
   Website: 'lucide:globe',
   GitHub: 'lucide:github',
   LinkedIn: 'lucide:linkedin',
