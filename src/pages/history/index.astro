@@ -4,6 +4,7 @@ import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 import { TEAM_URLS } from '@/lib/team-utils'
 import { getCollection } from 'astro:content'
+import FilterDropdowns from '@/components/ui/FilterDropdowns'
 
 const MONTHS = [
   'January',
@@ -41,6 +42,10 @@ const groups = Array.from(groupsMap.values()).sort(
 const totalCTFs = entries.length
 const uniqueMonthsSet = new Set(entries.map((e) => `${e.year}-${e.month}`))
 const totalMonths = uniqueMonthsSet.size
+
+// Get unique years and teams for filters
+const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort((a, b) => b - a)
+const uniqueTeams = Array.from(new Set(entries.filter((e) => e.team).map((e) => e.team))).sort()
 ---
 
 <Layout class="max-w-3xl">
@@ -124,30 +129,12 @@ const totalMonths = uniqueMonthsSet.size
             placeholder="Search CTF names..."
             class="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
           />
-          <select
-            id="yearFilter"
-            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
-          >
-            <option value="">All Years</option>
-            {
-              Array.from(new Set(entries.map((e) => e.year)))
-                .sort((a, b) => b - a)
-                .map((year) => <option value={year}>{year}</option>)
-            }
-          </select>
-          <select
-            id="teamFilter"
-            class="bg-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none transition-all duration-200 hover:border-ring/50"
-          >
-            <option value="">All Teams</option>
-            {
-              Array.from(
-                new Set(entries.filter((e) => e.team).map((e) => e.team)),
-              )
-                .sort()
-                .map((team) => <option value={team}>{team}</option>)
-            }
-          </select>
+          
+          <FilterDropdowns 
+            client:load
+            uniqueYears={uniqueYears.filter((y) => typeof y === "string" || typeof y === "number")}
+            uniqueTeams={uniqueTeams.filter((t) => typeof t === "string")}
+          />
         </div>
         <div class="text-muted-foreground flex items-center gap-2 text-xs">
           <span id="resultCount">{entries.length} CTFs</span>
@@ -234,19 +221,28 @@ const totalMonths = uniqueMonthsSet.size
 <script>
   // Search and filter functionality
   const searchInput = document.getElementById('search') as HTMLInputElement
-  const yearFilter = document.getElementById('yearFilter') as HTMLSelectElement
-  const teamFilter = document.getElementById('teamFilter') as HTMLSelectElement
-  const clearFilters = document.getElementById(
-    'clearFilters',
-  ) as HTMLButtonElement
+  const clearFilters = document.getElementById('clearFilters') as HTMLButtonElement
   const resultCount = document.getElementById('resultCount') as HTMLSpanElement
   const timelineItems = document.querySelectorAll('.timeline-item')
   const monthGroups = document.querySelectorAll('.month-group')
 
+  // Filter state
+  let selectedYear = ''
+  let selectedTeam = ''
+
+  // Listen for custom events from the dropdown components
+  document.addEventListener('yearFilterChange', (event: any) => {
+    selectedYear = event.detail.value
+    filterItems()
+  })
+
+  document.addEventListener('teamFilterChange', (event: any) => {
+    selectedTeam = event.detail.value
+    filterItems()
+  })
+
   function filterItems() {
     const searchTerm = searchInput.value.toLowerCase()
-    const selectedYear = yearFilter.value
-    const selectedTeam = teamFilter.value
 
     let visibleCount = 0
 
@@ -285,13 +281,15 @@ const totalMonths = uniqueMonthsSet.size
 
   function clearAllFilters() {
     searchInput.value = ''
-    yearFilter.value = ''
-    teamFilter.value = ''
+    selectedYear = ''
+    selectedTeam = ''
+    
+    // Dispatch events to reset dropdowns
+    document.dispatchEvent(new CustomEvent('clearFilters'))
+    
     filterItems()
   }
 
   searchInput.addEventListener('input', filterItems)
-  yearFilter.addEventListener('change', filterItems)
-  teamFilter.addEventListener('change', filterItems)
   clearFilters.addEventListener('click', clearAllFilters)
 </script>
