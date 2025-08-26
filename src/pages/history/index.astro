@@ -57,7 +57,7 @@ const totalMonths = uniqueMonthsSet.size
       Competition results over time, newest first.
     </p>
 
-    <div class="bg-secondary/30 mt-4 rounded-lg border p-4">
+    <div class="bg-blue-50/80 dark:bg-blue-950/40 mt-4 rounded-lg border border-blue-200/70 dark:border-blue-800/50 p-4">
       <div class="flex flex-wrap gap-6 text-sm">
         <div>
           <span class="text-muted-foreground">Total CTFs:</span>
@@ -70,42 +70,81 @@ const totalMonths = uniqueMonthsSet.size
       </div>
     </div>
 
-    <div
-      class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/20"
-    >
-      <h2
-        class="mb-2 text-sm font-semibold text-yellow-800 dark:text-yellow-200"
-      >
-        📝 Note
-      </h2>
-      <div class="space-y-2 text-xs text-yellow-700 dark:text-yellow-300">
-        <p>
-          <strong>Sorting:</strong> CTFs are sorted by month/year, but probably not
-          within each month.
-        </p>
-        <p>
-          <strong>Teams:</strong>
-          {Object.entries(TEAM_URLS).map(([team, url], index) => (
-            <>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="font-mono hover:underline"
-              >
-                {team}
-              </a>
-              {index < Object.keys(TEAM_URLS).length - 1 && ', '}
-            </>
-          ))}
-        </p>
+    <div class="bg-amber-50/80 dark:bg-amber-950/40 mt-4 rounded-lg border border-amber-200/70 dark:border-amber-800/50 p-4">
+      <div class="flex items-start gap-3">
+        <div class="text-muted-foreground text-lg">ℹ️</div>
+        <div class="space-y-2 text-sm">
+          <p>
+            <strong>Sorting:</strong> CTFs are sorted by month/year, but probably not
+            within each month.
+          </p>
+          <p>
+            <strong>Teams:</strong>
+            {Object.entries(TEAM_URLS).map(([team, url], index) => (
+              <>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-mono hover:underline"
+                >
+                  {team}
+                </a>
+                {index < Object.keys(TEAM_URLS).length - 1 && ', '}
+              </>
+            ))}
+          </p>
+        </div>
       </div>
     </div>
 
-    <div
-      class="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200"
-    >
-      <strong>Tip:</strong> Click a CTF name to open its detail page.
+    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 mt-4 rounded-lg border border-emerald-200/70 dark:border-emerald-800/50 p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="text-muted-foreground text-lg">💡</div>
+        <div class="text-sm">
+          <strong>Tip:</strong> Click a CTF name to open its detail page.
+        </div>
+      </div>
+      
+      <!-- Search and Filter -->
+      <div class="space-y-3">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            id="search"
+            placeholder="Search CTF names..."
+            class="flex-1 rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <select
+            id="yearFilter"
+            class="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">All Years</option>
+            {Array.from(new Set(entries.map(e => e.year))).sort((a, b) => b - a).map(year => (
+              <option value={year}>{year}</option>
+            ))}
+          </select>
+          <select
+            id="teamFilter"
+            class="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">All Teams</option>
+            {Array.from(new Set(entries.filter(e => e.team).map(e => e.team))).sort().map(team => (
+              <option value={team}>{team}</option>
+            ))}
+          </select>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <span id="resultCount">{entries.length} CTFs</span>
+          <span>•</span>
+          <button
+            id="clearFilters"
+            class="hover:text-foreground underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="relative mt-8">
@@ -124,7 +163,12 @@ const totalMonths = uniqueMonthsSet.size
 
               <ul class="mt-4 space-y-3">
                 {group.items.map((e) => (
-                  <li class="relative pl-10">
+                  <li 
+                    class="relative pl-10 timeline-item"
+                    data-name={e.name}
+                    data-year={e.year}
+                    data-team={e.team || ''}
+                  >
                     <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2" />
                     <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <a
@@ -170,3 +214,52 @@ const totalMonths = uniqueMonthsSet.size
     </div>
   </section>
 </Layout>
+
+<script>
+  // Search and filter functionality
+  const searchInput = document.getElementById('search') as HTMLInputElement
+  const yearFilter = document.getElementById('yearFilter') as HTMLSelectElement
+  const teamFilter = document.getElementById('teamFilter') as HTMLSelectElement
+  const clearFilters = document.getElementById('clearFilters') as HTMLButtonElement
+  const resultCount = document.getElementById('resultCount') as HTMLSpanElement
+  const timelineItems = document.querySelectorAll('.timeline-item')
+
+  function filterItems() {
+    const searchTerm = searchInput.value.toLowerCase()
+    const selectedYear = yearFilter.value
+    const selectedTeam = teamFilter.value
+
+    let visibleCount = 0
+
+    timelineItems.forEach((item) => {
+      const name = item.getAttribute('data-name')?.toLowerCase() || ''
+      const year = item.getAttribute('data-year') || ''
+      const team = item.getAttribute('data-team') || ''
+
+      const matchesSearch = name.includes(searchTerm)
+      const matchesYear = !selectedYear || year === selectedYear
+      const matchesTeam = !selectedTeam || team === selectedTeam
+
+      if (matchesSearch && matchesYear && matchesTeam) {
+        item.classList.remove('hidden')
+        visibleCount++
+      } else {
+        item.classList.add('hidden')
+      }
+    })
+
+    resultCount.textContent = `${visibleCount} CTF${visibleCount !== 1 ? 's' : ''}`
+  }
+
+  function clearAllFilters() {
+    searchInput.value = ''
+    yearFilter.value = ''
+    teamFilter.value = ''
+    filterItems()
+  }
+
+  searchInput.addEventListener('input', filterItems)
+  yearFilter.addEventListener('change', filterItems)
+  teamFilter.addEventListener('change', filterItems)
+  clearFilters.addEventListener('click', clearAllFilters)
+</script>
