@@ -1118,7 +1118,7 @@ A quick script gives us `d3spit3_th3_nam3`. Current flag: `idek{d3spit3_th3_nam3
 
 #### Part 2
 
-here there are some 8x8 grids, and using a hardcoded list of 36 coordinates (`r14` array at `case 394`) to set the "on" state of the "lights in this grid". this is the "lights out" game. we can use an online solver to solve it or do some Gaussian elimination over GF(2) to find the move set. the output is the 8x8 grid that solves the puzzle, and convert that to 8 bytes gives us the part2. (the first 8 bytes are from the `hi_there_coords` array)
+here there are some 8x8 grids, and using a hardcoded list of 36 coordinates (`r14` array at `case 394`) to set the "on" state of the "lights in this grid". this is the "lights out" game. we can use an online solver to solve it or do some Gaussian elimination over $GF(2)$ to find the move set. the output is the 8x8 grid that solves the puzzle, and convert that to 8 bytes gives us the part2. (the first 8 bytes are from the `hi_there_coords` array)
 
 the output of the solver i wrote was this:
 
