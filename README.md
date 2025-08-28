@@ -2,7 +2,9 @@
 
 ## licensing
 
-### Template code is MIT licensed.
+### Template/blog code is MIT licensed.
+
+---
 
 ### Blog content is under CC-BY.
 
