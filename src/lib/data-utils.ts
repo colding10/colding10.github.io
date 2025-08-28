@@ -1,9 +1,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import { readingTime, calculateWordCountFromHtml } from '@/lib/utils'
 
-export async function getAllAuthors(): Promise<CollectionEntry<'authors'>[]> {
-  return await getCollection('authors')
-}
+
 
 export async function getAllPosts(): Promise<CollectionEntry<'blog'>[]> {
   const posts = await getCollection('blog')
@@ -90,12 +88,7 @@ export async function getAdjacentPosts(currentId: string): Promise<{
   }
 }
 
-export async function getPostsByAuthor(
-  authorId: string,
-): Promise<CollectionEntry<'blog'>[]> {
-  const posts = await getAllPosts()
-  return posts.filter((post) => post.data.authors?.includes(authorId))
-}
+
 
 export async function getPostsByTag(
   tag: string,
@@ -185,16 +178,14 @@ export async function getParentPost(
 export async function parseAuthors(authorIds: string[] = []) {
   if (!authorIds.length) return []
 
-  const allAuthors = await getAllAuthors()
-  const authorMap = new Map(allAuthors.map((author) => [author.id, author]))
-
+  // Since we're removing the authors collection, we'll use a simple mapping
+  // for the single author case
   return authorIds.map((id) => {
-    const author = authorMap.get(id)
     return {
       id,
-      name: author?.data?.name || id,
-      avatar: author?.data?.avatar || '/static/logo.png',
-      isRegistered: !!author,
+      name: 'cold',
+      avatar: 'https://www.gravatar.com/avatar/db0b9b1be7f7ad32be1250b437099be3',
+      isRegistered: false,
     }
   })
 }

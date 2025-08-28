@@ -23,18 +23,10 @@ export const NAV_LINKS: SocialLink[] = [
     href: '/history',
     label: 'history',
   },
-  // {
-  //   href: '/opps',
-  //   label: 'opps',
-  // },
   {
     href: '/tags',
     label: 'tags',
-  },
-  // {
-  //   href: '/resume',
-  //   label: 'resume',
-  // },
+  }
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [
