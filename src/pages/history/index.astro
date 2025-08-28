@@ -51,6 +51,47 @@ const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort(
 const uniqueTeams = Array.from(
   new Set(entries.filter((e) => e.team).map((e) => e.team)),
 ).sort()
+
+// Helpers to derive placement rank and tier
+function parsePlacementNumber(placement: string | undefined): number | null {
+  if (!placement) return null
+  const match = placement.match(/\d+/)
+  if (!match) return null
+  const n = Number(match[0])
+  return Number.isFinite(n) ? n : null
+}
+
+function getTierFromRank(rank: number | null): 'SS' | 'S' | 'A' | 'B' | 'C' | 'D' | 'F' {
+  if (rank == null) return 'F'
+  if (rank <= 3) return 'SS'
+  if (rank <= 5) return 'S'
+  if (rank <= 10) return 'A'
+  if (rank <= 25) return 'B'
+  if (rank <= 50) return 'C'
+  if (rank <= 100) return 'D'
+  return 'F'
+}
+
+function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
+  switch (tier) {
+    case 'SS':
+      return 'bg-rose-100 text-rose-800 border border-rose-300/60 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800'
+    case 'S':
+      return 'bg-orange-100 text-orange-800 border border-orange-300/60 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
+    case 'A':
+      return 'bg-amber-100 text-amber-900 border border-amber-300/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800'
+    case 'B':
+      return 'bg-sky-100 text-sky-800 border border-sky-300/60 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800'
+    case 'C':
+      return 'bg-blue-100 text-blue-800 border border-blue-300/60 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+    case 'D':
+      return 'bg-indigo-100 text-indigo-800 border border-indigo-300/60 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800'
+    case 'F':
+      return 'bg-zinc-100 text-zinc-800 border border-zinc-300/60 dark:bg-zinc-900/30 dark:text-zinc-300 dark:border-zinc-800'
+    default:
+      return 'bg-muted text-muted-foreground border border-border'
+  }
+}
 ---
 
 <Layout class="max-w-3xl">
@@ -175,40 +216,52 @@ const uniqueTeams = Array.from(
               </div>
 
               <ul class="mt-4 space-y-3">
-                {group.items.map((e) => (
-                  <li
-                    class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
-                    data-name={e.name}
-                    data-year={e.year}
-                    data-team={e.team || ''}
-                  >
-                    <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
-                    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <a
-                        href={`/history/${encodeURIComponent(e.id)}`}
-                        class="text-primary font-medium transition-colors duration-200 hover:underline"
-                      >
-                        {e.name}
-                      </a>
-
-                      <span class="text-muted-foreground text-sm font-medium">
-                        {e.placement}
-                      </span>
-
-                      {e.team && (
-                        <span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
-                          {e.team}
+                {group.items.map((e) => {
+                  const rank = parsePlacementNumber(e.placement)
+                  const tier = getTierFromRank(rank)
+                  return (
+                    <li
+                      class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
+                      data-name={e.name}
+                      data-year={e.year}
+                      data-team={e.team || ''}
+                      data-rank={rank ?? ''}
+                      data-tier={tier}
+                    >
+                      <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
+                      <div class="flex items-start gap-2">
+                        {/* Tier badge at the far left of content block */}
+                        <span class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}>
+                          {tier}
                         </span>
-                      )}
+                        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                          <a
+                            href={`/history/${encodeURIComponent(e.id)}`}
+                            class="text-primary font-medium transition-colors duration-200 hover:underline"
+                          >
+                            {e.name}
+                          </a>
 
-                      {e.description && (
-                        <span class="text-muted-foreground flex-shrink-0 text-sm italic">
-                          — {e.description}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                          <span class="text-muted-foreground text-sm font-medium">
+                            {e.placement}
+                          </span>
+
+                          {e.team && (
+                            <span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
+                              {e.team}
+                            </span>
+                          )}
+
+                          {e.description && (
+                            <span class="text-muted-foreground flex-shrink-0 text-sm italic">
+                              — {e.description}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           ))
@@ -241,6 +294,7 @@ const uniqueTeams = Array.from(
   // Filter state
   let selectedYear = ''
   let selectedTeam = ''
+  let selectedTier = ''
 
   // Listen for custom events from the dropdown components
   document.addEventListener('yearFilterChange', (event: any) => {
@@ -250,6 +304,11 @@ const uniqueTeams = Array.from(
 
   document.addEventListener('teamFilterChange', (event: any) => {
     selectedTeam = event.detail.value
+    filterItems()
+  })
+
+  document.addEventListener('tierFilterChange', (event: any) => {
+    selectedTier = event.detail.value
     filterItems()
   })
 
@@ -263,12 +322,27 @@ const uniqueTeams = Array.from(
       const name = item.getAttribute('data-name')?.toLowerCase() || ''
       const year = item.getAttribute('data-year') || ''
       const team = item.getAttribute('data-team') || ''
+      const rankStr = item.getAttribute('data-rank') || ''
+      const tier = item.getAttribute('data-tier') || ''
 
       const matchesSearch = name.includes(searchTerm)
       const matchesYear = !selectedYear || year === selectedYear
       const matchesTeam = !selectedTeam || team === selectedTeam
 
-      if (matchesSearch && matchesYear && matchesTeam) {
+      let matchesTier = true
+      if (selectedTier) {
+        if (['SS', 'S', 'A', 'B', 'C', 'D'].includes(selectedTier)) {
+          matchesTier = tier === selectedTier
+        } else if (selectedTier === 'TOP3') {
+          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 3
+        } else if (selectedTier === 'TOP5') {
+          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 5
+        } else if (selectedTier === 'TOP10') {
+          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 10
+        }
+      }
+
+      if (matchesSearch && matchesYear && matchesTeam && matchesTier) {
         item.classList.remove('hidden')
         visibleCount++
       } else {
@@ -295,6 +369,7 @@ const uniqueTeams = Array.from(
     searchInput.value = ''
     selectedYear = ''
     selectedTeam = ''
+    selectedTier = ''
 
     // Dispatch events to reset dropdowns
     document.dispatchEvent(new CustomEvent('clearFilters'))
