@@ -9,7 +9,7 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "prettier": "prettier --write **/*.{ts,tsx,css,astro} --ignore-path .gitignore",
+    "prettier": "prettier --tab-width 4 --use-tabs --write **/*.{ts,tsx,css,astro} --ignore-path .gitignore",
     "postinstall": "patch-package"
   },
   "dependencies": {

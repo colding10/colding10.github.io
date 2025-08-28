@@ -9,88 +9,96 @@ import { Icon } from 'astro-icon/components'
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="About" />
-  <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
+	<PageHead slot="head" title="About" />
+	<Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
 
-  <section class="space-y-8">
-    <!-- Hero Section -->
-    <div class="flex items-center gap-6">
-      <AvatarComponent
-        client:load
-        src="/static/logo.png"
-        alt="Profile picture of cold"
-        fallback="C"
-        className="ring-primary/20 hover:ring-primary/40 size-24 shrink-0 rounded-full ring-4 transition-all duration-300"
-      />
-      <div class="space-y-4">
-        <h1 class="text-4xl font-bold">About Me</h1>
-        <p>
-          Hi there! I'm <b>cold</b>. I like computers whether hard or soft. This
-          means hardware and software. Right now, I study at the <Link
-            href="https://www.bergen.org/bergencountyacademies"
-            external>Bergen County Academies</Link
-          >. You may see me solving CTF challenges or doing other stuff like
-          coding or problem solving.
-        </p>
-      </div>
-    </div>
+	<section class="space-y-8">
+		<!-- Hero Section -->
+		<div class="flex items-center gap-6">
+			<AvatarComponent
+				client:load
+				src="/static/logo.png"
+				alt="Profile picture of cold"
+				fallback="C"
+				className="ring-primary/20 hover:ring-primary/40 size-24 shrink-0 rounded-full ring-4 transition-all duration-300"
+			/>
+			<div class="space-y-4">
+				<h1 class="text-4xl font-bold">About Me</h1>
+				<p>
+					Hi there! I'm <b>cold</b>. I like computers whether hard or
+					soft. This means hardware and software. Right now, I study
+					at the <Link
+						href="https://www.bergen.org/bergencountyacademies"
+						external>Bergen County Academies</Link
+					>. You may see me solving CTF challenges or doing other
+					stuff like coding or problem solving.
+				</p>
+			</div>
+		</div>
 
-    <!-- About Text -->
-    <div class="prose prose-lg space-y-6">
-      <p>
-        In CTF, I main <Link
-          href="https://ctf101.org/reverse-engineering/overview/"
-          external>reverse engineering</Link
-        >, but I mess around with forensics and <Link
-          href="https://ctf101.org/binary-exploitation/overview/"
-          external>pwn</Link
-        > too! To be honest, I have spent too much of my life staring at <Link
-          href="https://hex-rays.com/"
-          external>IDA</Link
-        > or <Link href="https://github.com/pwndbg/pwndbg" external>pwndbg</Link
-        >. I'm especially good at misc stuff and also <Link
-          href="https://en.wikipedia.org/wiki/Open-source_intelligence"
-          external>OSINT</Link
-        >. I have an external 1TB SSD filled with CTF stuff and VM images with
-        various tools lol.
-      </p>
+		<!-- About Text -->
+		<div class="prose prose-lg space-y-6">
+			<p>
+				In CTF, I main <Link
+					href="https://ctf101.org/reverse-engineering/overview/"
+					external>reverse engineering</Link
+				>, but I mess around with forensics and <Link
+					href="https://ctf101.org/binary-exploitation/overview/"
+					external>pwn</Link
+				> too! To be honest, I have spent too much of my life staring at
+				<Link href="https://hex-rays.com/" external>IDA</Link> or <Link
+					href="https://github.com/pwndbg/pwndbg"
+					external>pwndbg</Link
+				>. I'm especially good at misc stuff and also <Link
+					href="https://en.wikipedia.org/wiki/Open-source_intelligence"
+					external>OSINT</Link
+				>. I have an external 1TB SSD filled with CTF stuff and VM
+				images with various tools lol.
+			</p>
 
-      <p>
-        I am a <Link href="https://ctftime.org/team/222966" external
-          >Squid Proxy Lover</Link
-        > most of the time, but also play with my "duo" <Link
-          href="https://tienxion.github.io"
-          external>tien</Link
-        > and <Link href="https://ctftime.org/team/283028" external
-          >some people from my school</Link
-        >. <Link href="https://ctftime.org/team/372043/">Cosmic Bit Flip</Link> is
-        another really cool team I play with too. You can find the CTFs I've played
-        + which team I played on <Link href="/history">here</Link>.
-      </p>
-    </div>
+			<p>
+				I am a <Link href="https://ctftime.org/team/222966" external
+					>Squid Proxy Lover</Link
+				> most of the time, but also play with my "duo" <Link
+					href="https://tienxion.github.io"
+					external>tien</Link
+				> and <Link href="https://ctftime.org/team/283028" external
+					>some people from my school</Link
+				>. <Link href="https://ctftime.org/team/372043/"
+					>Cosmic Bit Flip</Link
+				> is another really cool team I play with too. You can find the CTFs
+				I've played + which team I played on <Link href="/history"
+					>here</Link
+				>.
+			</p>
+		</div>
 
-    <!-- Contact -->
-    <div class="space-y-4">
-      <p class="text-muted-foreground">
-        Feel free to DM me on discord <b>@cold10</b> if you have any questions! You
-        can find my <Link href="https://github.com/colding10" external
-          >GitHub</Link
-        > and other socials linked at the bottom of the page too.
-      </p>
-      <div class="flex gap-3">
-        <Link
-          href="https://github.com/colding10"
-          class={buttonVariants({ variant: 'outline' })}
-          external
-        >
-          <Icon name="lucide:github" class="size-4" />
-          GitHub
-        </Link>
-        <Link href="/history" class={buttonVariants({ variant: 'outline' })}>
-          <Icon name="lucide:trophy" class="size-4" />
-          CTF History
-        </Link>
-      </div>
-    </div>
-  </section>
+		<!-- Contact -->
+		<div class="space-y-4">
+			<p class="text-muted-foreground">
+				Feel free to DM me on discord <b>@cold10</b> if you have any questions!
+				You can find my <Link
+					href="https://github.com/colding10"
+					external>GitHub</Link
+				> and other socials linked at the bottom of the page too.
+			</p>
+			<div class="flex gap-3">
+				<Link
+					href="https://github.com/colding10"
+					class={buttonVariants({ variant: 'outline' })}
+					external
+				>
+					<Icon name="lucide:github" class="size-4" />
+					GitHub
+				</Link>
+				<Link
+					href="/history"
+					class={buttonVariants({ variant: 'outline' })}
+				>
+					<Icon name="lucide:trophy" class="size-4" />
+					CTF History
+				</Link>
+			</div>
+		</div>
+	</section>
 </Layout>

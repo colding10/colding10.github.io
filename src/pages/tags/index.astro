@@ -11,28 +11,30 @@ const sortedTags = await getSortedTags()
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="Tags" />
-  <Breadcrumbs items={[{ label: 'Tags', icon: 'lucide:tags' }]} />
+	<PageHead slot="head" title="Tags" />
+	<Breadcrumbs items={[{ label: 'Tags', icon: 'lucide:tags' }]} />
 
-  <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap gap-2">
-      {
-        sortedTags.map(({ tag, count }) => (
-          <Link
-            href={`/tags/${tag}`}
-            class={badgeVariants({ variant: 'secondary' })}
-          >
-            <Icon name="lucide:hash" class="size-3" />
-            {tag}
-            <span class="text-muted-foreground ml-1.5">({count})</span>
-          </Link>
-        ))
-      }
-    </div>
-    <div>
-      Check out some of my tagged posts! You can search for specific types of <Link
-        href="/tags/writeups">writeups</Link
-      > by clicking on a specific tag/category.
-    </div>
-  </div>
+	<div class="flex flex-col gap-4">
+		<div class="flex flex-wrap gap-2">
+			{
+				sortedTags.map(({ tag, count }) => (
+					<Link
+						href={`/tags/${tag}`}
+						class={badgeVariants({ variant: 'secondary' })}
+					>
+						<Icon name="lucide:hash" class="size-3" />
+						{tag}
+						<span class="text-muted-foreground ml-1.5">
+							({count})
+						</span>
+					</Link>
+				))
+			}
+		</div>
+		<div>
+			Check out some of my tagged posts! You can search for specific types
+			of <Link href="/tags/writeups">writeups</Link> by clicking on a specific
+			tag/category.
+		</div>
+	</div>
 </Layout>

@@ -4,10 +4,10 @@ import PageHead from '@/components/PageHead.astro'
 import FilterDropdowns from '@/components/ui/FilterDropdowns'
 import Layout from '@/layouts/Layout.astro'
 import {
-  getTierBadgeClasses,
-  getTierFromRank,
-  MONTHS,
-  parsePlacementNumber,
+	getTierBadgeClasses,
+	getTierFromRank,
+	MONTHS,
+	parsePlacementNumber,
 } from '@/lib/history-utils'
 import { TEAM_URLS } from '@/lib/team-utils'
 import { Icon } from 'astro-icon/components'
@@ -22,13 +22,13 @@ const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
 
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
-  const key = `${e.year}-${String(e.month).padStart(2, '0')}`
-  if (!groupsMap.has(key))
-    groupsMap.set(key, { year: e.year, month: e.month, items: [] })
-  groupsMap.get(key)!.items.push(e)
+	const key = `${e.year}-${String(e.month).padStart(2, '0')}`
+	if (!groupsMap.has(key))
+		groupsMap.set(key, { year: e.year, month: e.month, items: [] })
+	groupsMap.get(key)!.items.push(e)
 }
 const groups = Array.from(groupsMap.values()).sort(
-  (a, b) => b.year - a.year || b.month - a.month,
+	(a, b) => b.year - a.year || b.month - a.month,
 )
 
 const totalCTFs = entries.length
@@ -37,364 +37,400 @@ const totalMonths = uniqueMonthsSet.size
 
 // Get unique years and teams for filters
 const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort(
-  (a, b) => b - a,
+	(a, b) => b - a,
 )
 const uniqueTeams = Array.from(
-  new Set(entries.filter((e) => e.team).map((e) => e.team)),
+	new Set(entries.filter((e) => e.team).map((e) => e.team)),
 ).sort()
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead
-    slot="head"
-    title="CTF History"
-    description="Timeline of CTF competitions and results"
-  />
-  <Breadcrumbs items={[{ label: 'History', icon: 'lucide:calendar' }]} />
+	<PageHead
+		slot="head"
+		title="CTF History"
+		description="Timeline of CTF competitions and results"
+	/>
+	<Breadcrumbs items={[{ label: 'History', icon: 'lucide:calendar' }]} />
 
-  <section aria-labelledby="ctf-history-title" class="font-mono">
-    <h1 id="ctf-history-title" class="mt-5 text-3xl font-bold">CTF History</h1>
-    <p class="text-muted-foreground mt-2">
-      Competition results over time, newest first.
-    </p>
+	<section aria-labelledby="ctf-history-title" class="font-mono">
+		<h1 id="ctf-history-title" class="mt-5 text-3xl font-bold">
+			CTF History
+		</h1>
+		<p class="text-muted-foreground mt-2">
+			Competition results over time, newest first.
+		</p>
 
-    <div
-      class="mt-4 rounded-lg border border-blue-200/70 bg-blue-50/80 p-4 dark:border-blue-800/50 dark:bg-blue-950/40"
-    >
-      <div class="flex flex-wrap gap-6 text-sm">
-        <div>
-          <span class="text-muted-foreground">Total CTFs:</span>
-          <span class="ml-1 font-semibold">{totalCTFs}</span>
-        </div>
-        <div>
-          <span class="text-muted-foreground">Months Active:</span>
-          <span class="ml-1 font-semibold">{totalMonths}</span>
-        </div>
-      </div>
-    </div>
+		<div
+			class="mt-4 rounded-lg border border-blue-200/70 bg-blue-50/80 p-4 dark:border-blue-800/50 dark:bg-blue-950/40"
+		>
+			<div class="flex flex-wrap gap-6 text-sm">
+				<div>
+					<span class="text-muted-foreground">Total CTFs:</span>
+					<span class="ml-1 font-semibold">{totalCTFs}</span>
+				</div>
+				<div>
+					<span class="text-muted-foreground">Months Active:</span>
+					<span class="ml-1 font-semibold">{totalMonths}</span>
+				</div>
+			</div>
+		</div>
 
-    <div
-      class="mt-4 rounded-lg border border-amber-200/70 bg-amber-50/80 p-4 dark:border-amber-800/50 dark:bg-amber-950/40"
-    >
-      <div class="flex items-start gap-3">
-        <Icon name="lucide:info" class="text-muted-foreground mt-0.5 h-5 w-5" />
-        <div class="space-y-2 text-sm">
-          <p>
-            <strong>Sorting:</strong> CTFs are sorted by month/year, but probably
-            not within each month.
-          </p>
-          <p>
-            <strong>Teams:</strong>
-            {
-              Object.entries(TEAM_URLS).map(([team, url], index) => (
-                <>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="font-mono transition-colors duration-200 hover:underline"
-                  >
-                    {team}
-                  </a>
-                  {index < Object.keys(TEAM_URLS).length - 1 && ', '}
-                </>
-              ))
-            }
-          </p>
-        </div>
-      </div>
-    </div>
+		<div
+			class="mt-4 rounded-lg border border-amber-200/70 bg-amber-50/80 p-4 dark:border-amber-800/50 dark:bg-amber-950/40"
+		>
+			<div class="flex items-start gap-3">
+				<Icon
+					name="lucide:info"
+					class="text-muted-foreground mt-0.5 h-5 w-5"
+				/>
+				<div class="space-y-2 text-sm">
+					<p>
+						<strong>Sorting:</strong> CTFs are sorted by month/year,
+						but probably not within each month.
+					</p>
+					<p>
+						<strong>Teams:</strong>
+						{
+							Object.entries(TEAM_URLS).map(
+								([team, url], index) => (
+									<>
+										<a
+											href={url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="font-mono transition-colors duration-200 hover:underline"
+										>
+											{team}
+										</a>
+										{index <
+											Object.keys(TEAM_URLS).length - 1 &&
+											', '}
+									</>
+								),
+							)
+						}
+					</p>
+				</div>
+			</div>
+		</div>
 
-    <div
-      class="mt-4 rounded-lg border border-emerald-200/70 bg-emerald-50/80 p-4 dark:border-emerald-800/50 dark:bg-emerald-950/40"
-    >
-      <div class="mb-3 flex items-center gap-3">
-        <Icon name="lucide:lightbulb" class="text-muted-foreground h-5 w-5" />
-        <div class="text-sm">
-          <strong>Tip:</strong> Click a CTF name to open its detail page. You can
-          also search & filter here. Try query operators like
-          <code>year:2025</code>, <code>team:BCA</code>, <code>tier:A</code>, or <code
-            >top:10</code
-          >.
-        </div>
-      </div>
+		<div
+			class="mt-4 rounded-lg border border-emerald-200/70 bg-emerald-50/80 p-4 dark:border-emerald-800/50 dark:bg-emerald-950/40"
+		>
+			<div class="mb-3 flex items-center gap-3">
+				<Icon
+					name="lucide:lightbulb"
+					class="text-muted-foreground h-5 w-5"
+				/>
+				<div class="text-sm">
+					<strong>Tip:</strong> Click a CTF name to open its detail page.
+					You can also search & filter here. Try query operators like
+					<code>year:2025</code>, <code>team:BCA</code>, <code
+						>tier:A</code
+					>, or <code>top:10</code>.
+				</div>
+			</div>
 
-      <!-- Search and Filter -->
-      <div class="space-y-3">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <input
-            type="text"
-            id="search"
-            placeholder="Search CTF names..."
-            class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
-          />
+			<!-- Search and Filter -->
+			<div class="space-y-3">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<input
+						type="text"
+						id="search"
+						placeholder="Search CTF names..."
+						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
+					/>
 
-          <FilterDropdowns
-            client:load
-            uniqueYears={uniqueYears.filter(
-              (y) => typeof y === 'string' || typeof y === 'number',
-            )}
-            uniqueTeams={uniqueTeams.filter((t) => typeof t === 'string')}
-          />
-        </div>
-        <div class="text-muted-foreground flex items-center gap-2 text-xs">
-          <span id="resultCount">{entries.length} CTFs</span>
-          <span>•</span>
-          <button
-            id="clearFilters"
-            class="hover:text-foreground underline transition-colors duration-200"
-          >
-            Clear filters
-          </button>
-        </div>
-        <div id="teamHelper" class="text-muted-foreground hidden text-xs">
-          Names with spaces: use quotes or parentheses, e.g.
-          <code>team:&quot;Cosmic Squid&quot;</code> or <code
-            >team:(Cosmic Squid)</code
-          >.
-        </div>
-      </div>
-    </div>
+					<FilterDropdowns
+						client:load
+						uniqueYears={uniqueYears.filter(
+							(y) =>
+								typeof y === 'string' || typeof y === 'number',
+						)}
+						uniqueTeams={uniqueTeams.filter(
+							(t) => typeof t === 'string',
+						)}
+					/>
+				</div>
+				<div
+					class="text-muted-foreground flex items-center gap-2 text-xs"
+				>
+					<span id="resultCount">{entries.length} CTFs</span>
+					<span>•</span>
+					<button
+						id="clearFilters"
+						class="hover:text-foreground underline transition-colors duration-200"
+					>
+						Clear filters
+					</button>
+				</div>
+				<div
+					id="teamHelper"
+					class="text-muted-foreground hidden text-xs"
+				>
+					Names with spaces: use quotes or parentheses, e.g.
+					<code>team:&quot;Cosmic Squid&quot;</code> or <code
+						>team:(Cosmic Squid)</code
+					>.
+				</div>
+			</div>
+		</div>
 
-    <div class="relative mt-8">
-      <div class="bg-border absolute top-0 bottom-0 left-4 w-px"></div>
+		<div class="relative mt-8">
+			<div class="bg-border absolute top-0 bottom-0 left-4 w-px"></div>
 
-      <div class="space-y-10">
-        {
-          groups.map((group) => (
-            <div
-              class="month-group transition-all duration-300 ease-in-out"
-              data-month={group.month}
-              data-year={group.year}
-            >
-              <div class="relative pl-10">
-                <div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2 transition-all duration-200" />
-                <p class="text-muted-foreground text-xs tracking-wider uppercase">
-                  {MONTHS[group.month - 1]} {group.year}
-                </p>
-              </div>
+			<div class="space-y-10">
+				{
+					groups.map((group) => (
+						<div
+							class="month-group transition-all duration-300 ease-in-out"
+							data-month={group.month}
+							data-year={group.year}
+						>
+							<div class="relative pl-10">
+								<div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2 transition-all duration-200" />
+								<p class="text-muted-foreground text-xs tracking-wider uppercase">
+									{MONTHS[group.month - 1]} {group.year}
+								</p>
+							</div>
 
-              <ul class="mt-4 space-y-3">
-                {group.items.map((e) => {
-                  const rank = parsePlacementNumber(e.placement)
-                  const tier = getTierFromRank(rank)
-                  return (
-                    <li
-                      class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
-                      data-name={e.name}
-                      data-year={e.year}
-                      data-team={e.team || ''}
-                      data-rank={rank ?? ''}
-                      data-tier={tier}
-                    >
-                      <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
-                      <div class="flex items-start gap-2">
-                        {/* Tier badge at the far left of content block */}
-                        <span
-                          class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}
-                        >
-                          {tier}
-                        </span>
-                        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                          <a
-                            href={`/history/${encodeURIComponent(e.id)}`}
-                            class="text-primary font-medium transition-colors duration-200 hover:underline"
-                          >
-                            {e.name}
-                          </a>
+							<ul class="mt-4 space-y-3">
+								{group.items.map((e) => {
+									const rank = parsePlacementNumber(
+										e.placement,
+									)
+									const tier = getTierFromRank(rank)
+									return (
+										<li
+											class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
+											data-name={e.name}
+											data-year={e.year}
+											data-team={e.team || ''}
+											data-rank={rank ?? ''}
+											data-tier={tier}
+										>
+											<div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
+											<div class="flex items-start gap-2">
+												{/* Tier badge at the far left of content block */}
+												<span
+													class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}
+												>
+													{tier}
+												</span>
+												<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+													<a
+														href={`/history/${encodeURIComponent(e.id)}`}
+														class="text-primary font-medium transition-colors duration-200 hover:underline"
+													>
+														{e.name}
+													</a>
 
-                          <span class="text-muted-foreground text-sm font-medium">
-                            {e.placement}
-                          </span>
+													<span class="text-muted-foreground text-sm font-medium">
+														{e.placement}
+													</span>
 
-                          {e.team && (
-                            <span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
-                              {e.team}
-                            </span>
-                          )}
+													{e.team && (
+														<span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
+															{e.team}
+														</span>
+													)}
 
-                          {e.description && (
-                            <span class="text-muted-foreground flex-shrink-0 text-sm italic">
-                              — {e.description}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          ))
-        }
-      </div>
+													{e.description && (
+														<span class="text-muted-foreground flex-shrink-0 text-sm italic">
+															— {e.description}
+														</span>
+													)}
+												</div>
+											</div>
+										</li>
+									)
+								})}
+							</ul>
+						</div>
+					))
+				}
+			</div>
 
-      {
-        groups.length === 0 && (
-          <div class="py-12 text-center">
-            <p class="text-muted-foreground">
-              No CTF entries yet. Add some to the entries array!
-            </p>
-          </div>
-        )
-      }
-    </div>
-  </section>
+			{
+				groups.length === 0 && (
+					<div class="py-12 text-center">
+						<p class="text-muted-foreground">
+							No CTF entries yet. Add some to the entries array!
+						</p>
+					</div>
+				)
+			}
+		</div>
+	</section>
 </Layout>
 
 <script>
-  // Search and filter functionality
-  const searchInput = document.getElementById('search') as HTMLInputElement
-  const clearFilters = document.getElementById(
-    'clearFilters',
-  ) as HTMLButtonElement
-  const resultCount = document.getElementById('resultCount') as HTMLSpanElement
-  const timelineItems = document.querySelectorAll('.timeline-item')
-  const monthGroups = document.querySelectorAll('.month-group')
-  const teamHelper = document.getElementById('teamHelper') as HTMLDivElement
+	// Search and filter functionality
+	const searchInput = document.getElementById('search') as HTMLInputElement
+	const clearFilters = document.getElementById(
+		'clearFilters',
+	) as HTMLButtonElement
+	const resultCount = document.getElementById(
+		'resultCount',
+	) as HTMLSpanElement
+	const timelineItems = document.querySelectorAll('.timeline-item')
+	const monthGroups = document.querySelectorAll('.month-group')
+	const teamHelper = document.getElementById('teamHelper') as HTMLDivElement
 
-  // Filter state
-  let selectedYear = ''
-  let selectedTeam = ''
-  let selectedTier = ''
+	// Filter state
+	let selectedYear = ''
+	let selectedTeam = ''
+	let selectedTier = ''
 
-  // Listen for custom events from the dropdown components
-  document.addEventListener('yearFilterChange', (event: any) => {
-    selectedYear = event.detail.value
-    filterItems()
-  })
+	// Listen for custom events from the dropdown components
+	document.addEventListener('yearFilterChange', (event: any) => {
+		selectedYear = event.detail.value
+		filterItems()
+	})
 
-  document.addEventListener('teamFilterChange', (event: any) => {
-    selectedTeam = event.detail.value
-    filterItems()
-  })
+	document.addEventListener('teamFilterChange', (event: any) => {
+		selectedTeam = event.detail.value
+		filterItems()
+	})
 
-  document.addEventListener('tierFilterChange', (event: any) => {
-    selectedTier = event.detail.value
-    filterItems()
-  })
+	document.addEventListener('tierFilterChange', (event: any) => {
+		selectedTier = event.detail.value
+		filterItems()
+	})
 
-  function parseQuery(raw: string) {
-    const text = raw.trim()
-    const tokens = []
-    const re = /(year|team|tier|top):("[^"]+"|'[^']+'|\([^\)]*\)|\S+)/gi
-    let match
-    while ((match = re.exec(text)) !== null) {
-      tokens.push({ key: match[1].toLowerCase(), value: match[2] })
-    }
+	function parseQuery(raw: string) {
+		const text = raw.trim()
+		const tokens = []
+		const re = /(year|team|tier|top):("[^"]+"|'[^']+'|\([^\)]*\)|\S+)/gi
+		let match
+		while ((match = re.exec(text)) !== null) {
+			tokens.push({ key: match[1].toLowerCase(), value: match[2] })
+		}
 
-    // Remove tokens from free text
-    const cleaned = text
-      .replace(re, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
+		// Remove tokens from free text
+		const cleaned = text
+			.replace(re, '')
+			.replace(/\s{2,}/g, ' ')
+			.trim()
 
-    const result = { search: cleaned, year: '', team: '', tier: '', top: '' }
-    for (const t of tokens) {
-      let val = t.value
-      if (
-        (val.startsWith('"') && val.endsWith('"')) ||
-        (val.startsWith("'") && val.endsWith("'")) ||
-        (val.startsWith('(') && val.endsWith(')'))
-      ) {
-        val = val.slice(1, -1)
-      }
-      if (t.key === 'year') result.year = val
-      if (t.key === 'team') result.team = val
-      if (t.key === 'tier') result.tier = val.toUpperCase()
-      if (t.key === 'top') result.top = val
-    }
-    return result
-  }
+		const result = {
+			search: cleaned,
+			year: '',
+			team: '',
+			tier: '',
+			top: '',
+		}
+		for (const t of tokens) {
+			let val = t.value
+			if (
+				(val.startsWith('"') && val.endsWith('"')) ||
+				(val.startsWith("'") && val.endsWith("'")) ||
+				(val.startsWith('(') && val.endsWith(')'))
+			) {
+				val = val.slice(1, -1)
+			}
+			if (t.key === 'year') result.year = val
+			if (t.key === 'team') result.team = val
+			if (t.key === 'tier') result.tier = val.toUpperCase()
+			if (t.key === 'top') result.top = val
+		}
+		return result
+	}
 
-  function filterItems() {
-    const parsed = parseQuery(searchInput.value)
-    const searchTerm = parsed.search.toLowerCase()
+	function filterItems() {
+		const parsed = parseQuery(searchInput.value)
+		const searchTerm = parsed.search.toLowerCase()
 
-    // Operators override dropdowns if provided
-    const effectiveYear = parsed.year || selectedYear
-    const effectiveTeam = parsed.team || selectedTeam
-    const effectiveTier = parsed.tier || selectedTier
-    const effectiveTop = parsed.top
+		// Operators override dropdowns if provided
+		const effectiveYear = parsed.year || selectedYear
+		const effectiveTeam = parsed.team || selectedTeam
+		const effectiveTier = parsed.tier || selectedTier
+		const effectiveTop = parsed.top
 
-    let visibleCount = 0
+		let visibleCount = 0
 
-    // First, filter individual items
-    timelineItems.forEach((item) => {
-      const name = item.getAttribute('data-name')?.toLowerCase() || ''
-      const year = item.getAttribute('data-year') || ''
-      const team = item.getAttribute('data-team') || ''
-      const rankStr = item.getAttribute('data-rank') || ''
-      const tier = item.getAttribute('data-tier') || ''
+		// First, filter individual items
+		timelineItems.forEach((item) => {
+			const name = item.getAttribute('data-name')?.toLowerCase() || ''
+			const year = item.getAttribute('data-year') || ''
+			const team = item.getAttribute('data-team') || ''
+			const rankStr = item.getAttribute('data-rank') || ''
+			const tier = item.getAttribute('data-tier') || ''
 
-      const matchesSearch = name.includes(searchTerm)
-      const matchesYear = !effectiveYear || year === effectiveYear
-      const matchesTeam = !effectiveTeam || team === effectiveTeam
+			const matchesSearch = name.includes(searchTerm)
+			const matchesYear = !effectiveYear || year === effectiveYear
+			const matchesTeam = !effectiveTeam || team === effectiveTeam
 
-      let matchesTier = true
-      const topNum = effectiveTop ? Number(effectiveTop) : NaN
-      if (effectiveTier) {
-        if (['SS', 'S', 'A', 'B', 'C', 'D', 'F'].includes(effectiveTier)) {
-          matchesTier = tier === effectiveTier
-        } else if (effectiveTier === 'TOP3') {
-          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 3
-        } else if (effectiveTier === 'TOP5') {
-          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 5
-        } else if (effectiveTier === 'TOP10') {
-          matchesTier =
-            !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 10
-        }
-      }
-      if (!Number.isNaN(topNum) && topNum > 0) {
-        matchesTier =
-          matchesTier &&
-          !!rankStr &&
-          Number(rankStr) > 0 &&
-          Number(rankStr) <= topNum
-      }
+			let matchesTier = true
+			const topNum = effectiveTop ? Number(effectiveTop) : NaN
+			if (effectiveTier) {
+				if (
+					['SS', 'S', 'A', 'B', 'C', 'D', 'F'].includes(effectiveTier)
+				) {
+					matchesTier = tier === effectiveTier
+				} else if (effectiveTier === 'TOP3') {
+					matchesTier =
+						!!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 3
+				} else if (effectiveTier === 'TOP5') {
+					matchesTier =
+						!!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 5
+				} else if (effectiveTier === 'TOP10') {
+					matchesTier =
+						!!rankStr &&
+						Number(rankStr) > 0 &&
+						Number(rankStr) <= 10
+				}
+			}
+			if (!Number.isNaN(topNum) && topNum > 0) {
+				matchesTier =
+					matchesTier &&
+					!!rankStr &&
+					Number(rankStr) > 0 &&
+					Number(rankStr) <= topNum
+			}
 
-      if (matchesSearch && matchesYear && matchesTeam && matchesTier) {
-        item.classList.remove('hidden')
-        visibleCount++
-      } else {
-        item.classList.add('hidden')
-      }
-    })
+			if (matchesSearch && matchesYear && matchesTeam && matchesTier) {
+				item.classList.remove('hidden')
+				visibleCount++
+			} else {
+				item.classList.add('hidden')
+			}
+		})
 
-    // Then, hide/show month groups based on whether they have visible items
-    monthGroups.forEach((group) => {
-      const visibleItemsInGroup = group.querySelectorAll(
-        '.timeline-item:not(.hidden)',
-      )
-      if (visibleItemsInGroup.length === 0) {
-        group.classList.add('hidden')
-      } else {
-        group.classList.remove('hidden')
-      }
-    })
+		// Then, hide/show month groups based on whether they have visible items
+		monthGroups.forEach((group) => {
+			const visibleItemsInGroup = group.querySelectorAll(
+				'.timeline-item:not(.hidden)',
+			)
+			if (visibleItemsInGroup.length === 0) {
+				group.classList.add('hidden')
+			} else {
+				group.classList.remove('hidden')
+			}
+		})
 
-    resultCount.textContent = `${visibleCount} CTF${visibleCount !== 1 ? 's' : ''}`
+		resultCount.textContent = `${visibleCount} CTF${visibleCount !== 1 ? 's' : ''}`
 
-    // Toggle helper visibility when query includes team:
-    if (/\bteam:\s*/i.test(searchInput.value)) {
-      teamHelper?.classList.remove('hidden')
-    } else {
-      teamHelper?.classList.add('hidden')
-    }
-  }
+		// Toggle helper visibility when query includes team:
+		if (/\bteam:\s*/i.test(searchInput.value)) {
+			teamHelper?.classList.remove('hidden')
+		} else {
+			teamHelper?.classList.add('hidden')
+		}
+	}
 
-  function clearAllFilters() {
-    searchInput.value = ''
-    selectedYear = ''
-    selectedTeam = ''
-    selectedTier = ''
+	function clearAllFilters() {
+		searchInput.value = ''
+		selectedYear = ''
+		selectedTeam = ''
+		selectedTier = ''
 
-    // Dispatch events to reset dropdowns
-    document.dispatchEvent(new CustomEvent('clearFilters'))
+		// Dispatch events to reset dropdowns
+		document.dispatchEvent(new CustomEvent('clearFilters'))
 
-    filterItems()
-  }
+		filterItems()
+	}
 
-  searchInput.addEventListener('input', filterItems)
-  clearFilters.addEventListener('click', clearAllFilters)
+	searchInput.addEventListener('input', filterItems)
+	clearFilters.addEventListener('click', clearAllFilters)
 </script>
