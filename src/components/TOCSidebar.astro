@@ -63,7 +63,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                               ? `/blog/${parentId}#${heading.slug}`
                               : `#${heading.slug}`
                           }
-                          class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+                          class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit rounded px-2 py-1 -mx-2"
                           data-heading-link={heading.slug}
                         >
                           {heading.text}
@@ -93,7 +93,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                               ? '#'
                               : `/blog/${section.subpostId}`
                           }
-                          class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+                          class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit rounded px-2 py-1 -mx-2"
                           data-heading-link={
                             section.subpostId === currentPostId
                               ? 'top'
@@ -119,7 +119,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                                 ? `#${heading.slug}`
                                 : `/blog/${section.subpostId}#${heading.slug}`
                             }
-                            class="marker:text-foreground/30 hover:text-foreground/60 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+                            class="marker:text-foreground/30 hover:text-foreground/60 list-none underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit rounded px-2 py-1 -mx-2"
                             data-heading-link={
                               section.subpostId === currentPostId
                                 ? heading.slug
@@ -250,7 +250,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
   class TOCLinks {
     static update(headingIds: string[]) {
       state.links.forEach((link) => {
-        link.classList.remove('text-foreground')
+        link.classList.remove('text-foreground', 'bg-accent', 'border-l-2', 'border-primary', 'pl-2')
       })
 
       headingIds.forEach((id) => {
@@ -259,7 +259,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
             `#toc-sidebar-container [data-heading-link="${id}"]`,
           )
           if (activeLink) {
-            activeLink.classList.add('text-foreground')
+            activeLink.classList.add('text-foreground', 'bg-accent', 'border-l-2', 'border-primary', 'pl-2')
           }
         }
       })
