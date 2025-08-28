@@ -3,31 +3,22 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import FilterDropdowns from '@/components/ui/FilterDropdowns'
 import Layout from '@/layouts/Layout.astro'
+import {
+  getTierBadgeClasses,
+  getTierFromRank,
+  MONTHS,
+  parsePlacementNumber,
+} from '@/lib/history-utils'
 import { TEAM_URLS } from '@/lib/team-utils'
-import { getCollection } from 'astro:content'
 import { Icon } from 'astro-icon/components'
-
-const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
+import { getCollection } from 'astro:content'
 
 const ctfCollection = await getCollection('ctfs')
 const entries = ctfCollection.map((entry) => ({ id: entry.id, ...entry.data }))
 
-const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
-
 type Group = { year: number; month: number; items: typeof entries }
+
+const sorted = [...entries].sort((a, b) => b.year - a.year || b.month - a.month)
 
 const groupsMap = new Map<string, Group>()
 for (const e of sorted) {
@@ -51,47 +42,6 @@ const uniqueYears = Array.from(new Set(entries.map((e) => e.year))).sort(
 const uniqueTeams = Array.from(
   new Set(entries.filter((e) => e.team).map((e) => e.team)),
 ).sort()
-
-// Helpers to derive placement rank and tier
-function parsePlacementNumber(placement: string | undefined): number | null {
-  if (!placement) return null
-  const match = placement.match(/\d+/)
-  if (!match) return null
-  const n = Number(match[0])
-  return Number.isFinite(n) ? n : null
-}
-
-function getTierFromRank(rank: number | null): 'SS' | 'S' | 'A' | 'B' | 'C' | 'D' | 'F' {
-  if (rank == null) return 'F'
-  if (rank <= 3) return 'SS'
-  if (rank <= 5) return 'S'
-  if (rank <= 10) return 'A'
-  if (rank <= 25) return 'B'
-  if (rank <= 50) return 'C'
-  if (rank <= 100) return 'D'
-  return 'F'
-}
-
-function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
-  switch (tier) {
-    case 'SS':
-      return 'bg-rose-100 text-rose-800 border border-rose-300/60 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800'
-    case 'S':
-      return 'bg-orange-100 text-orange-800 border border-orange-300/60 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
-    case 'A':
-      return 'bg-amber-100 text-amber-900 border border-amber-300/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800'
-    case 'B':
-      return 'bg-sky-100 text-sky-800 border border-sky-300/60 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800'
-    case 'C':
-      return 'bg-blue-100 text-blue-800 border border-blue-300/60 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
-    case 'D':
-      return 'bg-indigo-100 text-indigo-800 border border-indigo-300/60 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800'
-    case 'F':
-      return 'bg-zinc-100 text-zinc-800 border border-zinc-300/60 dark:bg-zinc-900/30 dark:text-zinc-300 dark:border-zinc-800'
-    default:
-      return 'bg-muted text-muted-foreground border border-border'
-  }
-}
 ---
 
 <Layout class="max-w-3xl">
@@ -127,7 +77,7 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
       class="mt-4 rounded-lg border border-amber-200/70 bg-amber-50/80 p-4 dark:border-amber-800/50 dark:bg-amber-950/40"
     >
       <div class="flex items-start gap-3">
-        <Icon name="lucide:info" class="text-muted-foreground h-5 w-5 mt-0.5" />
+        <Icon name="lucide:info" class="text-muted-foreground mt-0.5 h-5 w-5" />
         <div class="space-y-2 text-sm">
           <p>
             <strong>Sorting:</strong> CTFs are sorted by month/year, but probably
@@ -163,8 +113,9 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
         <div class="text-sm">
           <strong>Tip:</strong> Click a CTF name to open its detail page. You can
           also search & filter here. Try query operators like
-          <code>year:2025</code>, <code>team:BCA</code>, <code>tier:A</code>,
-          or <code>top:10</code>.
+          <code>year:2025</code>, <code>team:BCA</code>, <code>tier:A</code>, or <code
+            >top:10</code
+          >.
         </div>
       </div>
 
@@ -196,9 +147,11 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
             Clear filters
           </button>
         </div>
-        <div id="teamHelper" class="text-muted-foreground text-xs hidden">
+        <div id="teamHelper" class="text-muted-foreground hidden text-xs">
           Names with spaces: use quotes or parentheses, e.g.
-          <code>team:&quot;Cosmic Squid&quot;</code> or <code>team:(Cosmic Squid)</code>.
+          <code>team:&quot;Cosmic Squid&quot;</code> or <code
+            >team:(Cosmic Squid)</code
+          >.
         </div>
       </div>
     </div>
@@ -237,7 +190,9 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
                       <div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
                       <div class="flex items-start gap-2">
                         {/* Tier badge at the far left of content block */}
-                        <span class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}>
+                        <span
+                          class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}
+                        >
                           {tier}
                         </span>
                         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -329,12 +284,19 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
     }
 
     // Remove tokens from free text
-    const cleaned = text.replace(re, '').replace(/\s{2,}/g, ' ').trim()
+    const cleaned = text
+      .replace(re, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
 
     const result = { search: cleaned, year: '', team: '', tier: '', top: '' }
     for (const t of tokens) {
       let val = t.value
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'")) || (val.startsWith('(') && val.endsWith(')'))) {
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'")) ||
+        (val.startsWith('(') && val.endsWith(')'))
+      ) {
         val = val.slice(1, -1)
       }
       if (t.key === 'year') result.year = val
@@ -379,11 +341,16 @@ function getTierBadgeClasses(tier: ReturnType<typeof getTierFromRank>): string {
         } else if (effectiveTier === 'TOP5') {
           matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 5
         } else if (effectiveTier === 'TOP10') {
-          matchesTier = !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 10
+          matchesTier =
+            !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= 10
         }
       }
       if (!Number.isNaN(topNum) && topNum > 0) {
-        matchesTier = matchesTier && !!rankStr && Number(rankStr) > 0 && Number(rankStr) <= topNum
+        matchesTier =
+          matchesTier &&
+          !!rankStr &&
+          Number(rankStr) > 0 &&
+          Number(rankStr) <= topNum
       }
 
       if (matchesSearch && matchesYear && matchesTeam && matchesTier) {
