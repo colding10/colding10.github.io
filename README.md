@@ -1,8 +1,12 @@
-# hi
+# Welcome to my blog!
+
+This blog is built upon the theme [astro-erudite](https://github.com/jktrn/astro-erudite).
 
 ## licensing
 
 ### Template/blog code is MIT licensed.
+
+Feel free to use and modify it.
 
 ---
 
