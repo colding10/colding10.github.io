@@ -38,7 +38,7 @@ export default defineConfig({
         },
       },
       styleOverrides: {
-        codeFontSize: '0.75rem',
+        codeFontSize: '0.85rem',
         borderColor: 'var(--border)',
         codeFontFamily: 'var(--font-mono)',
         codeBackground:
