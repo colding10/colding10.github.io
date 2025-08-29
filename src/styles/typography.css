@@ -35,8 +35,8 @@
 		}
 
 		:where(h1, h2, h3, h4, h5, h6):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply text-foreground scroll-mt-32 font-medium xl:scroll-mt-20;
 		}
 
@@ -58,8 +58,8 @@
 		}
 
 		:where(h5, h6):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply mt-5 mb-3;
 		}
 
@@ -68,8 +68,8 @@
 		}
 
 		:where(strong):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply text-foreground font-medium;
 		}
 
@@ -87,8 +87,8 @@
 		}
 
 		:where(ul ul, ol ol, ul ol, ol ul):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply marker:text-foreground/30 my-2 ml-6;
 		}
 
@@ -100,8 +100,8 @@
 
 		/* Code blocks - use medium weight for better readability in long code */
 		:where(pre code, .expressive-code code):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			font-size: 1em;
 			font-weight: 500 !important;
 			letter-spacing: 0;
@@ -109,8 +109,8 @@
 		}
 
 		:where(blockquote):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply [&_*]:text-muted-foreground small my-6 border-l-2 pl-6;
 		}
 
@@ -119,14 +119,14 @@
 		}
 
 		:where(table):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply mx-auto my-6 block max-w-fit overflow-x-auto text-sm;
 		}
 
 		:where(thead):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply border-muted-foreground/30 border-b;
 		}
 
@@ -145,8 +145,8 @@
 		}
 
 		:where(img, video, figure, .expressive-code):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply mx-auto my-6;
 		}
 
@@ -155,8 +155,8 @@
 		}
 
 		:where(summary):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply [&~*]:small [&~*>*]:first:mt-0! [&~*>*]:last:mb-0!;
 		}
 
@@ -165,8 +165,8 @@
 		}
 
 		:where(.katex-display):not(
-				:where([class~='not-prose'], [class~='not-prose'] *)
-			) {
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			@apply text-foreground/80 my-6 overflow-x-auto overflow-y-hidden py-2 tracking-normal;
 		}
 	}
