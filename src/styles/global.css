@@ -109,7 +109,7 @@
 	--border: oklch(0.25 0.02 250);
 	--ring: oklch(0.5 0.05 250);
 
-	/* Clean Blue-Tinted Gradients */
+	/* Blue-Tinted Gradients */
 	--gradient-accent-start: oklch(0.3 0.46 245);
 	--gradient-accent-end: oklch(0.4 0.44 255);
 	--gradient-subtle-start: oklch(0.14 0.42 248);
@@ -127,7 +127,6 @@
 		@apply border-border outline-ring/50 tracking-tight;
 	}
 
-	/* Clean background */
 	html {
 		background: var(--background);
 	}
