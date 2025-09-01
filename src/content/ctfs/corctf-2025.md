@@ -11,5 +11,5 @@ review: |
 quality: 9/10
 wouldPlayAgain: yes
 notes: |
-  - Ngl I only did some easy rev then skillissued on boat_vm. At least I learned a lot about VM rev from working on boat_vm with DisplayGFX + dudcom. Also hopefully the part of dudcom's body that got injured (those who know) is better now lol
+  - Ngl I only did some easy rev then skillissued on boat_vm. At least I learned a lot about VM rev from working on boat_vm with DisplayGFX + dudcom. Also hopefully the part of dudcom's body that got injured (those who know) is better now lol.
 ---
