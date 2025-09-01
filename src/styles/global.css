@@ -8,7 +8,11 @@
 		'Liberation Mono', 'Courier New', monospace, 'Apple Color Emoji',
 		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 	--font-mono:
-		'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Fira Code', 'Fira Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace, 'Apple Color Emoji',
+		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+	--font-code:
+		'Fira Code', 'Fira Mono', 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
 		'Liberation Mono', 'Courier New', monospace, 'Apple Color Emoji',
 		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
@@ -64,6 +68,38 @@
 @font-face {
 	font-family: 'JetBrains Mono';
 	src: url('/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/fonts/FiraCode-Light.woff2') format('woff2');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/fonts/FiraCode-Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/fonts/FiraCode-Medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/fonts/FiraCode-Bold.woff2') format('woff2');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
@@ -183,5 +219,10 @@
 			color: var(--foreground);
 			background: none;
 		}
+	}
+
+	/* Code font utility */
+	.font-code {
+		font-family: var(--font-code);
 	}
 }
