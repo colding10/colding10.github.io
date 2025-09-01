@@ -12,4 +12,5 @@ quality: 7/10
 wouldPlayAgain: yes
 notes: |
   - Idk anymore its been too long
+  - I think lore was pretty cool they had like lore on challs
 ---

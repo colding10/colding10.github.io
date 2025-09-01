@@ -11,5 +11,6 @@ review: |
 quality: 7/10
 wouldPlayAgain: yes
 notes: |
-  - OSINT was fun, also I remember an AI chall that graded you based on percentage right, so I cheesed by sending one at a time to see which ones are right
+  - OSINT was fun
+  - I remember an AI chall that graded you based on percentage correct on a classification, so I cheesed by sending one at a time to see which ones are right (it was binary yes/no classification)
 ---

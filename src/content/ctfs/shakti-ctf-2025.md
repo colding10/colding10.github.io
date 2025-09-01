@@ -11,5 +11,6 @@ review: |
 quality: 7/10
 wouldPlayAgain: yes
 notes: |
-  - Played as WomenInCTF and I solved a vm rev. Idk abt the rest ngl
+  - Played as WomenInCTF and I solved a vm rev. It was easy though since it had a register that made sidechannel easy
+  - Idk abt the rest tbh
 ---

@@ -12,4 +12,5 @@ quality: 4/10
 wouldPlayAgain: no
 notes: |
   - tien and i played this while in school and stuff
+  - one of the many times we "had the cash in locks" then "sold the bag" (ie we were top 3 -> prize but then fell off)
 ---

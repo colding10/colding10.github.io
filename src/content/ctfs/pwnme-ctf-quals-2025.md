@@ -11,5 +11,5 @@ review: |
 quality: 7/10
 wouldPlayAgain: yes
 notes: |
-  - Idk tbh
+  - Honestly have no clue cuz it was so so long ago
 ---

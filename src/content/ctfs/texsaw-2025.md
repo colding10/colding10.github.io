@@ -12,5 +12,6 @@ quality: 8/10
 wouldPlayAgain: yes
 notes: |
   - We got first podium finish and also tien owes me a Brawl Pass for solving Ocaml rev last minute
+  - GS's Reinventing the Wheel solve was orz. Go read it here https://bingchillingacademies.vercel.app/writeups/texsaw2025/reinventingwheel
 writeupUrl: /blog/texsawctf2025
 ---

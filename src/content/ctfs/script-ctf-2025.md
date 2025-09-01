@@ -13,5 +13,6 @@ quality: 8/10
 wouldPlayAgain: yes
 notes: |
   - We full cleared everything except for the Blockchain; only UofT solved that one
+  - Won a Hex-Rays t shirt, Hex-Rays notebook, HTB+ 1yr subscription, and 150/4 = 37.5 dollars
 writeupUrl: "/blog/scriptctf2025"
 ---

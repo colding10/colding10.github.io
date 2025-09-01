@@ -11,6 +11,6 @@ review: |
 quality: 7/10
 wouldPlayAgain: yes
 notes: |
-  - There was this one rev which was pretty cool.
+  - There was this one rev which was pretty cool. It was like about syscalls or smth
 writeupUrl: /blog/nahamcon2025
 ---

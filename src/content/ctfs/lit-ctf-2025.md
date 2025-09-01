@@ -11,5 +11,6 @@ review: |
 quality: 7/10
 wouldPlayAgain: yes
 notes: |
-  - I kinda didn't play ctf at all this weekend (and i should have been doing hitcon mb), but for what it's worth i wasn't doing LIT either tbh
+  - I kinda didn't play ctf at all this weekend (and i should have been doing hitcon mb), but for what it's worth i wasn't really doing LIT either tbh
+  - Just vibe solved a few "hard" rev and gave up on everything else. Sniped easy challs with vibe skills again
 ---

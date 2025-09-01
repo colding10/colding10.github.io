@@ -12,4 +12,5 @@ quality: 9/10
 wouldPlayAgain: yes
 notes: |
   - Idk tbh, kinda forgot everything
+  - I was going to solve rev/dna which was VM i think but i didnt have time
 ---

@@ -11,5 +11,6 @@ review: |
 quality: 5/10
 wouldPlayAgain: yes
 notes: |
+  - This was a CTF for New Jersey high schoolers only i believe. Pretty easy challs since pretty much everyone has never done ctf before
   - Most things I did was just chatgpt if im being 100% honest. I did try to start learning ctf tho. Also there was no rev
 ---

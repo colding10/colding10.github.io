@@ -12,5 +12,6 @@ quality: 7/10
 wouldPlayAgain: yes
 notes: |
   - Piotr Sultanbekov or smth was funny
+  - Molly the GOAT.
 writeupUrl: /blog/sdctf2025
 ---

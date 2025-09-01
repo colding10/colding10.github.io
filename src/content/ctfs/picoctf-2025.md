@@ -12,4 +12,5 @@ quality: 9/10
 wouldPlayAgain: yes
 notes: |
   - I didn't really know jack abt ctf, hopefully next year I can cook
+  - PicoCTF 2026 leaderboard :pray:
 ---

@@ -12,4 +12,5 @@ quality: 7/10
 wouldPlayAgain: yes
 notes: |
   - pretty fun i think
+  - up until this point i used Ghidra (badly) now I tried out IDA
 ---
