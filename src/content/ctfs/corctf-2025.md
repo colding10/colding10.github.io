@@ -14,4 +14,5 @@ notes: |
   - Ngl I only did some easy rev then skillissued on boat_vm. At least I learned a lot about VM rev from working on boat_vm with DisplayGFX + dudcom.
   - Hopefully the part of dudcom's body that got injured (those who know) is better now lol.
   - After this CTF, I set up ida pro mcp server and a mcp client :skull:. Fully converted to the dark side.
+writeupUrl: "/blog/corctf2025"
 ---
