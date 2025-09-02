@@ -129,6 +129,7 @@
 
 	html {
 		background: var(--background);
+		scrollbar-gutter: stable;
 	}
 	
 	[data-theme='dark'] html {

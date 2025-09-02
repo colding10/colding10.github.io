@@ -44,7 +44,7 @@ const uniqueTeams = Array.from(
 ).sort()
 ---
 
-<Layout class="max-w-3xl">
+<Layout class="max-w-3xl overflow-x-hidden">
 	<PageHead
 		slot="head"
 		title="CTF History"
@@ -217,7 +217,7 @@ const uniqueTeams = Array.from(
 												>
 													{tier}
 												</span>
-												<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+												<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
 													<a
 														href={`/history/${encodeURIComponent(e.id)}`}
 														class="text-primary font-medium transition-colors duration-200 hover:underline"
