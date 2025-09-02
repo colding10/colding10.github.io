@@ -19,7 +19,7 @@ const { entry } = Astro.props
 const data = entry.data
 ---
 
-<Layout class="max-w-4xl">
+<Layout class="max-w-3xl">
 	<PageHead
 		slot="head"
 		title={`${data.name} (${data.year})`}
@@ -43,7 +43,7 @@ const data = entry.data
 				</div>
 				<div class="flex flex-wrap gap-3">
 					<span
-						class="bg-secondary text-secondary-foreground inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium"
+						class="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium"
 					>
                         <span class="mr-2"><Icon name="lucide:award"/> </span>
 						{data.placement}
@@ -55,12 +55,12 @@ const data = entry.data
 									href={getTeamUrl(data.team)!}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+									class="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer ring-2 ring-transparent hover:ring-blue-300 dark:hover:ring-blue-700"
 								>
                         <span class="mr-2"><Icon name="lucide:users"/></span> {data.team}
 								</a>
 							) : (
-								<span class="bg-secondary text-secondary-foreground inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium">
+								<span class="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium">
 									<span class="mr-2"><Icon name="lucide:users"/></span> {data.team}
 								</span>
 							))
