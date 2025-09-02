@@ -1,0 +1,171 @@
+---
+title: 'corCTF 2025'
+description: 'writeups from corCTF 2025'
+date: 2025-09-01
+tags: ['writeups', 'forensics']
+authors: ['cold']
+image: ./logo.png
+---
+
+# Introduction
+
+This CTF I played with [Squid Proxy Lovers](https://ctftime.org/team/222966/). I think the active team was *slightly* smaller, but we still did manage to get 8th, but mostly cuz other orz ppl carried. Here I'll write about the only **forensics** chall of the CTF.
+
+*Generally, I try not to write about absolutely free challs cuz its boring. But I also don't really like to write about stuff that I got hard carried on cuz that's no fun. Although this chall DisplayGFX helped at the end I feel like I know enough to have fun writing it at least.*
+
+---
+
+## forensics/Nintendo-SSwitch
+
+
+> Just get the flag dummy.
+> by @plastic
+
+### Scoping out the chall
+
+The challenge also provided an instancer and a method to connect to a remote machine via `ssh`. Upon connecting, it appears pretty normal and there isn't really anything interesting.
+
+Personally, I don't like to use `sh`, and on this system there was `bash`, so I switched to `bash` right away.
+
+### Finding challenge-relevant files
+
+I checked out the home folder and stuff but there wasn't anything interesting. In cases like these, forensics challs generally have some artifacts placed by the author. To find these, the best method in my opinion is to search for files that have ctf-related names. Also I'm too lazy to use `find` flags and this works so shoot me:
+
+```bash
+$ cd /
+$ find | grep flag
+$ find | grep ctf
+```
+
+In this challenge, these files were discovered:
+
+```bash
+$ find | grep flag
+./opt/ctf/flag.blob
+```
+
+```bash
+$ find | grep ctf
+./usr/lib/x86_64-linux-gnu/libnss_ctf.so.2
+```
+
+The fact that we have a `libnss_ctf.so.2` lines up with the challenge title which references NSS. From here, I also decided to check out stuff with `nss`:
+
+```bash
+$ find | grep nss
+./etc/nsswitch.conf
+$ cat ./etc/nsswitch.conf
+passwd: files ctf
+shadow: files
+hosts:  files dns
+```
+
+To learn more about this `nsswitch` I used the Linux manpages, you can find them online [here](https://man7.org/linux/man-pages/man5/nsswitch.conf.5.html).
+
+To summarize it acts as a method of resolving how certain system databases (like users, passwords, hosts) are looked up on Linux. The `nsswitch.conf` file lets you specify the order and sources for these lookups like local files, DNS, or even custom modules.
+
+For example, the line:
+```
+passwd: files ctf
+```
+
+means that when the system tried to look up user information (like with `getent passwd`), it first checks local files (like `/etc/passwd`), and then tried the `ctf` source, which is provided by the custom `libnss_ctf.so.2` file we found earlier!
+
+This is interesting because it means the challenge wants us to interact with the NSS system in some way, perhaps the flag is hidden behind a user entry that only shows up when using the "ctf" module. So, instead of just looking for files, we might need to use commands like `getent passwd` or similar to trigger the custom NSS logic and reveal the flag.
+
+### What about the flag.blob?
+
+The `flag.blob` file is likely where the actual flag is stored, but it’s not meant to be read directly. Instead, the custom NSS module (`libnss_ctf.so.2`) is probably programmed to read `flag.blob` and expose its contents through NSS lookups—such as when you run `getent passwd` or similar commands.
+
+To summarize how it works:
+
+- The `nsswitch.conf` file tells the system to use the "ctf" source for user lookups.
+- The custom `libnss_ctf.so.2` library implements this "ctf" source.
+- When you run a command like `getent passwd`, the system loads the "ctf" module, which might read `flag.blob` and present its contents as a fake user entry or in some other way.
+- This means the flag is hidden behind the NSS mechanism, and you need to trigger the right lookup (not just read the file) to see it.
+
+But it's important to realize that the `.blob` isn't just the flag as plaintext. More likely its encrypted in a way that the `libnss_ctf.so.2` decodes.
+
+### Reverse engineering libnss_ctf.so.2
+
+To get it off the remote box and analyze it locally I just base64-encoded it and decoded it locally. Once again, I am sure there are cleaner methods, but if it works it works.
+
+```bash
+$ file libnss_ctf.so.2 
+libnss_ctf.so.2: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=1daa20122158288ea7c5c59ce61a47fec78efe3b, stripped
+```
+
+So I got it out nicely. Then I simply loaded it into IDA Pro. There are three functions of interest I'll explain here:
+
+#### get_blob_path
+
+```c
+char *get_blob_path()
+{
+  unsigned __int64 v1; // [rsp+0h] [rbp-20h]
+  _QWORD v2[2]; // [rsp+8h] [rbp-18h]
+  unsigned int i; // [rsp+1Ch] [rbp-4h]
+
+  v1 = 0xCCDEC985DEDAC585LL;
+  v2[0] = 0xC6C884CDCBC6CC85LL;
+  *(v2 + 7) = -1429682746;
+  for ( i = 0; i <= 0x12; ++i )
+    byte_4090[i] = *(&v2[-1] + i) ^ 0xAA;
+  return byte_4090;
+}
+```
+
+With some trivial rev skills we find that `get_blob_path` is returing the path of the blob to decrypt, and it XORs some stuff and eventually returns the string `/opt/ctf/flag.blob`! This is great since it means it's actually reading `flag.blob` like we expected!
+
+#### get_outfile
+
+```c
+char *get_outfile()
+{
+  char *v1; // [rsp+0h] [rbp-12h] BYREF
+  unsigned int v2; // [rsp+Eh] [rbp-4h]
+
+  strcpy(&v1, "z!8%z3942{!-!U");
+  BYTE1(v2) = 0;
+  HIWORD(v2) = 0;
+  while ( v2 <= 0xD )
+  {
+    byte_40A8[v2] = *(&v1 + v2) ^ 0x55;
+    ++v2;
+  }
+  return byte_40A8;
+}
+```
+
+This one is really similar and does another XOR decrypt, returing the string `/tmp/flag.txt`. So we should expect something written (the flag, hopefully) to `/tmp/flag.txt`!
+
+#### get_trigger_user
+
+```c
+char *get_trigger_user()
+{
+  __int64 v1; // [rsp+1h] [rbp-Dh]
+  char v2; // [rsp+9h] [rbp-5h]
+  unsigned int i; // [rsp+Ah] [rbp-4h]
+
+  v1 = 0x101B111A0B111611LL;
+  v2 = 127;
+  for ( i = 0; i <= 8; ++i )
+    byte_40B8[i] = *(&v1 + i) ^ 0x7F;
+  return byte_40B8;
+}
+```
+
+This one does yet another XOR, returing the string `nintendo`. Okay, so it looks like the **trigger user is `nintendo`**, so let's trigger a lookup for the user `nintendo`!
+
+### Getting the flag
+
+With all three pieces of the puzzle in hand, we can log back into the remote machine and run the command `getent passwd nintendo` to trigger a lookup in `passwd` for the user `nintendo`. Since `ctf` is an entry in `nsswitch.conf`, this will be handled by `libnss_ctf.sol.2`, and since we used the user `nintendo`, it'll actually run the decryption on `flag.blob`!
+
+```bash
+$ getent passwd nintendo
+$ cat /tmp/flag.txt
+corctf{nsswitch_can_be_sneaky_sometimes_i_guess_idk}
+```
+
+and that's it for this challenge.
