@@ -14,8 +14,19 @@ function Separator({
 			data-slot="separator-root"
 			decorative={decorative}
 			orientation={orientation}
+			style={{
+				// Inline fallback colors to ensure immediate rendering
+				backgroundColor: '#d6d3c9', // Light theme fallback
+				// CSS custom property with fallback
+				backgroundColor: 'var(--border, #d6d3c9)',
+				// Ensure proper rendering before CSS variables load
+				borderColor: '#d6d3c9',
+				borderColor: 'var(--border, #d6d3c9)',
+			}}
 			className={cn(
 				'bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px',
+				// Additional classes for enhanced robustness
+				'[&[data-theme="dark"]]:bg-[#3f3c49] [data-theme="dark"] &:bg-[#3f3c49]',
 				className,
 			)}
 			{...props}
