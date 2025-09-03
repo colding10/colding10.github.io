@@ -11,9 +11,8 @@ image: ./logo.png
 
 Yet another random small(ish) ctf that I played. This one also had a lot of fun osint that we blooded(?)/did pretty well on. But I forgot to write about it. Just remember @tien rambling about Molly.
 
-## Rev
+## Rev/Constant Folding
 
-### Constant Folding
 
 > I just finished writing my very own super secret encryption program. I'm so confident in its security that I'll give you the binary and the output of my program! Bet you can't figure out the secret I gave it >:)
 >
@@ -194,7 +193,7 @@ The binary contains a few key functions:
 
 It's trivial to attempt a brute force. But, the brute-force method is clearly inefficient, so we analyze and reverse the operations.
 
-## Understanding Shuffle
+### Understanding Shuffle
 
 `SHUFFLE_INDICES[i] = (i * 17) % 96` for `i` in `0..95`
 
