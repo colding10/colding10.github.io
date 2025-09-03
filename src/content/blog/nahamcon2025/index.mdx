@@ -268,8 +268,6 @@ once we feed that password into the binary we get the flag:
 
 > Astronomical.
 
-## Solvepath
-
 the challenge gives you a nc connection to a server. in this server we have the options to move around in 3D, there are rooms with IDs.
 
 the challenge premise is that you can move into any room, but if the room id (which looks like 049-125-625) has any numbers that are any number raised to a power (a "perfect exponent"), then it will kill you instantly. note that the example room id is deadly for sure cuz $49 = 7^2, 125 = 5^3, 625 = 5^4$. we needed to navigate to a certain spot so a pwntools script does it.
