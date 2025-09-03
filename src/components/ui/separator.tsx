@@ -16,11 +16,7 @@ function Separator({
 			orientation={orientation}
 			style={{
 				// Inline fallback colors to ensure immediate rendering
-				backgroundColor: '#d6d3c9', // Light theme fallback
-				// CSS custom property with fallback
 				backgroundColor: 'var(--border, #d6d3c9)',
-				// Ensure proper rendering before CSS variables load
-				borderColor: '#d6d3c9',
 				borderColor: 'var(--border, #d6d3c9)',
 			}}
 			className={cn(
