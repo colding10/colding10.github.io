@@ -127,6 +127,15 @@
 		@apply border-border outline-ring/50 tracking-tight;
 	}
 
+	/* Immediate header border - prevents FOUC and extension interference */
+	.sticky-header {
+		border-bottom: 1px solid #d6d3c9 !important;
+	}
+
+	[data-theme='dark'] .sticky-header {
+		border-bottom: 1px solid #3f3c49 !important;
+	}
+
 	html {
 		background: var(--background);
 		scrollbar-gutter: stable both-edges;
@@ -182,19 +191,32 @@
 		border-top-color: var(--border, #3f3c49);
 	}
 
-	/* Specific header targeting for robustness */
+	/* Specific header targeting for robustness - Extension-proof */
 	header,
 	.sticky.top-0.z-50.divide-y.border-b,
-	.bg-background\/95.border-border.sticky.border-b {
+	.bg-background\/95.border-border.sticky.border-b,
+	.sticky-header,
+	.sticky-header.bg-background\/95.border-border.sticky.border-b {
 		border-bottom: 1px solid #d6d3c9 !important;
 		border-bottom: 1px solid var(--border, #d6d3c9) !important;
 	}
 
 	[data-theme='dark'] header,
 	[data-theme='dark'] .sticky.top-0.z-50.divide-y.border-b,
-	[data-theme='dark'] .bg-background\/95.border-border.sticky.border-b {
+	[data-theme='dark'] .bg-background\/95.border-border.sticky.border-b,
+	[data-theme='dark'] .sticky-header,
+	[data-theme='dark'] .sticky-header.bg-background\/95.border-border.sticky.border-b {
 		border-bottom: 1px solid #3f3c49 !important;
 		border-bottom: 1px solid var(--border, #3f3c49) !important;
+	}
+
+	/* Ultra-high specificity for extension interference */
+	html body .sticky-header.bg-background\/95.border-border.sticky.border-b {
+		border-bottom: 1px solid #d6d3c9 !important;
+	}
+
+	html body[data-theme='dark'] .sticky-header.bg-background\/95.border-border.sticky.border-b {
+		border-bottom: 1px solid #3f3c49 !important;
 	}
 
 	/* Footer specific targeting */

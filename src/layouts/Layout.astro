@@ -23,9 +23,10 @@ const { class: className } = Astro.props
 	</Head>
 	<body class="prevent-shift">
 		<div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
-			<div
-				class="bg-background/95 border-border sticky-header sticky top-0 z-50 divide-y border-b backdrop-blur-md xl:divide-none"
-			>
+		<div
+			class="bg-background/95 border-border sticky-header sticky top-0 z-50 divide-y border-b backdrop-blur-md xl:divide-none"
+			style="border-bottom: 1px solid #d6d3c9; border-bottom-color: var(--border, #d6d3c9);"
+		>
 				<Header />
 				<slot name="subposts-navigation" />
 				<slot name="table-of-contents" />
@@ -72,5 +73,36 @@ const { class: className } = Astro.props
 		}
 
 		window.addEventListener('mousemove', handleMouseMove, { passive: true })
+
+		// Ensure header border is always visible (extension-proof)
+		function ensureHeaderBorder() {
+			const headerContainer = document.querySelector('.sticky-header')
+			if (headerContainer && headerContainer instanceof HTMLElement) {
+				const computedStyle = window.getComputedStyle(headerContainer)
+				const borderBottom = computedStyle.borderBottom
+				
+				// If border is not visible or has no width, force it
+				if (!borderBottom || borderBottom === '0px none rgb(0, 0, 0)' || borderBottom.includes('0px')) {
+					const isDark = html.getAttribute('data-theme') === 'dark'
+					const borderColor = isDark ? '#3f3c49' : '#d6d3c9'
+					headerContainer.style.setProperty('border-bottom', `1px solid ${borderColor}`, 'important')
+				}
+			}
+		}
+
+		// Run immediately and after a short delay to catch extension interference
+		ensureHeaderBorder()
+		setTimeout(ensureHeaderBorder, 100)
+		setTimeout(ensureHeaderBorder, 500)
+
+		// Also run when theme changes
+		const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+				if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+					setTimeout(ensureHeaderBorder, 50)
+				}
+			})
+		})
+		observer.observe(html, { attributes: true, attributeFilter: ['data-theme'] })
 	})
 </script>
