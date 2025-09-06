@@ -49,7 +49,7 @@ const { class: className } = Astro.props
 	// Handle scrollbar visibility to prevent double scrollbar effect
 	document.addEventListener('DOMContentLoaded', () => {
 		const html = document.documentElement
-		let scrollTimeout
+		let scrollTimeout: ReturnType<typeof setTimeout> | undefined
 
 		// Add scrolling class when user scrolls
 		function handleScroll() {
@@ -64,7 +64,7 @@ const { class: className } = Astro.props
 		window.addEventListener('scroll', handleScroll, { passive: true })
 
 		// Show scrollbar on hover over the right edge
-		function handleMouseMove(e) {
+		function handleMouseMove(e: MouseEvent) {
 			const rightEdge = window.innerWidth - 20 // 20px from right edge
 			if (e.clientX > rightEdge) {
 				html.classList.add('scrolling')
