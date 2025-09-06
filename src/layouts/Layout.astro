@@ -44,3 +44,33 @@ const { class: className } = Astro.props
 		</div>
 	</body>
 </html>
+
+<script>
+	// Handle scrollbar visibility to prevent double scrollbar effect
+	document.addEventListener('DOMContentLoaded', () => {
+		const html = document.documentElement;
+		let scrollTimeout;
+		
+		// Add scrolling class when user scrolls
+		function handleScroll() {
+			html.classList.add('scrolling');
+			clearTimeout(scrollTimeout);
+			scrollTimeout = setTimeout(() => {
+				html.classList.remove('scrolling');
+			}, 1000); // Hide scrollbar after 1 second of no scrolling
+		}
+		
+		// Listen for scroll events
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		
+		// Show scrollbar on hover over the right edge
+		function handleMouseMove(e) {
+			const rightEdge = window.innerWidth - 20; // 20px from right edge
+			if (e.clientX > rightEdge) {
+				html.classList.add('scrolling');
+			}
+		}
+		
+		window.addEventListener('mousemove', handleMouseMove, { passive: true });
+	});
+</script>
