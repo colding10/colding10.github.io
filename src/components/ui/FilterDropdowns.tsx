@@ -68,7 +68,7 @@ const FilterDropdowns = ({
 						<ChevronDown className="h-4 w-4 opacity-50" />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="z-50 w-[120px]">
+				<DropdownMenuContent align="end" className="z-50 w-[120px]" sideOffset={4}>
 					<DropdownMenuItem
 						onClick={() => handleYearChange('')}
 						className={
@@ -106,7 +106,7 @@ const FilterDropdowns = ({
 						<ChevronDown className="h-4 w-4 opacity-50" />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="z-50 w-[160px]">
+				<DropdownMenuContent align="end" className="z-50 w-[160px]" sideOffset={4}>
 					<DropdownMenuItem
 						onClick={() => handleTierChange('')}
 						className={
@@ -174,7 +174,7 @@ const FilterDropdowns = ({
 						<ChevronDown className="h-4 w-4 opacity-50" />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="z-50 w-[120px]">
+				<DropdownMenuContent align="end" className="z-50 w-[120px]" sideOffset={4}>
 					<DropdownMenuItem
 						onClick={() => handleTeamChange('')}
 						className={

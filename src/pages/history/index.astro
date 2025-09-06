@@ -133,7 +133,7 @@ const uniqueTeams = Array.from(
 
 			<!-- Search and Filter -->
 			<div class="space-y-3">
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center filter-stable">
 					<input
 						type="text"
 						id="search"
@@ -141,16 +141,18 @@ const uniqueTeams = Array.from(
 						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
 					/>
 
-					<FilterDropdowns
-						client:load
-						uniqueYears={uniqueYears.filter(
-							(y) =>
-								typeof y === 'string' || typeof y === 'number',
-						)}
-						uniqueTeams={uniqueTeams.filter(
-							(t) => typeof t === 'string',
-						)}
-					/>
+					<div class="dropdown-container flex flex-wrap gap-2">
+						<FilterDropdowns
+							client:load
+							uniqueYears={uniqueYears.filter(
+								(y) =>
+									typeof y === 'string' || typeof y === 'number',
+							)}
+							uniqueTeams={uniqueTeams.filter(
+								(t) => typeof t === 'string',
+							)}
+						/>
+					</div>
 				</div>
 				<div
 					class="text-muted-foreground flex items-center gap-2 text-xs"

@@ -17,14 +17,14 @@ const { class: className } = Astro.props
 ---
 
 <!doctype html>
-<html class="bg-background text-foreground" lang={SITE.locale}>
+<html class="bg-background text-foreground custom-scrollbar" lang={SITE.locale}>
 	<Head>
 		<slot name="head" />
 	</Head>
-	<body>
+	<body class="prevent-shift">
 		<div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
 			<div
-				class="bg-background/95 border-border sticky top-0 z-50 divide-y border-b backdrop-blur-md xl:divide-none"
+				class="bg-background/95 border-border sticky top-0 z-50 divide-y border-b backdrop-blur-md xl:divide-none sticky-header"
 			>
 				<Header />
 				<slot name="subposts-navigation" />

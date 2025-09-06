@@ -129,7 +129,16 @@
 
 	html {
 		background: var(--background);
-		scrollbar-gutter: stable;
+		scrollbar-gutter: stable both-edges;
+		overflow-y: scroll; /* Force scrollbar to always be present */
+	}
+
+	body {
+		/* Prevent any horizontal layout shifts */
+		overflow-x: hidden;
+		/* Ensure consistent width regardless of scrollbar */
+		width: 100%;
+		min-width: 0;
 	}
 
 	[data-theme='dark'] html {
@@ -232,6 +241,70 @@
 		border-width: 1px;
 		border-style: solid;
 		border-color: #d6d3c9 !important;
+	}
+
+	/* Prevent layout shifts from scrollbars and dropdowns */
+	.prevent-shift {
+		/* Reserve space for scrollbar to prevent horizontal shifts */
+		overflow-y: scroll;
+		scrollbar-gutter: stable;
+	}
+
+	/* Better scrollbar styling for consistent appearance */
+	.custom-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: var(--muted-foreground) transparent;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background-color: var(--muted-foreground);
+		border-radius: 4px;
+		border: 2px solid transparent;
+		background-clip: content-box;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background-color: var(--foreground);
+	}
+
+	/* Prevent dropdown-related layout shifts */
+	.dropdown-container {
+		position: relative;
+		/* Ensure dropdowns don't affect parent layout */
+		contain: layout;
+	}
+
+	/* Stable layout for filter components */
+	.filter-stable {
+		/* Prevent reflow when dropdowns open */
+		contain: layout style;
+		/* Reserve space to prevent shifts */
+		min-height: 2.5rem;
+	}
+
+	/* Prevent header shifts from dropdown interactions */
+	.sticky-header {
+		/* Ensure header stays stable during dropdown interactions */
+		contain: layout;
+		/* Prevent any layout shifts */
+		will-change: auto;
+	}
+
+	/* Better dropdown positioning to prevent page shifts */
+	.dropdown-content {
+		/* Ensure dropdowns don't cause horizontal scrolling */
+		max-width: calc(100vw - 2rem);
+		/* Prevent dropdowns from extending beyond viewport */
+		transform: translateX(0);
 	}
 
 	[data-theme='dark'] .border-immediate {
