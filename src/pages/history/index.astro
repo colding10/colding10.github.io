@@ -133,7 +133,9 @@ const uniqueTeams = Array.from(
 
 			<!-- Search and Filter -->
 			<div class="space-y-3">
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-center filter-stable">
+				<div
+					class="filter-stable flex flex-col gap-2 sm:flex-row sm:items-center"
+				>
 					<input
 						type="text"
 						id="search"
@@ -146,7 +148,8 @@ const uniqueTeams = Array.from(
 							client:load
 							uniqueYears={uniqueYears.filter(
 								(y) =>
-									typeof y === 'string' || typeof y === 'number',
+									typeof y === 'string' ||
+									typeof y === 'number',
 							)}
 							uniqueTeams={uniqueTeams.filter(
 								(t) => typeof t === 'string',
