@@ -205,7 +205,8 @@
 	[data-theme='dark'] .sticky.top-0.z-50.divide-y.border-b,
 	[data-theme='dark'] .bg-background\/95.border-border.sticky.border-b,
 	[data-theme='dark'] .sticky-header,
-	[data-theme='dark'] .sticky-header.bg-background\/95.border-border.sticky.border-b {
+	[data-theme='dark']
+		.sticky-header.bg-background\/95.border-border.sticky.border-b {
 		border-bottom: 1px solid #3f3c49 !important;
 		border-bottom: 1px solid var(--border, #3f3c49) !important;
 	}
@@ -215,7 +216,9 @@
 		border-bottom: 1px solid #d6d3c9 !important;
 	}
 
-	html body[data-theme='dark'] .sticky-header.bg-background\/95.border-border.sticky.border-b {
+	html
+		body[data-theme='dark']
+		.sticky-header.bg-background\/95.border-border.sticky.border-b {
 		border-bottom: 1px solid #3f3c49 !important;
 	}
 
