@@ -53,12 +53,23 @@ const uniqueTeams = Array.from(
 	<Breadcrumbs items={[{ label: 'History', icon: 'lucide:calendar' }]} />
 
 	<section aria-labelledby="ctf-history-title" class="font-mono">
-		<h1 id="ctf-history-title" class="mt-5 text-3xl font-bold">
-			CTF History
-		</h1>
-		<p class="text-muted-foreground mt-2">
-			Competition results over time, newest first.
-		</p>
+		<div class="mt-5 flex items-center justify-between">
+			<div>
+				<h1 id="ctf-history-title" class="text-3xl font-bold">
+					CTF History
+				</h1>
+				<p class="text-muted-foreground mt-2">
+					Competition results over time, newest first.
+				</p>
+			</div>
+			<a
+				href="/history/stats"
+				class="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+			>
+				<Icon name="lucide:bar-chart-3" class="h-4 w-4" />
+				Statistics
+			</a>
+		</div>
 
 		<div
 			class="mt-4 rounded-lg border border-blue-200/70 bg-blue-50/80 p-4 dark:border-blue-800/50 dark:bg-blue-950/40"
