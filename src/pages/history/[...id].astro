@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 import { getTeamUrl, isTeamClickable } from '@/lib/team-utils'
+import { normalizeYamlText } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 import { getCollection } from 'astro:content'
 
@@ -149,9 +150,11 @@ const data = entry.data
 							<h2 class="font-mono text-xl font-semibold">
 								Review
 							</h2>
-							<p class="overflow-wrap mt-2 leading-7 break-words whitespace-pre-wrap">
-								{data.review}
-							</p>
+							<div class="mt-2 leading-7 break-words">
+								{normalizeYamlText(data.review).split('\n').map(line => (
+									<div>{line}</div>
+								))}
+							</div>
 						</div>
 					)}
 					{data.notes && (
@@ -159,9 +162,11 @@ const data = entry.data
 							<h2 class="font-mono text-xl font-semibold">
 								Notes
 							</h2>
-							<p class="overflow-wrap mt-2 leading-7 break-words whitespace-pre-wrap">
-								{data.notes}
-							</p>
+							<div class="mt-2 leading-7 break-words">
+								{normalizeYamlText(data.notes).split('\n').map(line => (
+									<div>{line}</div>
+								))}
+							</div>
 						</div>
 					)}
 				</div>

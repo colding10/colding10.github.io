@@ -35,3 +35,17 @@ export function getHeadingMargin(depth: number): string {
   }
   return margins[depth] || ''
 }
+
+export function normalizeYamlText(text: string | undefined): string {
+  if (!text) return ''
+  
+  // Split into lines and remove leading whitespace from each line
+  const lines = text.split('\n')
+  const normalizedLines = lines.map(line => {
+    // Remove all leading whitespace (spaces, tabs, etc.)
+    return line.replace(/^\s+/, '')
+  })
+  
+  // Join back and trim the entire result
+  return normalizedLines.join('\n').trim()
+}
