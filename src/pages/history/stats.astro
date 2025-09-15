@@ -15,133 +15,204 @@ const uniqueMonths = new Set(entries.map((e) => `${e.year}-${e.month}`)).size
 const uniqueYears = new Set(entries.map((e) => e.year)).size
 
 // Overall statistics
-const placements = entries.map(e => parsePlacementNumber(e.placement)).filter((p): p is number => p !== null)
-const averagePlacement = placements.length > 0 ? Math.round(placements.reduce((a, b) => a + b, 0) / placements.length) : 0
+const placements = entries
+	.map((e) => parsePlacementNumber(e.placement))
+	.filter((p): p is number => p !== null)
+const averagePlacement =
+	placements.length > 0
+		? Math.round(placements.reduce((a, b) => a + b, 0) / placements.length)
+		: 0
 const bestPlacement = placements.length > 0 ? Math.min(...placements) : 0
 const worstPlacement = placements.length > 0 ? Math.max(...placements) : 0
 
 // Tier distribution
-const tierCounts = entries.reduce((acc, e) => {
-  const rank = parsePlacementNumber(e.placement)
-  if (rank) {
-    const tier = getTierFromRank(rank)
-    acc[tier] = (acc[tier] || 0) + 1
-  }
-  return acc
-}, {} as Record<string, number>)
+const tierCounts = entries.reduce(
+	(acc, e) => {
+		const rank = parsePlacementNumber(e.placement)
+		if (rank) {
+			const tier = getTierFromRank(rank)
+			acc[tier] = (acc[tier] || 0) + 1
+		}
+		return acc
+	},
+	{} as Record<string, number>,
+)
 
 // Team statistics
-const teamStats = entries.reduce((acc, e) => {
-  if (e.team) {
-    if (!acc[e.team]) {
-      acc[e.team] = { count: 0, placements: [], averagePlacement: 0 }
-    }
-    acc[e.team].count++
-    const rank = parsePlacementNumber(e.placement)
-    if (rank) {
-      acc[e.team].placements.push(rank)
-    }
-  }
-  return acc
-}, {} as Record<string, { count: number; placements: number[]; averagePlacement: number }>)
+const teamStats = entries.reduce(
+	(acc, e) => {
+		if (e.team) {
+			if (!acc[e.team]) {
+				acc[e.team] = { count: 0, placements: [], averagePlacement: 0 }
+			}
+			acc[e.team].count++
+			const rank = parsePlacementNumber(e.placement)
+			if (rank) {
+				acc[e.team].placements.push(rank)
+			}
+		}
+		return acc
+	},
+	{} as Record<
+		string,
+		{ count: number; placements: number[]; averagePlacement: number }
+	>,
+)
 
 // Calculate average placement per team
-Object.keys(teamStats).forEach(team => {
-  const placements = teamStats[team].placements
-  teamStats[team].averagePlacement = placements.length > 0 
-    ? Math.round(placements.reduce((a, b) => a + b, 0) / placements.length)
-    : 0
+Object.keys(teamStats).forEach((team) => {
+	const placements = teamStats[team].placements
+	teamStats[team].averagePlacement =
+		placements.length > 0
+			? Math.round(
+					placements.reduce((a, b) => a + b, 0) / placements.length,
+				)
+			: 0
 })
 
 // Monthly statistics
-const monthlyStats = entries.reduce((acc, e) => {
-  const key = `${e.year}-${String(e.month).padStart(2, '0')}`
-  if (!acc[key]) {
-    acc[key] = {
-      year: e.year,
-      month: e.month,
-      count: 0,
-      placements: [],
-      teams: new Set(),
-      teamCount: 0,
-      averagePlacement: 0,
-      bestPlacement: 0
-    }
-  }
-  acc[key].count++
-  const rank = parsePlacementNumber(e.placement)
-  if (rank) {
-    acc[key].placements.push(rank)
-  }
-  if (e.team) {
-    acc[key].teams.add(e.team)
-  }
-  return acc
-}, {} as Record<string, { year: number; month: number; count: number; placements: number[]; teams: Set<string>; teamCount: number; averagePlacement: number; bestPlacement: number }>)
+const monthlyStats = entries.reduce(
+	(acc, e) => {
+		const key = `${e.year}-${String(e.month).padStart(2, '0')}`
+		if (!acc[key]) {
+			acc[key] = {
+				year: e.year,
+				month: e.month,
+				count: 0,
+				placements: [],
+				teams: new Set(),
+				teamCount: 0,
+				averagePlacement: 0,
+				bestPlacement: 0,
+			}
+		}
+		acc[key].count++
+		const rank = parsePlacementNumber(e.placement)
+		if (rank) {
+			acc[key].placements.push(rank)
+		}
+		if (e.team) {
+			acc[key].teams.add(e.team)
+		}
+		return acc
+	},
+	{} as Record<
+		string,
+		{
+			year: number
+			month: number
+			count: number
+			placements: number[]
+			teams: Set<string>
+			teamCount: number
+			averagePlacement: number
+			bestPlacement: number
+		}
+	>,
+)
 
 // Convert teams Set to count and calculate averages
-Object.keys(monthlyStats).forEach(key => {
-  const month = monthlyStats[key]
-  month.teamCount = month.teams.size
-  month.averagePlacement = month.placements.length > 0 
-    ? Math.round(month.placements.reduce((a, b) => a + b, 0) / month.placements.length)
-    : 0
-  month.bestPlacement = month.placements.length > 0 ? Math.min(...month.placements) : 0
+Object.keys(monthlyStats).forEach((key) => {
+	const month = monthlyStats[key]
+	month.teamCount = month.teams.size
+	month.averagePlacement =
+		month.placements.length > 0
+			? Math.round(
+					month.placements.reduce((a, b) => a + b, 0) /
+						month.placements.length,
+				)
+			: 0
+	month.bestPlacement =
+		month.placements.length > 0 ? Math.min(...month.placements) : 0
 })
 
 // Sort monthly stats by date
-const sortedMonthlyStats = Object.values(monthlyStats).sort((a, b) => 
-  b.year - a.year || b.month - a.month
+const sortedMonthlyStats = Object.values(monthlyStats).sort(
+	(a, b) => b.year - a.year || b.month - a.month,
 )
 
 // Yearly statistics
-const yearlyStats = entries.reduce((acc, e) => {
-  if (!acc[e.year]) {
-    acc[e.year] = {
-      year: e.year,
-      count: 0,
-      placements: [],
-      teams: new Set(),
-      teamCount: 0,
-      averagePlacement: 0,
-      bestPlacement: 0
-    }
-  }
-  acc[e.year].count++
-  const rank = parsePlacementNumber(e.placement)
-  if (rank) {
-    acc[e.year].placements.push(rank)
-  }
-  if (e.team) {
-    acc[e.year].teams.add(e.team)
-  }
-  return acc
-}, {} as Record<number, { year: number; count: number; placements: number[]; teams: Set<string>; teamCount: number; averagePlacement: number; bestPlacement: number }>)
+const yearlyStats = entries.reduce(
+	(acc, e) => {
+		if (!acc[e.year]) {
+			acc[e.year] = {
+				year: e.year,
+				count: 0,
+				placements: [],
+				teams: new Set(),
+				teamCount: 0,
+				averagePlacement: 0,
+				bestPlacement: 0,
+			}
+		}
+		acc[e.year].count++
+		const rank = parsePlacementNumber(e.placement)
+		if (rank) {
+			acc[e.year].placements.push(rank)
+		}
+		if (e.team) {
+			acc[e.year].teams.add(e.team)
+		}
+		return acc
+	},
+	{} as Record<
+		number,
+		{
+			year: number
+			count: number
+			placements: number[]
+			teams: Set<string>
+			teamCount: number
+			averagePlacement: number
+			bestPlacement: number
+		}
+	>,
+)
 
 // Calculate yearly averages
-Object.keys(yearlyStats).forEach(year => {
-  const yearData = yearlyStats[parseInt(year)]
-  yearData.teamCount = yearData.teams.size
-  yearData.averagePlacement = yearData.placements.length > 0 
-    ? Math.round(yearData.placements.reduce((a, b) => a + b, 0) / yearData.placements.length)
-    : 0
-  yearData.bestPlacement = yearData.placements.length > 0 ? Math.min(...yearData.placements) : 0
+Object.keys(yearlyStats).forEach((year) => {
+	const yearData = yearlyStats[parseInt(year)]
+	yearData.teamCount = yearData.teams.size
+	yearData.averagePlacement =
+		yearData.placements.length > 0
+			? Math.round(
+					yearData.placements.reduce((a, b) => a + b, 0) /
+						yearData.placements.length,
+				)
+			: 0
+	yearData.bestPlacement =
+		yearData.placements.length > 0 ? Math.min(...yearData.placements) : 0
 })
 
-const sortedYearlyStats = Object.values(yearlyStats).sort((a, b) => b.year - a.year)
+const sortedYearlyStats = Object.values(yearlyStats).sort(
+	(a, b) => b.year - a.year,
+)
 
 // Top performing months
 const topMonths = sortedMonthlyStats
-  .filter(m => m.placements.length > 0)
-  .sort((a, b) => a.averagePlacement - b.averagePlacement)
-  .slice(0, 5)
+	.filter((m) => m.placements.length > 0)
+	.sort((a, b) => a.averagePlacement - b.averagePlacement)
+	.slice(0, 5)
 
 // Most active months
 const mostActiveMonths = sortedMonthlyStats
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 5)
+	.sort((a, b) => b.count - a.count)
+	.slice(0, 5)
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec',
+]
 ---
 
 <Layout class="max-w-3xl overflow-x-hidden">
@@ -163,187 +234,335 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 			Performance analytics and trends over time.
 		</p>
 
-		<!-- Overall Statistics -->
 		<div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-			<div class="group relative rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-700">
+			<div
+				class="group relative rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 transition-all duration-300 hover:scale-105 hover:border-blue-300 hover:shadow-xl dark:border-blue-800 dark:from-blue-950/20 dark:to-blue-900/20 dark:hover:border-blue-700"
+			>
 				<div class="flex items-center gap-3">
-					<div class="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg group-hover:shadow-blue-500/25 transition-shadow duration-300">
+					<div
+						class="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-3 shadow-lg transition-shadow duration-300 group-hover:shadow-blue-500/25"
+					>
 						<Icon name="lucide:trophy" class="h-6 w-6 text-white" />
 					</div>
 					<div>
-						<div class="text-3xl font-bold text-blue-700 dark:text-blue-300">{totalCTFs}</div>
-						<div class="text-muted-foreground text-sm font-medium">Total CTFs</div>
+						<div
+							class="text-3xl font-bold text-blue-700 dark:text-blue-300"
+						>
+							{totalCTFs}
+						</div>
+						<div class="text-muted-foreground text-sm font-medium">
+							Total CTFs
+						</div>
 					</div>
 				</div>
-				<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-					<div class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">All Time</div>
+				<div
+					class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+				>
+					<div
+						class="rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
+					>
+						All Time
+					</div>
 				</div>
 			</div>
 
-			<div class="group relative rounded-lg border-2 border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-green-300 dark:hover:border-green-700">
+			<div
+				class="group relative rounded-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-6 transition-all duration-300 hover:scale-105 hover:border-green-300 hover:shadow-xl dark:border-green-800 dark:from-green-950/20 dark:to-green-900/20 dark:hover:border-green-700"
+			>
 				<div class="flex items-center gap-3">
-					<div class="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl shadow-lg group-hover:shadow-green-500/25 transition-shadow duration-300">
+					<div
+						class="rounded-xl bg-gradient-to-r from-green-500 to-green-600 p-3 shadow-lg transition-shadow duration-300 group-hover:shadow-green-500/25"
+					>
 						<Icon name="lucide:target" class="h-6 w-6 text-white" />
 					</div>
 					<div>
-						<div class="text-3xl font-bold text-green-700 dark:text-green-300">#{averagePlacement}</div>
-						<div class="text-muted-foreground text-sm font-medium">Avg Placement</div>
+						<div
+							class="text-3xl font-bold text-green-700 dark:text-green-300"
+						>
+							#{averagePlacement}
+						</div>
+						<div class="text-muted-foreground text-sm font-medium">
+							Avg Placement
+						</div>
 					</div>
 				</div>
-				<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-					<div class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Overall</div>
+				<div
+					class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+				>
+					<div
+						class="rounded-full bg-green-500 px-2 py-1 text-xs text-white"
+					>
+						Overall
+					</div>
 				</div>
 			</div>
 
-			<div class="group relative rounded-lg border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-amber-300 dark:hover:border-amber-700">
+			<div
+				class="group relative rounded-lg border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-6 transition-all duration-300 hover:scale-105 hover:border-amber-300 hover:shadow-xl dark:border-amber-800 dark:from-amber-950/20 dark:to-amber-900/20 dark:hover:border-amber-700"
+			>
 				<div class="flex items-center gap-3">
-					<div class="bg-gradient-to-r from-amber-500 to-amber-600 p-3 rounded-xl shadow-lg group-hover:shadow-amber-500/25 transition-shadow duration-300">
+					<div
+						class="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 p-3 shadow-lg transition-shadow duration-300 group-hover:shadow-amber-500/25"
+					>
 						<Icon name="lucide:crown" class="h-6 w-6 text-white" />
 					</div>
 					<div>
-						<div class="text-3xl font-bold text-amber-700 dark:text-amber-300">#{bestPlacement}</div>
-						<div class="text-muted-foreground text-sm font-medium">Best Placement</div>
+						<div
+							class="text-3xl font-bold text-amber-700 dark:text-amber-300"
+						>
+							#{bestPlacement}
+						</div>
+						<div class="text-muted-foreground text-sm font-medium">
+							Best Placement
+						</div>
 					</div>
 				</div>
-				<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-					<div class="bg-amber-500 text-white text-xs px-2 py-1 rounded-full">Peak</div>
+				<div
+					class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+				>
+					<div
+						class="rounded-full bg-amber-500 px-2 py-1 text-xs text-white"
+					>
+						Peak
+					</div>
 				</div>
 			</div>
 
-			<div class="group relative rounded-lg border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-700">
+			<div
+				class="group relative rounded-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 transition-all duration-300 hover:scale-105 hover:border-purple-300 hover:shadow-xl dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/20 dark:hover:border-purple-700"
+			>
 				<div class="flex items-center gap-3">
-					<div class="bg-gradient-to-r from-purple-500 to-purple-600 p-3 rounded-xl shadow-lg group-hover:shadow-purple-500/25 transition-shadow duration-300">
-						<Icon name="lucide:calendar" class="h-6 w-6 text-white" />
+					<div
+						class="rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 p-3 shadow-lg transition-shadow duration-300 group-hover:shadow-purple-500/25"
+					>
+						<Icon
+							name="lucide:calendar"
+							class="h-6 w-6 text-white"
+						/>
 					</div>
 					<div>
-						<div class="text-3xl font-bold text-purple-700 dark:text-purple-300">{uniqueMonths}</div>
-						<div class="text-muted-foreground text-sm font-medium">Active Months</div>
+						<div
+							class="text-3xl font-bold text-purple-700 dark:text-purple-300"
+						>
+							{uniqueMonths}
+						</div>
+						<div class="text-muted-foreground text-sm font-medium">
+							Active Months
+						</div>
 					</div>
 				</div>
-				<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-					<div class="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">Consistent</div>
+				<div
+					class="absolute top-2 right-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+				>
+					<div
+						class="rounded-full bg-purple-500 px-2 py-1 text-xs text-white"
+					>
+						Consistent
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Tier Distribution -->
 		<div class="mt-8">
-			<h2 class="text-2xl font-bold mb-4">Tier Distribution</h2>
-			<div class="rounded-lg border p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+			<h2 class="mb-4 text-2xl font-bold">Tier Distribution</h2>
+			<div
+				class="rounded-lg border bg-gradient-to-br from-slate-50 to-slate-100 p-6 dark:from-slate-900 dark:to-slate-800"
+			>
 				<div class="space-y-4">
-					{Object.entries(tierCounts)
-						.sort(([a], [b]) => {
-							// Sort tiers in proper order: SS, S, A, B, C, D, F
-							const tierOrder = { 'SS': 0, 'S': 1, 'A': 2, 'B': 3, 'C': 4, 'D': 5, 'F': 6 }
-							return (tierOrder[a as keyof typeof tierOrder] ?? 999) - (tierOrder[b as keyof typeof tierOrder] ?? 999)
-						})
-						.map(([tier, count]) => {
-						const percentage = Math.round((count / totalCTFs) * 100)
-						const maxCount = Math.max(...Object.values(tierCounts))
-						const barHeight = (count / maxCount) * 100
-						
-						// Tier-specific colors
-						const tierColors = {
-							'SS': 'from-red-500 to-red-600 hover:from-red-400 hover:to-red-500',
-							'S': 'from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500',
-							'A': 'from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500',
-							'B': 'from-green-500 to-green-600 hover:from-green-400 hover:to-green-500',
-							'C': 'from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500',
-							'D': 'from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500',
-							'F': 'from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500'
-						}
-						
-						const tierBgColors = {
-							'SS': 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
-							'S': 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
-							'A': 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
-							'B': 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
-							'C': 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
-							'D': 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800',
-							'F': 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800'
-						}
-						
-						return (
-							<div class={`group relative rounded-lg border-2 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg ${tierBgColors[tier as keyof typeof tierBgColors] || 'bg-slate-50 dark:bg-slate-800'}`}>
-								<div class="flex items-center justify-between mb-3">
-									<div class="flex items-center gap-3">
-										<div class={`w-8 h-8 rounded-full bg-gradient-to-r ${tierColors[tier as keyof typeof tierColors] || 'from-slate-500 to-slate-600'} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-											{tier}
+					{
+						Object.entries(tierCounts)
+							.sort(([a], [b]) => {
+								// Sort tiers in proper order: SS, S, A, B, C, D, F
+								const tierOrder = {
+									SS: 0,
+									S: 1,
+									A: 2,
+									B: 3,
+									C: 4,
+									D: 5,
+									F: 6,
+								}
+								return (
+									(tierOrder[a as keyof typeof tierOrder] ??
+										999) -
+									(tierOrder[b as keyof typeof tierOrder] ??
+										999)
+								)
+							})
+							.map(([tier, count]) => {
+								const percentage = Math.round(
+									(count / totalCTFs) * 100,
+								)
+								const maxCount = Math.max(
+									...Object.values(tierCounts),
+								)
+								const barHeight = (count / maxCount) * 100
+
+								// Tier-specific colors
+								const tierColors = {
+									SS: 'from-red-500 to-red-600 hover:from-red-400 hover:to-red-500',
+									S: 'from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500',
+									A: 'from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500',
+									B: 'from-green-500 to-green-600 hover:from-green-400 hover:to-green-500',
+									C: 'from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500',
+									D: 'from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500',
+									F: 'from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500',
+								}
+
+								const tierBgColors = {
+									SS: 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
+									S: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
+									A: 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
+									B: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
+									C: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+									D: 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800',
+									F: 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800',
+								}
+
+								return (
+									<div
+										class={`group relative rounded-lg border-2 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg ${tierBgColors[tier as keyof typeof tierBgColors] || 'bg-slate-50 dark:bg-slate-800'}`}
+									>
+										<div class="mb-3 flex items-center justify-between">
+											<div class="flex items-center gap-3">
+												<div
+													class={`h-8 w-8 rounded-full bg-gradient-to-r ${tierColors[tier as keyof typeof tierColors] || 'from-slate-500 to-slate-600'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}
+												>
+													{tier}
+												</div>
+												<div>
+													<span class="text-lg font-bold">
+														{tier} Tier
+													</span>
+													<div class="text-muted-foreground text-sm">
+														{count} CTF
+														{count !== 1 ? 's' : ''}
+													</div>
+												</div>
+											</div>
+											<div class="text-right">
+												<div class="text-2xl font-bold">
+													{percentage}%
+												</div>
+												<div class="text-muted-foreground text-sm">
+													of total
+												</div>
+											</div>
 										</div>
-										<div>
-											<span class="text-lg font-bold">{tier} Tier</span>
-											<div class="text-muted-foreground text-sm">{count} CTF{count !== 1 ? 's' : ''}</div>
+
+										<div class="relative">
+											<div class="h-6 w-full overflow-hidden rounded-full bg-white/50 shadow-inner dark:bg-black/20">
+												<div
+													class={`h-full bg-gradient-to-r ${tierColors[tier as keyof typeof tierColors] || 'from-slate-500 to-slate-600'} relative overflow-hidden rounded-full shadow-lg transition-all duration-500 ease-out`}
+													style={`width: ${percentage}%`}
+												>
+													<div class="absolute inset-0 -translate-x-full -skew-x-12 transform bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+												</div>
+											</div>
+											<div class="text-muted-foreground mt-1 flex justify-between text-xs">
+												<span>0</span>
+												<span class="font-medium">
+													{count} CTFs
+												</span>
+												<span>{maxCount}</span>
+											</div>
+										</div>
+
+										<div class="pointer-events-none absolute -top-2 -right-2 z-10 rounded-lg border border-slate-200 bg-white px-3 py-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-800">
+											<div class="text-sm font-medium">
+												{tier} Tier Performance
+											</div>
+											<div class="text-muted-foreground text-xs">
+												{count} out of {totalCTFs} CTFs
+											</div>
+											<div class="text-muted-foreground text-xs">
+												{percentage}% of total
+												competitions
+											</div>
 										</div>
 									</div>
-									<div class="text-right">
-										<div class="text-2xl font-bold">{percentage}%</div>
-										<div class="text-muted-foreground text-sm">of total</div>
-									</div>
-								</div>
-								
-								<!-- Histogram Bar -->
-								<div class="relative">
-									<div class="w-full bg-white/50 dark:bg-black/20 rounded-full h-6 overflow-hidden shadow-inner">
-										<div 
-											class={`h-full bg-gradient-to-r ${tierColors[tier as keyof typeof tierColors] || 'from-slate-500 to-slate-600'} rounded-full transition-all duration-500 ease-out shadow-lg relative overflow-hidden`}
-											style={`width: ${percentage}%`}
-										>
-											<!-- Animated shine effect -->
-											<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
-										</div>
-									</div>
-									<div class="flex justify-between text-xs text-muted-foreground mt-1">
-										<span>0</span>
-										<span class="font-medium">{count} CTFs</span>
-										<span>{maxCount}</span>
-									</div>
-								</div>
-								
-								<!-- Hover tooltip -->
-								<div class="absolute -top-2 -right-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-									<div class="text-sm font-medium">{tier} Tier Performance</div>
-									<div class="text-xs text-muted-foreground">{count} out of {totalCTFs} CTFs</div>
-									<div class="text-xs text-muted-foreground">{percentage}% of total competitions</div>
-								</div>
-							</div>
-						)
-					})}
+								)
+							})
+					}
 				</div>
-				
-				<!-- Summary Stats -->
-				<div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+
+				<div
+					class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700"
+				>
+					<div
+						class="grid grid-cols-2 gap-4 text-center md:grid-cols-4"
+					>
 						<div>
-							<div class="text-2xl font-bold text-green-600 dark:text-green-400">
-								{Object.entries(tierCounts).reduce((acc, [tier, count]) => 
-									['SS', 'S', 'A'].includes(tier) ? acc + count : acc, 0
-								)}
+							<div
+								class="text-2xl font-bold text-green-600 dark:text-green-400"
+							>
+								{
+									Object.entries(tierCounts).reduce(
+										(acc, [tier, count]) =>
+											['SS', 'S', 'A'].includes(tier)
+												? acc + count
+												: acc,
+										0,
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">High Tier (SS-S-A)</div>
+							<div class="text-muted-foreground text-sm">
+								High Tier (SS-S-A)
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-								{Object.entries(tierCounts).reduce((acc, [tier, count]) => 
-									['B', 'C'].includes(tier) ? acc + count : acc, 0
-								)}
+							<div
+								class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+							>
+								{
+									Object.entries(tierCounts).reduce(
+										(acc, [tier, count]) =>
+											['B', 'C'].includes(tier)
+												? acc + count
+												: acc,
+										0,
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Mid Tier (B-C)</div>
+							<div class="text-muted-foreground text-sm">
+								Mid Tier (B-C)
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-orange-600 dark:text-orange-400">
-								{Object.entries(tierCounts).reduce((acc, [tier, count]) => 
-									['D'].includes(tier) ? acc + count : acc, 0
-								)}
+							<div
+								class="text-2xl font-bold text-orange-600 dark:text-orange-400"
+							>
+								{
+									Object.entries(tierCounts).reduce(
+										(acc, [tier, count]) =>
+											['D'].includes(tier)
+												? acc + count
+												: acc,
+										0,
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Lower Tier (D)</div>
+							<div class="text-muted-foreground text-sm">
+								Lower Tier (D)
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-red-600 dark:text-red-400">
-								{Object.entries(tierCounts).reduce((acc, [tier, count]) => 
-									['F'].includes(tier) ? acc + count : acc, 0
-								)}
+							<div
+								class="text-2xl font-bold text-red-600 dark:text-red-400"
+							>
+								{
+									Object.entries(tierCounts).reduce(
+										(acc, [tier, count]) =>
+											['F'].includes(tier)
+												? acc + count
+												: acc,
+										0,
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Bottom Tier (F)</div>
+							<div class="text-muted-foreground text-sm">
+								Bottom Tier (F)
+							</div>
 						</div>
 					</div>
 				</div>
@@ -352,131 +571,223 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 		<!-- Team Statistics -->
 		<div class="mt-8">
-			<div class="flex items-center gap-3 mb-4">
-				<div class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-2 rounded-lg">
+			<div class="mb-4 flex items-center gap-3">
+				<div
+					class="rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 p-2"
+				>
 					<Icon name="lucide:users" class="h-5 w-5 text-white" />
 				</div>
-				<h2 class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">Team Performance</h2>
+				<h2
+					class="text-2xl font-bold text-indigo-700 dark:text-indigo-300"
+				>
+					Team Performance
+				</h2>
 			</div>
-			<div class="rounded-lg border-2 border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 p-6">
+			<div
+				class="rounded-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 dark:border-indigo-800 dark:from-indigo-950/20 dark:to-indigo-900/20"
+			>
 				<div class="space-y-4">
-					{Object.entries(teamStats)
-						.sort((a, b) => b[1].count - a[1].count)
-						.map(([team, stats], index) => {
-							const teamColors = [
-								'from-yellow-400 to-yellow-500',     // 1st - Gold
-								'from-gray-300 to-gray-400',         // 2nd - Silver
-								'from-amber-600 to-amber-700',       // 3rd - Bronze
-								'from-blue-400 to-blue-500',         // 4th - Blue
-								'from-purple-400 to-purple-500',     // 5th - Purple
-								'from-green-400 to-green-500',       // 6th - Green
-								'from-red-400 to-red-500',           // 7th - Red
-								'from-pink-400 to-pink-500'          // 8th - Pink
-							]
-							
-							const bgColors = [
-								'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
-								'bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800',
-								'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
-								'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
-								'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800',
-								'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
-								'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
-								'bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800'
-							]
-							
-							const textColors = [
-								'text-yellow-700 dark:text-yellow-300',
-								'text-gray-700 dark:text-gray-300',
-								'text-amber-700 dark:text-amber-300',
-								'text-blue-700 dark:text-blue-300',
-								'text-purple-700 dark:text-purple-300',
-								'text-green-700 dark:text-green-300',
-								'text-red-700 dark:text-red-300',
-								'text-pink-700 dark:text-pink-300'
-							]
-							
-							return (
-								<div class={`group relative rounded-lg border-2 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg ${bgColors[index] || 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-800'}`}>
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-4">
-											<div class={`w-10 h-10 rounded-full bg-gradient-to-r ${teamColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-												{index + 1}
+					{
+						Object.entries(teamStats)
+							.sort((a, b) => b[1].count - a[1].count)
+							.map(([team, stats], index) => {
+								const teamColors = [
+									'from-yellow-400 to-yellow-500', // 1st - Gold
+									'from-gray-300 to-gray-400', // 2nd - Silver
+									'from-amber-600 to-amber-700', // 3rd - Bronze
+									'from-blue-400 to-blue-500', // 4th - Blue
+									'from-purple-400 to-purple-500', // 5th - Purple
+									'from-green-400 to-green-500', // 6th - Green
+									'from-red-400 to-red-500', // 7th - Red
+									'from-pink-400 to-pink-500', // 8th - Pink
+								]
+
+								const bgColors = [
+									'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800',
+									'bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800',
+									'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
+									'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+									'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800',
+									'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
+									'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800',
+									'bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800',
+								]
+
+								const textColors = [
+									'text-yellow-700 dark:text-yellow-300',
+									'text-gray-700 dark:text-gray-300',
+									'text-amber-700 dark:text-amber-300',
+									'text-blue-700 dark:text-blue-300',
+									'text-purple-700 dark:text-purple-300',
+									'text-green-700 dark:text-green-300',
+									'text-red-700 dark:text-red-300',
+									'text-pink-700 dark:text-pink-300',
+								]
+
+								return (
+									<div
+										class={`group relative rounded-lg border-2 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg ${bgColors[index] || 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800'}`}
+									>
+										<div class="flex items-center justify-between">
+											<div class="flex items-center gap-4">
+												<div
+													class={`h-10 w-10 rounded-full bg-gradient-to-r ${teamColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}
+												>
+													{index + 1}
+												</div>
+												<div>
+													<div
+														class={`text-lg font-bold ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}
+													>
+														{team}
+													</div>
+													<div class="text-muted-foreground text-sm">
+														{stats.count} CTF
+														{stats.count !== 1
+															? 's'
+															: ''}
+													</div>
+												</div>
 											</div>
-											<div>
-												<div class={`font-bold text-lg ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}>{team}</div>
-												<div class="text-muted-foreground text-sm">{stats.count} CTF{stats.count !== 1 ? 's' : ''}</div>
+
+											<div class="flex items-center gap-6">
+												<div class="text-center">
+													<div
+														class={`text-2xl font-bold ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}
+													>
+														#
+														{stats.averagePlacement}
+													</div>
+													<div class="text-muted-foreground text-xs">
+														avg placement
+													</div>
+												</div>
+												<div class="text-center">
+													<div
+														class={`text-2xl font-bold ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}
+													>
+														#
+														{Math.min(
+															...stats.placements,
+														)}
+													</div>
+													<div class="text-muted-foreground text-xs">
+														best result
+													</div>
+												</div>
 											</div>
 										</div>
-										
-										<div class="flex items-center gap-6">
-											<div class="text-center">
-												<div class={`text-2xl font-bold ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}>#{stats.averagePlacement}</div>
-												<div class="text-muted-foreground text-xs">avg placement</div>
+
+										<div class="mt-3">
+											<div class="text-muted-foreground mb-1 flex justify-between text-xs">
+												<span>Performance</span>
+												<span>
+													{Math.round(
+														(1 /
+															stats.averagePlacement) *
+															100,
+													)}
+													% efficiency
+												</span>
 											</div>
-											<div class="text-center">
-												<div class={`text-2xl font-bold ${textColors[index] || 'text-slate-700 dark:text-slate-300'}`}>#{Math.min(...stats.placements)}</div>
-												<div class="text-muted-foreground text-xs">best result</div>
+											<div class="h-2 w-full overflow-hidden rounded-full bg-white/50 dark:bg-black/20">
+												<div
+													class={`h-full bg-gradient-to-r ${teamColors[index] || 'from-slate-400 to-slate-500'} relative overflow-hidden rounded-full shadow-lg transition-all duration-500 ease-out`}
+													style={`width: ${Math.min((1 / stats.averagePlacement) * 100, 100)}%`}
+												>
+													<div class="absolute inset-0 -translate-x-full -skew-x-12 transform bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+												</div>
+											</div>
+										</div>
+
+										<div class="pointer-events-none absolute -top-2 -right-2 z-10 rounded-lg border border-slate-200 bg-white px-3 py-2 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 dark:border-slate-700 dark:bg-slate-800">
+											<div class="text-sm font-medium">
+												{team} Performance
+											</div>
+											<div class="text-muted-foreground text-xs">
+												{stats.count} CTFs participated
+											</div>
+											<div class="text-muted-foreground text-xs">
+												Average: #
+												{stats.averagePlacement}
+											</div>
+											<div class="text-muted-foreground text-xs">
+												Best: #
+												{Math.min(...stats.placements)}
 											</div>
 										</div>
 									</div>
-									
-									<!-- Progress bar showing performance -->
-									<div class="mt-3">
-										<div class="flex justify-between text-xs text-muted-foreground mb-1">
-											<span>Performance</span>
-											<span>{Math.round((1 / stats.averagePlacement) * 100)}% efficiency</span>
-										</div>
-										<div class="w-full bg-white/50 dark:bg-black/20 rounded-full h-2 overflow-hidden">
-											<div 
-												class={`h-full bg-gradient-to-r ${teamColors[index] || 'from-slate-400 to-slate-500'} rounded-full transition-all duration-500 ease-out shadow-lg relative overflow-hidden`}
-												style={`width: ${Math.min((1 / stats.averagePlacement) * 100, 100)}%`}
-											>
-												<!-- Animated shine effect -->
-												<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
-											</div>
-										</div>
-									</div>
-									
-									<!-- Hover tooltip -->
-									<div class="absolute -top-2 -right-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-										<div class="text-sm font-medium">{team} Performance</div>
-										<div class="text-xs text-muted-foreground">{stats.count} CTFs participated</div>
-										<div class="text-xs text-muted-foreground">Average: #{stats.averagePlacement}</div>
-										<div class="text-xs text-muted-foreground">Best: #{Math.min(...stats.placements)}</div>
-									</div>
-								</div>
-							)
-						})
+								)
+							})
 					}
 				</div>
-				
+
 				<!-- Summary Stats -->
-				<div class="mt-6 pt-4 border-t border-indigo-200 dark:border-indigo-700">
-					<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+				<div
+					class="mt-6 border-t border-indigo-200 pt-4 dark:border-indigo-700"
+				>
+					<div
+						class="grid grid-cols-2 gap-4 text-center md:grid-cols-4"
+					>
 						<div>
-							<div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+							<div
+								class="text-2xl font-bold text-indigo-600 dark:text-indigo-400"
+							>
 								{Object.keys(teamStats).length}
 							</div>
-							<div class="text-sm text-muted-foreground">Total Teams</div>
+							<div class="text-muted-foreground text-sm">
+								Total Teams
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-green-600 dark:text-green-400">
-								{Math.round(Object.values(teamStats).reduce((acc, team) => acc + team.averagePlacement, 0) / Object.keys(teamStats).length)}
+							<div
+								class="text-2xl font-bold text-green-600 dark:text-green-400"
+							>
+								{
+									Math.round(
+										Object.values(teamStats).reduce(
+											(acc, team) =>
+												acc + team.averagePlacement,
+											0,
+										) / Object.keys(teamStats).length,
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Overall Avg</div>
+							<div class="text-muted-foreground text-sm">
+								Overall Avg
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-								{Math.max(...Object.values(teamStats).map(team => team.count))}
+							<div
+								class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+							>
+								{
+									Math.max(
+										...Object.values(teamStats).map(
+											(team) => team.count,
+										),
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Most Active</div>
+							<div class="text-muted-foreground text-sm">
+								Most Active
+							</div>
 						</div>
 						<div>
-							<div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
-								{Math.min(...Object.values(teamStats).map(team => team.averagePlacement))}
+							<div
+								class="text-2xl font-bold text-purple-600 dark:text-purple-400"
+							>
+								{
+									Math.min(
+										...Object.values(teamStats).map(
+											(team) => team.averagePlacement,
+										),
+									)
+								}
 							</div>
-							<div class="text-sm text-muted-foreground">Best Avg</div>
+							<div class="text-muted-foreground text-sm">
+								Best Avg
+							</div>
 						</div>
 					</div>
 				</div>
@@ -485,106 +796,165 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 		<!-- Top Performing Months -->
 		<div class="mt-8 grid gap-6 md:grid-cols-2">
-			<div class="rounded-lg border-2 border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 p-6">
-				<div class="flex items-center gap-3 mb-4">
-					<div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-2 rounded-lg">
-						<Icon name="lucide:trending-up" class="h-5 w-5 text-white" />
+			<div
+				class="rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-emerald-900/20"
+			>
+				<div class="mb-4 flex items-center gap-3">
+					<div
+						class="rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 p-2"
+					>
+						<Icon
+							name="lucide:trending-up"
+							class="h-5 w-5 text-white"
+						/>
 					</div>
-					<h2 class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">Top Performing Months</h2>
+					<h2
+						class="text-2xl font-bold text-emerald-700 dark:text-emerald-300"
+					>
+						Top Performing Months
+					</h2>
 				</div>
 				<div class="space-y-3">
-					{topMonths.map((month, index) => {
-						const rankColors = [
-							'from-yellow-400 to-yellow-500', // 1st - Gold
-							'from-gray-300 to-gray-400',     // 2nd - Silver  
-							'from-amber-600 to-amber-700',   // 3rd - Bronze
-							'from-blue-400 to-blue-500',     // 4th - Blue
-							'from-purple-400 to-purple-500'  // 5th - Purple
-						]
-						return (
-							<div class="group flex items-center justify-between p-4 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white/50 dark:bg-black/20 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-								<div class="flex items-center gap-3">
-									<div class={`w-8 h-8 rounded-full bg-gradient-to-r ${rankColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white text-sm font-bold shadow-lg`}>
-										{index + 1}
+					{
+						topMonths.map((month, index) => {
+							const rankColors = [
+								'from-yellow-400 to-yellow-500', // 1st - Gold
+								'from-gray-300 to-gray-400', // 2nd - Silver
+								'from-amber-600 to-amber-700', // 3rd - Bronze
+								'from-blue-400 to-blue-500', // 4th - Blue
+								'from-purple-400 to-purple-500', // 5th - Purple
+							]
+							return (
+								<div class="group flex items-center justify-between rounded-lg border border-emerald-200 bg-white/50 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg dark:border-emerald-800 dark:bg-black/20">
+									<div class="flex items-center gap-3">
+										<div
+											class={`h-8 w-8 rounded-full bg-gradient-to-r ${rankColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}
+										>
+											{index + 1}
+										</div>
+										<div>
+											<div class="font-bold text-emerald-800 dark:text-emerald-200">
+												{MONTHS[month.month - 1]}{' '}
+												{month.year}
+											</div>
+											<div class="text-muted-foreground text-sm">
+												{month.count} CTF
+												{month.count !== 1 ? 's' : ''}
+											</div>
+										</div>
 									</div>
-									<div>
-										<div class="font-bold text-emerald-800 dark:text-emerald-200">{MONTHS[month.month - 1]} {month.year}</div>
-										<div class="text-muted-foreground text-sm">{month.count} CTF{month.count !== 1 ? 's' : ''}</div>
+									<div class="text-right">
+										<div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+											#{month.averagePlacement}
+										</div>
+										<div class="text-muted-foreground text-sm">
+											avg placement
+										</div>
 									</div>
 								</div>
-								<div class="text-right">
-									<div class="font-bold text-lg text-emerald-700 dark:text-emerald-300">#{month.averagePlacement}</div>
-									<div class="text-muted-foreground text-sm">avg placement</div>
-								</div>
-							</div>
-						)
-					})}
+							)
+						})
+					}
 				</div>
 			</div>
 
-			<div class="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 p-6">
-				<div class="flex items-center gap-3 mb-4">
-					<div class="bg-gradient-to-r from-blue-500 to-blue-600 p-2 rounded-lg">
-						<Icon name="lucide:activity" class="h-5 w-5 text-white" />
+			<div
+				class="rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 dark:border-blue-800 dark:from-blue-950/20 dark:to-blue-900/20"
+			>
+				<div class="mb-4 flex items-center gap-3">
+					<div
+						class="rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 p-2"
+					>
+						<Icon
+							name="lucide:activity"
+							class="h-5 w-5 text-white"
+						/>
 					</div>
-					<h2 class="text-2xl font-bold text-blue-700 dark:text-blue-300">Most Active Months</h2>
+					<h2
+						class="text-2xl font-bold text-blue-700 dark:text-blue-300"
+					>
+						Most Active Months
+					</h2>
 				</div>
 				<div class="space-y-3">
-					{mostActiveMonths.map((month, index) => {
-						const activityColors = [
-							'from-red-400 to-red-500',       // Most active - Red
-							'from-orange-400 to-orange-500', // 2nd - Orange
-							'from-yellow-400 to-yellow-500', // 3rd - Yellow
-							'from-green-400 to-green-500',   // 4th - Green
-							'from-blue-400 to-blue-500'      // 5th - Blue
-						]
-						return (
-							<div class="group flex items-center justify-between p-4 rounded-lg border border-blue-200 dark:border-blue-800 bg-white/50 dark:bg-black/20 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-								<div class="flex items-center gap-3">
-									<div class={`w-8 h-8 rounded-full bg-gradient-to-r ${activityColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-white text-sm font-bold shadow-lg`}>
-										{index + 1}
+					{
+						mostActiveMonths.map((month, index) => {
+							const activityColors = [
+								'from-red-400 to-red-500', // Most active - Red
+								'from-orange-400 to-orange-500', // 2nd - Orange
+								'from-yellow-400 to-yellow-500', // 3rd - Yellow
+								'from-green-400 to-green-500', // 4th - Green
+								'from-blue-400 to-blue-500', // 5th - Blue
+							]
+							return (
+								<div class="group flex items-center justify-between rounded-lg border border-blue-200 bg-white/50 p-4 transition-all duration-300 hover:scale-105 hover:shadow-lg dark:border-blue-800 dark:bg-black/20">
+									<div class="flex items-center gap-3">
+										<div
+											class={`h-8 w-8 rounded-full bg-gradient-to-r ${activityColors[index] || 'from-slate-400 to-slate-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}
+										>
+											{index + 1}
+										</div>
+										<div>
+											<div class="font-bold text-blue-800 dark:text-blue-200">
+												{MONTHS[month.month - 1]}{' '}
+												{month.year}
+											</div>
+											<div class="text-muted-foreground text-sm">
+												#{month.averagePlacement} avg
+											</div>
+										</div>
 									</div>
-									<div>
-										<div class="font-bold text-blue-800 dark:text-blue-200">{MONTHS[month.month - 1]} {month.year}</div>
-										<div class="text-muted-foreground text-sm">#{month.averagePlacement} avg</div>
+									<div class="text-right">
+										<div class="text-lg font-bold text-blue-700 dark:text-blue-300">
+											{month.count}
+										</div>
+										<div class="text-muted-foreground text-sm">
+											CTF{month.count !== 1 ? 's' : ''}
+										</div>
 									</div>
 								</div>
-								<div class="text-right">
-									<div class="font-bold text-lg text-blue-700 dark:text-blue-300">{month.count}</div>
-									<div class="text-muted-foreground text-sm">CTF{month.count !== 1 ? 's' : ''}</div>
-								</div>
-							</div>
-						)
-					})}
+							)
+						})
+					}
 				</div>
 			</div>
 		</div>
 
 		<!-- Yearly Overview -->
 		<div class="mt-8">
-			<h2 class="text-2xl font-bold mb-4">Yearly Overview</h2>
-			<div class="rounded-lg border overflow-hidden">
+			<h2 class="mb-4 text-2xl font-bold">Yearly Overview</h2>
+			<div class="overflow-hidden rounded-lg border">
 				<div class="overflow-x-auto">
 					<table class="w-full">
 						<thead class="bg-muted/50">
 							<tr>
-								<th class="text-left p-4 font-medium">Year</th>
-								<th class="text-left p-4 font-medium">CTFs</th>
-								<th class="text-left p-4 font-medium">Teams</th>
-								<th class="text-left p-4 font-medium">Avg Placement</th>
-								<th class="text-left p-4 font-medium">Best</th>
+								<th class="p-4 text-left font-medium">Year</th>
+								<th class="p-4 text-left font-medium">CTFs</th>
+								<th class="p-4 text-left font-medium">Teams</th>
+								<th class="p-4 text-left font-medium"
+									>Avg Placement</th
+								>
+								<th class="p-4 text-left font-medium">Best</th>
 							</tr>
 						</thead>
 						<tbody>
-							{sortedYearlyStats.map((year) => (
-								<tr class="border-t">
-									<td class="p-4 font-medium">{year.year}</td>
-									<td class="p-4">{year.count}</td>
-									<td class="p-4">{year.teamCount}</td>
-									<td class="p-4">{year.averagePlacement}</td>
-									<td class="p-4">{year.bestPlacement}</td>
-								</tr>
-							))}
+							{
+								sortedYearlyStats.map((year) => (
+									<tr class="border-t">
+										<td class="p-4 font-medium">
+											{year.year}
+										</td>
+										<td class="p-4">{year.count}</td>
+										<td class="p-4">{year.teamCount}</td>
+										<td class="p-4">
+											{year.averagePlacement}
+										</td>
+										<td class="p-4">
+											{year.bestPlacement}
+										</td>
+									</tr>
+								))
+							}
 						</tbody>
 					</table>
 				</div>
@@ -593,22 +963,33 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 		<!-- Recent Activity -->
 		<div class="mt-8">
-			<h2 class="text-2xl font-bold mb-4">Recent Activity</h2>
+			<h2 class="mb-4 text-2xl font-bold">Recent Activity</h2>
 			<div class="space-y-3">
-				{sortedMonthlyStats.slice(0, 6).map((month) => (
-					<div class="flex items-center justify-between p-4 rounded-lg border">
-						<div>
-							<div class="font-medium">{MONTHS[month.month - 1]} {month.year}</div>
-							<div class="text-muted-foreground text-sm">
-								{month.count} CTF{month.count !== 1 ? 's' : ''} • {month.teamCount} team{month.teamCount !== 1 ? 's' : ''}
+				{
+					sortedMonthlyStats.slice(0, 6).map((month) => (
+						<div class="flex items-center justify-between rounded-lg border p-4">
+							<div>
+								<div class="font-medium">
+									{MONTHS[month.month - 1]} {month.year}
+								</div>
+								<div class="text-muted-foreground text-sm">
+									{month.count} CTF
+									{month.count !== 1 ? 's' : ''} •{' '}
+									{month.teamCount} team
+									{month.teamCount !== 1 ? 's' : ''}
+								</div>
+							</div>
+							<div class="text-right">
+								<div class="font-semibold">
+									#{month.averagePlacement}
+								</div>
+								<div class="text-muted-foreground text-sm">
+									avg placement
+								</div>
 							</div>
 						</div>
-						<div class="text-right">
-							<div class="font-semibold">#{month.averagePlacement}</div>
-							<div class="text-muted-foreground text-sm">avg placement</div>
-						</div>
-					</div>
-				))}
+					))
+				}
 			</div>
 		</div>
 	</section>

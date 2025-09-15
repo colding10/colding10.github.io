@@ -151,9 +151,11 @@ const data = entry.data
 								Review
 							</h2>
 							<div class="mt-2 leading-7 break-words">
-								{normalizeYamlText(data.review).split('\n').map(line => (
-									<div>{line}</div>
-								))}
+								{normalizeYamlText(data.review)
+									.split('\n')
+									.map((line) => (
+										<div>{line}</div>
+									))}
 							</div>
 						</div>
 					)}
@@ -163,9 +165,11 @@ const data = entry.data
 								Notes
 							</h2>
 							<div class="mt-2 leading-7 break-words">
-								{normalizeYamlText(data.notes).split('\n').map(line => (
-									<div>{line}</div>
-								))}
+								{normalizeYamlText(data.notes)
+									.split('\n')
+									.map((line) => (
+										<div>{line}</div>
+									))}
 							</div>
 						</div>
 					)}
