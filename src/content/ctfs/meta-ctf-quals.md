@@ -13,4 +13,5 @@ wouldPlayAgain: yes
 notes: |
   - SPL full clear
   - GL to SPL @ finals!
+  - EDIT: uh apparently i can go to finals.... welp time to bum around :trol:
 ---
