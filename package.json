@@ -15,7 +15,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.5",
     "@astrojs/markdown-remark": "6.3.6",
     "@astrojs/mdx": "4.3.4",
     "@astrojs/react": "4.3.0",
@@ -23,8 +23,8 @@
     "@astrojs/sitemap": "3.5.1",
     "@expressive-code/plugin-collapsible-sections": "^0.40.2",
     "@expressive-code/plugin-line-numbers": "^0.40.2",
-    "@iconify-json/lucide": "^1.2.68",
-    "@tailwindcss/vite": "^4.1.14",
+    "@iconify-json/lucide": "^1.2.73",
+    "@tailwindcss/vite": "^4.1.17",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "astro": "5.13.4",
@@ -43,8 +43,8 @@
     "rehype-pretty-code": "^0.14.1",
     "remark-emoji": "^5.0.2",
     "remark-math": "^6.0.0",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.14",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
