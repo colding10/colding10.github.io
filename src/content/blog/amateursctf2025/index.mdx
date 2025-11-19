@@ -1,6 +1,6 @@
 ---
 title: 'amateursCTF 2025'
-description: 'cheesing a crypto'
+description: 'cheesing a crypto with a timing side-channel'
 date: 2025-11-18
 tags: ['writeups', 'crypto']
 authors: ['cold']
@@ -27,13 +27,13 @@ Here I'll write about two crypto challenges that wjat and I solved using a timin
 
 ## What the server did
 
-```python title=chall.py
-#!/usr/local/bin/python
+```python title=addition2.py
 from Crypto.Util.number import *
 from random import getrandbits, choice
 import hashlib
 
 flag = open('flag.txt','rb').read().strip()
+assert len(flag) == 72
 flag = bytes_to_long(flag) << 256
 
 n = getPrime(1024) * getPrime(1024)
@@ -51,6 +51,36 @@ while True:
 
     c = choice([pow(m, e, n) for m in ms])
     print(f'{c = }')
+```
+
+That was the server for the first challenge, addition2. The second one (addition3) only had a few minor changes:
+
+```python title=addition3.py {"n is now regenerated each time":12-13} {"lshift 512 instead of 256":8-9}
+from Crypto.Util.number import *
+import os
+from random import getrandbits, choice
+import hashlib
+
+flag = open('flag.txt','rb').read().strip()
+assert len(flag) == 52
+
+flag = bytes_to_long(flag) << 512
+
+while True:
+
+    n = int(os.popen('openssl genrsa 2048 | openssl rsa -noout -modulus').read()[8:], 16)
+    e = 3
+
+    print(f'{n, e = }')
+    cs = [flag + getrandbits(512) for _ in range(100000)]
+    scramble = int(input('scramble the flag: '))
+
+    ms = [(m + scramble)%n for m in cs]
+
+    print('scrambling...')
+
+    c = choice([pow(m, e, n) for m in ms])
+    print(f'{c = }')%
 ```
 
 Here, the server:
@@ -215,3 +245,9 @@ if __name__ == "__main__":
 ```
 
 This is the byte-by-byte approach. It takes a bit longer, but progress persists across instances, so that's okay. Also, the charset within the flag format turned out to be lowercase hex, so that could have been optimized.
+
+## Conclusion
+
+Wjat and I were stuck on this for a **long time**. We tried and failed to implement multivariate coppersmith for addition2 and were completely stumped for addition3. Eventually though, we thought of this timing side channel and managed to solve both.
+
+I guess the lesson is that in creating cryptographically secure services, you always need to watch out for any side-channel that can leak information about secrets! By manipulating our controlled value (scramble) to probe for timing differences, we managed to leak the entire flag, even though the cryptosystem itself is secure.
