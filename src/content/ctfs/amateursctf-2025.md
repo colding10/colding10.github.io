@@ -3,7 +3,7 @@ name: 'amateursCTF 2025'
 url: 'https://ctftime.org/event/2844'
 team: 'CBF'
 placement: '1st hs'
-description: 'la competition ctf avec cbass, wj, brew, anywheres, math'
+description: 'amateurs avec cbass, wj, brew, anywheres, math'
 month: 11
 year: 2025
 review: |
