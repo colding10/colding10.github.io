@@ -51,6 +51,10 @@ export const SOCIAL_LINKS: SocialLink[] = [
 		href: '/rss.xml',
 		label: 'RSS',
 	},
+	{
+		href: '/colin.asc',
+		label: 'PGP',
+	},
 ]
 
 export const ICON_MAP: IconMap = {
@@ -61,4 +65,5 @@ export const ICON_MAP: IconMap = {
 	Twitter: 'lucide:twitter',
 	Email: 'lucide:mail',
 	RSS: 'lucide:rss',
+	PGP: 'lucide:key',
 }
