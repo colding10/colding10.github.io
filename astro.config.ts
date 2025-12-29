@@ -71,7 +71,8 @@ export default defineConfig({
     icon(),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    plugins: tailwindcss() as any,
   },
   server: {
     port: 1234,
