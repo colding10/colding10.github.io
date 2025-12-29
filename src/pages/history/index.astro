@@ -204,7 +204,7 @@ const uniqueTeams = Array.from(
 							data-year={group.year}
 						>
 							<div class="relative pl-10">
-								<div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 rounded-full ring-2 transition-all duration-200" />
+								<div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 -translate-x-1/2 rounded-full ring-2 transition-all duration-200" />
 								<p class="text-muted-foreground text-xs tracking-wider uppercase">
 									{MONTHS[group.month - 1]} {group.year}
 								</p>
@@ -225,7 +225,7 @@ const uniqueTeams = Array.from(
 											data-rank={rank ?? ''}
 											data-tier={tier}
 										>
-											<div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 rounded-full ring-2 transition-all duration-200" />
+											<div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 -translate-x-1/2 rounded-full ring-2 transition-all duration-200" />
 											<div class="flex items-start gap-2">
 												{/* Tier badge at the far left of content block */}
 												<span
