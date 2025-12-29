@@ -18,6 +18,7 @@ import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-s
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
+import type { PluginOption } from 'vite'
 
 export default defineConfig({
   site: 'https://cold.is-a.dev',
@@ -71,7 +72,7 @@ export default defineConfig({
     icon(),
   ],
   vite: {
-    plugins: tailwindcss(),
+    plugins: tailwindcss() as PluginOption[],
   },
   server: {
     port: 1234,
