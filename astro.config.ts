@@ -71,7 +71,7 @@ export default defineConfig({
     icon(),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: tailwindcss(),
   },
   server: {
     port: 1234,
