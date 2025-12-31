@@ -1,0 +1,96 @@
+---
+interface Props {
+	uniqueYears: number[]
+	uniqueTeams: string[]
+}
+
+const { uniqueYears, uniqueTeams } = Astro.props
+const tiers = ['SS', 'S', 'A', 'B', 'C', 'D']
+const topFilters = [
+	{ value: 'TOP10', label: 'Top 10' },
+	{ value: 'TOP5', label: 'Top 5' },
+	{ value: 'TOP3', label: 'Top 3' },
+]
+---
+
+<div class="filter-dropdowns flex flex-wrap gap-2">
+	<select
+		id="year-filter"
+		class="bg-background border-input hover:border-ring/50 focus:ring-ring min-w-[120px] cursor-pointer rounded-md border px-3 py-2 text-sm transition-all focus:ring-2 focus:outline-none"
+	>
+		<option value="">All Years</option>
+		{uniqueYears.map((year) => <option value={year.toString()}>{year}</option>)}
+	</select>
+
+	<select
+		id="tier-filter"
+		class="bg-background border-input hover:border-ring/50 focus:ring-ring min-w-[140px] cursor-pointer rounded-md border px-3 py-2 text-sm transition-all focus:ring-2 focus:outline-none"
+	>
+		<option value="">All Placements</option>
+		{tiers.map((tier) => <option value={tier}>{tier}</option>)}
+		{
+			topFilters.map((filter) => (
+				<option value={filter.value}>{filter.label}</option>
+			))
+		}
+	</select>
+
+	<select
+		id="team-filter"
+		class="bg-background border-input hover:border-ring/50 focus:ring-ring min-w-[120px] cursor-pointer rounded-md border px-3 py-2 text-sm transition-all focus:ring-2 focus:outline-none"
+	>
+		<option value="">All Teams</option>
+		{uniqueTeams.map((team) => <option value={team}>{team}</option>)}
+	</select>
+</div>
+
+<script>
+	function initFilterDropdowns() {
+		const yearFilter = document.getElementById(
+			'year-filter',
+		) as HTMLSelectElement
+		const tierFilter = document.getElementById(
+			'tier-filter',
+		) as HTMLSelectElement
+		const teamFilter = document.getElementById(
+			'team-filter',
+		) as HTMLSelectElement
+
+		if (!yearFilter || !tierFilter || !teamFilter) return
+
+		yearFilter.addEventListener('change', () => {
+			document.dispatchEvent(
+				new CustomEvent('yearFilterChange', {
+					detail: { value: yearFilter.value },
+				}),
+			)
+		})
+
+		tierFilter.addEventListener('change', () => {
+			document.dispatchEvent(
+				new CustomEvent('tierFilterChange', {
+					detail: { value: tierFilter.value },
+				}),
+			)
+		})
+
+		teamFilter.addEventListener('change', () => {
+			document.dispatchEvent(
+				new CustomEvent('teamFilterChange', {
+					detail: { value: teamFilter.value },
+				}),
+			)
+		})
+
+		// Listen for clear filters event
+		document.addEventListener('clearFilters', () => {
+			yearFilter.value = ''
+			tierFilter.value = ''
+			teamFilter.value = ''
+		})
+	}
+
+	// Initialize on page load and after navigation
+	initFilterDropdowns()
+	document.addEventListener('astro:after-swap', initFilterDropdowns)
+</script>

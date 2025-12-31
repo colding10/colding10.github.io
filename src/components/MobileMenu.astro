@@ -1,0 +1,54 @@
+---
+import { NAV_LINKS } from '@/consts'
+import { Icon } from 'astro-icon/components'
+---
+
+<details class="mobile-menu relative sm:hidden">
+	<summary
+		class="inline-flex size-8 cursor-pointer list-none items-center justify-center rounded-md text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 [&::-webkit-details-marker]:hidden"
+		title="Menu"
+	>
+		<Icon name="lucide:menu" class="size-5" />
+		<span class="sr-only">Toggle menu</span>
+	</summary>
+	<div
+		class="bg-popover text-popover-foreground absolute right-0 top-full z-50 mt-1 min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-md"
+	>
+		{
+			NAV_LINKS.map((item) => (
+				<a
+					href={item.href}
+					class="relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-lg font-medium capitalize outline-hidden select-none hover:bg-accent hover:text-accent-foreground"
+				>
+					{item.label}
+				</a>
+			))
+		}
+	</div>
+</details>
+
+<script>
+	function initMobileMenu() {
+		const menu = document.querySelector('.mobile-menu') as HTMLDetailsElement
+		if (!menu) return
+
+		// Close menu when clicking outside
+		const handleClickOutside = (e: MouseEvent) => {
+			if (menu.open && !menu.contains(e.target as Node)) {
+				menu.open = false
+			}
+		}
+
+		// Close menu on navigation
+		const handleNavigation = () => {
+			menu.open = false
+		}
+
+		document.addEventListener('click', handleClickOutside)
+		document.addEventListener('astro:before-swap', handleNavigation)
+	}
+
+	// Initialize on page load and after navigation
+	initMobileMenu()
+	document.addEventListener('astro:after-swap', initMobileMenu)
+</script>

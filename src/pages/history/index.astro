@@ -1,7 +1,7 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import FilterDropdowns from '@/components/FilterDropdowns.astro'
 import PageHead from '@/components/PageHead.astro'
-import FilterDropdowns from '@/components/ui/FilterDropdowns'
 import Layout from '@/layouts/Layout.astro'
 import {
 	getTierBadgeClasses,
@@ -154,19 +154,14 @@ const uniqueTeams = Array.from(
 						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
 					/>
 
-					<div class="dropdown-container flex flex-wrap gap-2">
-						<FilterDropdowns
-							client:load
-							uniqueYears={uniqueYears.filter(
-								(y) =>
-									typeof y === 'string' ||
-									typeof y === 'number',
-							)}
-							uniqueTeams={uniqueTeams.filter(
-								(t) => typeof t === 'string',
-							)}
-						/>
-					</div>
+					<FilterDropdowns
+						uniqueYears={uniqueYears.filter(
+							(y) => typeof y === 'number',
+						)}
+						uniqueTeams={uniqueTeams.filter(
+							(t) => typeof t === 'string',
+						)}
+					/>
 				</div>
 				<div
 					class="text-muted-foreground flex items-center gap-2 text-xs"

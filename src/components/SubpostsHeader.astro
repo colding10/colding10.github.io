@@ -136,15 +136,15 @@ const currentSubpostDetails = isCurrentSubpost
 														{activePostCombinedReadingTime &&
 															activePostCombinedReadingTime !==
 																activePostReadingTime && (
-																<span>
-																	{' '}
-																	(
-																	{
-																		activePostCombinedReadingTime
-																	}{' '}
-																	total)
-																</span>
-															)}
+															<span>
+																{' '}
+																(
+																{
+																	activePostCombinedReadingTime
+																}{' '}
+																total)
+															</span>
+														)}
 													</span>
 												)}
 											</div>
@@ -204,133 +204,99 @@ const currentSubpostDetails = isCurrentSubpost
 }
 
 <script>
-	class SubpostsState {
-		scrollArea: HTMLElement | null = null
-		detailsElement: HTMLDetailsElement | null = null
-		headerScrollArea: HTMLElement | null = null
+	import {
+		updateScrollMask,
+		scrollToCenter,
+		createLifecycleController,
+	} from '@/scripts/toc-utils'
 
-		reset() {
-			this.scrollArea = null
-			this.detailsElement = null
-			this.headerScrollArea = null
+	const CONTAINER_ID = 'mobile-subposts-container'
+
+	interface SubpostsState {
+		scrollArea: HTMLElement | null
+		detailsElement: HTMLDetailsElement | null
+		headerScrollArea: HTMLElement | null
+	}
+
+	const state: SubpostsState = {
+		scrollArea: null,
+		detailsElement: null,
+		headerScrollArea: null,
+	}
+
+	function updateMask() {
+		if (!state.scrollArea || !state.headerScrollArea) return
+		updateScrollMask(
+			state.scrollArea,
+			state.headerScrollArea,
+			'mask-t-from-80%',
+			'mask-b-from-80%',
+		)
+	}
+
+	function scrollToActive() {
+		if (!state.scrollArea) return
+
+		const activeItem = state.scrollArea.querySelector(
+			'.mobile-subposts-active-item',
+		)
+		if (activeItem) {
+			scrollToCenter(state.scrollArea, activeItem)
 		}
 	}
 
-	const state = new SubpostsState()
+	function setupInteraction() {
+		const container = document.getElementById(CONTAINER_ID)
+		if (!container) return
 
-	class SubpostsHeaderScrollMask {
-		static update() {
-			if (!state.scrollArea || !state.headerScrollArea) return
+		state.scrollArea = container.querySelector(
+			'[data-radix-scroll-area-viewport]',
+		)
+		state.detailsElement = container.querySelector('details')
+		state.headerScrollArea = container.querySelector(
+			'[data-subposts-header-scroll]',
+		)
+		const links = container.querySelectorAll('.mobile-subposts-link')
 
-			const { scrollTop, scrollHeight, clientHeight } = state.scrollArea
-			const threshold = 5
-			const isAtTop = scrollTop <= threshold
-			const isAtBottom =
-				scrollTop >= scrollHeight - clientHeight - threshold
-
-			state.headerScrollArea.classList.toggle('mask-t-from-80%', !isAtTop)
-			state.headerScrollArea.classList.toggle(
-				'mask-b-from-80%',
-				!isAtBottom,
-			)
-		}
-	}
-
-	class SubpostsScroll {
-		static toActive() {
-			if (!state.scrollArea) return
-
-			const activeItem = state.scrollArea.querySelector(
-				'.mobile-subposts-active-item',
-			)
-			if (!activeItem) return
-
-			const { top: areaTop, height: areaHeight } =
-				state.scrollArea.getBoundingClientRect()
-			const { top: itemTop, height: itemHeight } =
-				activeItem.getBoundingClientRect()
-
-			const currentItemTop =
-				itemTop - areaTop + state.scrollArea.scrollTop
-			const targetScroll = Math.max(
-				0,
-				Math.min(
-					currentItemTop - (areaHeight - itemHeight) / 2,
-					state.scrollArea.scrollHeight -
-						state.scrollArea.clientHeight,
-				),
-			)
-
-			state.scrollArea.scrollTop = targetScroll
-		}
-
-		static setupInteraction() {
-			const container = document.getElementById(
-				'mobile-subposts-container',
-			)
-			if (!container) return
-
-			state.scrollArea = container.querySelector(
-				'[data-radix-scroll-area-viewport]',
-			)
-			state.detailsElement = container.querySelector('details')
-			state.headerScrollArea = container.querySelector(
-				'[data-subposts-header-scroll]',
-			)
-			const links = container.querySelectorAll('.mobile-subposts-link')
-
-			if (state.scrollArea) {
-				state.scrollArea.addEventListener(
-					'scroll',
-					SubpostsHeaderScrollMask.update,
-					{ passive: true },
-				)
-			}
-
-			if (state.detailsElement) {
-				state.detailsElement.addEventListener('toggle', () => {
-					if (state.detailsElement?.open) {
-						requestAnimationFrame(() => {
-							SubpostsScroll.toActive()
-							setTimeout(SubpostsHeaderScrollMask.update, 100)
-						})
-					}
-				})
-			}
-
-			links.forEach((link) => {
-				link.addEventListener('click', () => {
-					if (state.detailsElement) state.detailsElement.open = false
-				})
+		if (state.scrollArea) {
+			state.scrollArea.addEventListener('scroll', updateMask, {
+				passive: true,
 			})
 		}
-	}
 
-	class SubpostsController {
-		static init() {
-			state.reset()
-			SubpostsScroll.setupInteraction()
+		if (state.detailsElement) {
+			state.detailsElement.addEventListener('toggle', () => {
+				if (state.detailsElement?.open) {
+					requestAnimationFrame(() => {
+						scrollToActive()
+						setTimeout(updateMask, 100)
+					})
+				}
+			})
 		}
 
-		static cleanup() {
-			if (state.scrollArea) {
-				state.scrollArea.removeEventListener(
-					'scroll',
-					SubpostsHeaderScrollMask.update,
-				)
-			}
-			state.reset()
-		}
+		links.forEach((link) => {
+			link.addEventListener('click', () => {
+				if (state.detailsElement) state.detailsElement.open = false
+			})
+		})
 	}
 
-	document.addEventListener('astro:page-load', () =>
-		SubpostsController.init(),
-	)
-	document.addEventListener('astro:after-swap', () => {
-		SubpostsController.cleanup()
-		SubpostsController.init()
-	})
-	document.addEventListener('astro:before-swap', () =>
-		SubpostsController.cleanup(),
-	)
+	function init() {
+		state.scrollArea = null
+		state.detailsElement = null
+		state.headerScrollArea = null
+		setupInteraction()
+	}
+
+	function cleanup() {
+		if (state.scrollArea) {
+			state.scrollArea.removeEventListener('scroll', updateMask)
+		}
+		state.scrollArea = null
+		state.detailsElement = null
+		state.headerScrollArea = null
+	}
+
+	createLifecycleController(init, cleanup)
 </script>

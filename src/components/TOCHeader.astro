@@ -94,338 +94,238 @@ const { headings } = Astro.props
 }
 
 <script>
+	import {
+		buildHeadingRegions,
+		getVisibleHeadingIds,
+		getProseHeadings,
+		updateScrollMask,
+		scrollToCenter,
+		createLifecycleController,
+		type HeadingRegion,
+	} from '@/scripts/toc-utils'
+
 	const INITIAL_OVERVIEW_TEXT = 'Overview'
 	const HEADER_OFFSET = 102 + 36
 	const PROGRESS_CIRCLE_RADIUS = 10
 	const PROGRESS_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS
+	const CONTAINER_ID = 'mobile-toc-container'
 
-	class MobileTOCState {
-		progressCircle: HTMLElement | null = null
-		currentSectionText: HTMLElement | null = null
-		detailsElement: HTMLDetailsElement | null = null
-		listElement: HTMLElement | null = null
-		scrollArea: HTMLElement | null = null
-		headings: HTMLElement[] = []
-		regions: { id: string; start: number; end: number }[] = []
-		activeIds: string[] = []
+	interface MobileTOCState {
+		progressCircle: HTMLElement | null
+		currentSectionText: HTMLElement | null
+		detailsElement: HTMLDetailsElement | null
+		listElement: HTMLElement | null
+		scrollArea: HTMLElement | null
+		tocHeaderScroll: HTMLElement | null
+		headings: HTMLElement[]
+		regions: HeadingRegion[]
+		activeIds: string[]
+	}
 
-		reset() {
-			this.progressCircle = document.getElementById(
-				'mobile-toc-progress-circle',
-			)
-			this.currentSectionText = document.getElementById(
-				'mobile-toc-current-section',
-			)
-			this.detailsElement = document.querySelector(
-				'#mobile-toc-container details',
-			)
-			this.listElement = document.getElementById(
-				'mobile-table-of-contents',
-			)
-			const tocContainer = document.getElementById('mobile-toc-container')
-			this.scrollArea =
-				tocContainer?.querySelector(
-					'[data-radix-scroll-area-viewport]',
-				) || null
-			this.headings = []
-			this.regions = []
-			this.activeIds = []
+	const state: MobileTOCState = {
+		progressCircle: null,
+		currentSectionText: null,
+		detailsElement: null,
+		listElement: null,
+		scrollArea: null,
+		tocHeaderScroll: null,
+		headings: [],
+		regions: [],
+		activeIds: [],
+	}
 
-			if (this.progressCircle) {
-				this.progressCircle.style.strokeDasharray =
-					PROGRESS_CIRCLE_CIRCUMFERENCE.toString()
-				this.progressCircle.style.strokeDashoffset =
-					PROGRESS_CIRCLE_CIRCUMFERENCE.toString()
-			}
+	function resetState() {
+		const container = document.getElementById(CONTAINER_ID)
+		state.progressCircle = document.getElementById(
+			'mobile-toc-progress-circle',
+		)
+		state.currentSectionText = document.getElementById(
+			'mobile-toc-current-section',
+		)
+		state.detailsElement = document.querySelector(
+			`#${CONTAINER_ID} details`,
+		)
+		state.listElement = document.getElementById('mobile-table-of-contents')
+		state.scrollArea =
+			container?.querySelector('[data-radix-scroll-area-viewport]') || null
+		state.tocHeaderScroll =
+			container?.querySelector('[data-toc-header-scroll]') || null
+		state.headings = []
+		state.regions = []
+		state.activeIds = []
+
+		if (state.progressCircle) {
+			state.progressCircle.style.strokeDasharray =
+				PROGRESS_CIRCLE_CIRCUMFERENCE.toString()
+			state.progressCircle.style.strokeDashoffset =
+				PROGRESS_CIRCLE_CIRCUMFERENCE.toString()
 		}
 	}
 
-	const state = new MobileTOCState()
-
-	class HeadingRegions {
-		static build() {
-			state.headings = Array.from(
-				document.querySelectorAll<HTMLElement>(
-					'.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
-				),
-			)
-
-			if (state.headings.length === 0) {
-				state.regions = []
-				return
-			}
-
-			state.regions = state.headings.map((heading, index) => {
-				const nextHeading = state.headings[index + 1]
-				return {
-					id: heading.id,
-					start: heading.offsetTop,
-					end: nextHeading
-						? nextHeading.offsetTop
-						: document.body.scrollHeight,
-				}
-			})
-		}
-
-		static getVisibleIds(): string[] {
-			if (state.headings.length === 0) return []
-
-			const viewportTop = window.scrollY + HEADER_OFFSET
-			const viewportBottom = window.scrollY + window.innerHeight
-			const visibleIds = new Set<string>()
-
-			const isInViewport = (top: number, bottom: number) =>
-				(top >= viewportTop && top <= viewportBottom) ||
-				(bottom >= viewportTop && bottom <= viewportBottom) ||
-				(top <= viewportTop && bottom >= viewportBottom)
-
-			state.headings.forEach((heading) => {
-				const headingBottom = heading.offsetTop + heading.offsetHeight
-				if (isInViewport(heading.offsetTop, headingBottom)) {
-					visibleIds.add(heading.id)
-				}
-			})
-
-			state.regions.forEach((region) => {
-				if (
-					region.start <= viewportBottom &&
-					region.end >= viewportTop
-				) {
-					const heading = document.getElementById(region.id)
-					if (heading) {
-						const headingBottom =
-							heading.offsetTop + heading.offsetHeight
-						if (
-							region.end > headingBottom &&
-							(headingBottom < viewportBottom ||
-								viewportTop < region.end)
-						) {
-							visibleIds.add(region.id)
-						}
-					}
-				}
-			})
-
-			return Array.from(visibleIds)
-		}
+	function updateMask() {
+		if (!state.scrollArea || !state.tocHeaderScroll) return
+		updateScrollMask(
+			state.scrollArea,
+			state.tocHeaderScroll,
+			'mask-t-from-80%',
+			'mask-b-from-80%',
+		)
 	}
 
-	class TOCHeaderScrollMask {
-		static update() {
-			if (!state.scrollArea) return
+	function updateProgress() {
+		if (!state.progressCircle) return
 
-			const { scrollTop, scrollHeight, clientHeight } = state.scrollArea
-			const threshold = 5
-			const isAtTop = scrollTop <= threshold
-			const isAtBottom =
-				scrollTop >= scrollHeight - clientHeight - threshold
+		const scrollableDistance =
+			document.documentElement.scrollHeight - window.innerHeight
+		const scrollProgress =
+			scrollableDistance > 0
+				? Math.min(Math.max(window.scrollY / scrollableDistance, 0), 1)
+				: 0
 
-			state.scrollArea.classList.toggle('mask-t-from-80%', !isAtTop)
-			state.scrollArea.classList.toggle('mask-b-from-80%', !isAtBottom)
-		}
+		state.progressCircle.style.strokeDashoffset = (
+			PROGRESS_CIRCLE_CIRCUMFERENCE *
+			(1 - scrollProgress)
+		).toString()
 	}
 
-	class MobileTOCLinks {
-		static update(headingIds: string[]) {
-			if (!state.listElement || !state.currentSectionText) return
+	function updateCurrentSectionText(headingIds: string[]) {
+		if (!state.currentSectionText) return
 
-			state.listElement
-				.querySelectorAll('.mobile-toc-item')
-				.forEach((item) => {
-					const tocItem = item as HTMLElement
-					const headingId = tocItem.dataset.headingId
-					if (headingId && headingIds.includes(headingId)) {
-						tocItem.classList.add('text-foreground')
-					} else {
-						tocItem.classList.remove('text-foreground')
-					}
-				})
+		let textToShow = INITIAL_OVERVIEW_TEXT
 
-			if (headingIds.length > 0) {
-				this.scrollToActive(headingIds[0])
-			}
-
-			this.updateCurrentSectionText(headingIds)
-		}
-
-		static updateCurrentSectionText(headingIds: string[]) {
-			if (!state.currentSectionText) return
-
-			let textToShow = INITIAL_OVERVIEW_TEXT
-
-			if (headingIds.length > 0) {
-				const activeTexts = state.headings
-					.filter(
-						(heading) =>
-							headingIds.includes(heading.id) &&
-							heading.textContent,
-					)
-					.map((heading) => heading.textContent!.trim())
-
-				if (activeTexts.length > 0) {
-					textToShow = activeTexts.join(', ')
-				}
-			}
-
-			state.currentSectionText.textContent = textToShow
-		}
-
-		static scrollToActive(activeHeadingId: string) {
-			if (!state.listElement) return
-
-			const activeItem = state.listElement.querySelector(
-				`[data-heading-id="${activeHeadingId}"]`,
-			)
-			if (!activeItem) return
-
-			const scrollContainer = state.scrollArea
-			if (!scrollContainer) return
-
-			const { top: containerTop, height: containerHeight } =
-				scrollContainer.getBoundingClientRect()
-			const { top: itemTop, height: itemHeight } =
-				activeItem.getBoundingClientRect()
-
-			const currentItemTop =
-				itemTop - containerTop + scrollContainer.scrollTop
-			const targetScroll = Math.max(
-				0,
-				Math.min(
-					currentItemTop - (containerHeight - itemHeight) / 2,
-					scrollContainer.scrollHeight - scrollContainer.clientHeight,
-				),
-			)
-
-			if (Math.abs(targetScroll - scrollContainer.scrollTop) > 5) {
-				scrollContainer.scrollTop = targetScroll
-			}
-		}
-
-		static setupInteraction() {
-			if (!state.listElement) return
-
-			state.listElement
-				.querySelectorAll('.mobile-toc-item')
-				.forEach((item) => {
-					item.addEventListener('click', () => {
-						if (state.detailsElement)
-							state.detailsElement.open = false
-					})
-				})
-
-			if (state.scrollArea) {
-				state.scrollArea.addEventListener(
-					'scroll',
-					() => TOCHeaderScrollMask.update(),
-					{ passive: true },
+		if (headingIds.length > 0) {
+			const activeTexts = state.headings
+				.filter(
+					(heading) =>
+						headingIds.includes(heading.id) && heading.textContent,
 				)
-			}
+				.map((heading) => heading.textContent!.trim())
 
-			if (state.detailsElement) {
-				state.detailsElement.addEventListener('toggle', () => {
-					if (state.detailsElement?.open) {
-						setTimeout(TOCHeaderScrollMask.update, 100)
-					}
-				})
+			if (activeTexts.length > 0) {
+				textToShow = activeTexts.join(', ')
 			}
 		}
+
+		state.currentSectionText.textContent = textToShow
 	}
 
-	class ProgressCircle {
-		static update() {
-			if (!state.progressCircle) return
+	function updateLinks(headingIds: string[]) {
+		if (!state.listElement || !state.currentSectionText) return
 
-			const scrollableDistance =
-				document.documentElement.scrollHeight - window.innerHeight
-			const scrollProgress =
-				scrollableDistance > 0
-					? Math.min(
-							Math.max(window.scrollY / scrollableDistance, 0),
-							1,
-						)
-					: 0
+		state.listElement.querySelectorAll('.mobile-toc-item').forEach((item) => {
+			const tocItem = item as HTMLElement
+			const headingId = tocItem.dataset.headingId
+			if (headingId && headingIds.includes(headingId)) {
+				tocItem.classList.add('text-foreground')
+			} else {
+				tocItem.classList.remove('text-foreground')
+			}
+		})
 
-			state.progressCircle.style.strokeDashoffset = (
-				PROGRESS_CIRCLE_CIRCUMFERENCE *
-				(1 - scrollProgress)
-			).toString()
+		if (headingIds.length > 0 && state.scrollArea) {
+			const activeItem = state.listElement.querySelector(
+				`[data-heading-id="${headingIds[0]}"]`,
+			)
+			if (activeItem) {
+				scrollToCenter(state.scrollArea, activeItem)
+			}
 		}
+
+		updateCurrentSectionText(headingIds)
 	}
 
-	class MobileTOCController {
-		static handleScroll() {
-			const newActiveIds = HeadingRegions.getVisibleIds()
+	function setupInteraction() {
+		if (!state.listElement) return
 
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				MobileTOCLinks.update(state.activeIds)
-			}
-
-			ProgressCircle.update()
-		}
-
-		static handleResize() {
-			HeadingRegions.build()
-
-			const newActiveIds = HeadingRegions.getVisibleIds()
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				MobileTOCLinks.update(state.activeIds)
-			}
-
-			ProgressCircle.update()
-		}
-
-		static init() {
-			state.reset()
-			HeadingRegions.build()
-
-			if (!state.currentSectionText) return
-
-			if (state.headings.length === 0) {
-				state.currentSectionText.textContent = INITIAL_OVERVIEW_TEXT
-				window.addEventListener('scroll', ProgressCircle.update, {
-					passive: true,
-				})
-				ProgressCircle.update()
-				return
-			}
-
-			state.activeIds = HeadingRegions.getVisibleIds()
-			MobileTOCLinks.update(state.activeIds)
-			ProgressCircle.update()
-
-			MobileTOCLinks.setupInteraction()
-			window.addEventListener('scroll', this.handleScroll, {
-				passive: true,
+		state.listElement.querySelectorAll('.mobile-toc-item').forEach((item) => {
+			item.addEventListener('click', () => {
+				if (state.detailsElement) state.detailsElement.open = false
 			})
-			window.addEventListener('resize', this.handleResize, {
+		})
+
+		if (state.scrollArea) {
+			state.scrollArea.addEventListener('scroll', updateMask, {
 				passive: true,
 			})
 		}
 
-		static cleanup() {
-			window.removeEventListener('scroll', this.handleScroll)
-			window.removeEventListener('scroll', ProgressCircle.update)
-			window.removeEventListener('resize', this.handleResize)
-			state.activeIds = []
-			state.headings = []
-			state.regions = []
+		if (state.detailsElement) {
+			state.detailsElement.addEventListener('toggle', () => {
+				if (state.detailsElement?.open) {
+					setTimeout(updateMask, 100)
+				}
+			})
 		}
 	}
 
-	document.addEventListener('astro:page-load', () =>
-		MobileTOCController.init(),
-	)
-	document.addEventListener('astro:after-swap', () => {
-		MobileTOCController.cleanup()
-		MobileTOCController.init()
-	})
-	document.addEventListener('astro:before-swap', () =>
-		MobileTOCController.cleanup(),
-	)
+	function handleScroll() {
+		const newActiveIds = getVisibleHeadingIds(
+			state.headings,
+			state.regions,
+			HEADER_OFFSET,
+		)
+
+		if (JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)) {
+			state.activeIds = newActiveIds
+			updateLinks(state.activeIds)
+		}
+
+		updateProgress()
+	}
+
+	function handleResize() {
+		state.headings = getProseHeadings()
+		state.regions = buildHeadingRegions(state.headings)
+
+		const newActiveIds = getVisibleHeadingIds(
+			state.headings,
+			state.regions,
+			HEADER_OFFSET,
+		)
+
+		if (JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)) {
+			state.activeIds = newActiveIds
+			updateLinks(state.activeIds)
+		}
+
+		updateProgress()
+	}
+
+	function init() {
+		resetState()
+		state.headings = getProseHeadings()
+		state.regions = buildHeadingRegions(state.headings)
+
+		if (!state.currentSectionText) return
+
+		if (state.headings.length === 0) {
+			state.currentSectionText.textContent = INITIAL_OVERVIEW_TEXT
+			window.addEventListener('scroll', updateProgress, { passive: true })
+			updateProgress()
+			return
+		}
+
+		state.activeIds = getVisibleHeadingIds(
+			state.headings,
+			state.regions,
+			HEADER_OFFSET,
+		)
+		updateLinks(state.activeIds)
+		updateProgress()
+
+		setupInteraction()
+		window.addEventListener('scroll', handleScroll, { passive: true })
+		window.addEventListener('resize', handleResize, { passive: true })
+	}
+
+	function cleanup() {
+		window.removeEventListener('scroll', handleScroll)
+		window.removeEventListener('scroll', updateProgress)
+		window.removeEventListener('resize', handleResize)
+		state.activeIds = []
+		state.headings = []
+		state.regions = []
+	}
+
+	createLifecycleController(init, cleanup)
 </script>
