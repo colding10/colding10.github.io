@@ -3,7 +3,6 @@ import BlogCard from '@/components/BlogCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import { buttonVariants } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
@@ -16,12 +15,20 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
 
 	<!-- Hero Section -->
 	<section class="mt-8 mb-16">
-		<div class="space-y-6">
-			<h1 class="text-4xl font-bold">Hi! I'm cold</h1>
-			<p class="text-muted-foreground text-lg">
-				This is my site where I'll put occasional CTF writeups, things I
-				learn, and other random stuff! Hopefully you find an occasional
-				gem in this vast heap of yap here.
+		<div class="space-y-4">
+			<p class="text-muted-foreground text-sm tracking-widest uppercase">
+				CTF Player / Reverse Engineer
+			</p>
+			<h1 class="text-4xl font-bold">
+				Hi! I'm <span class="text-primary">cold</span>
+			</h1>
+			<p class="text-muted-foreground max-w-xl text-lg leading-relaxed">
+				This is my site where I'll put occasional <Link
+					href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
+					class="text-foreground hover:text-primary underline transition-colors"
+					external>CTF</Link
+				> writeups, things I learn, and other random stuff! Hopefully you
+				find an occasional gem in this vast heap of yap here.
 			</p>
 		</div>
 	</section>
@@ -43,34 +50,8 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
 		</div>
 
 		<div class="space-y-6">
-			{
-				blog.map((post) => (
-					<div class="transform transition-all duration-200 hover:scale-[1.01]">
-						<BlogCard entry={post} />
-					</div>
-				))
-			}
+			{blog.map((post) => <BlogCard entry={post} />)}
 		</div>
 	</section>
 
-	<!-- Info Section -->
-	<section class="mt-16">
-		<Separator className="mb-6" />
-		<div class="text-muted-foreground space-y-2 text-sm">
-			<p>
-				Check out this page for a <Link
-					href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
-					class="text-foreground hover:text-primary underline transition-colors"
-					external>explanation of what CTFs are</Link
-				>.
-			</p>
-			<p>
-				This site is based on <Link
-					href="https://github.com/jktrn/astro-erudite"
-					class="text-foreground hover:text-primary underline transition-colors"
-					external>astro-erudite</Link
-				>.
-			</p>
-		</div>
-	</section>
 </Layout>
