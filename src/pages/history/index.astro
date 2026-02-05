@@ -71,75 +71,43 @@ const uniqueTeams = Array.from(
 			</a>
 		</div>
 
-		<div
-			class="mt-4 rounded-lg border border-blue-200/70 bg-blue-50/80 p-4 dark:border-blue-800/50 dark:bg-blue-950/40"
-		>
-			<div class="flex flex-wrap gap-6 text-sm">
+		<div class="mt-4 space-y-4 rounded-lg border bg-secondary/30 p-4">
+			<div class="text-muted-foreground flex flex-wrap gap-x-6 gap-y-1 text-sm">
 				<div>
-					<span class="text-muted-foreground">Total CTFs:</span>
-					<span class="ml-1 font-semibold">{totalCTFs}</span>
+					<span>Total CTFs:</span>
+					<span class="text-foreground ml-1 font-semibold">{totalCTFs}</span>
 				</div>
 				<div>
-					<span class="text-muted-foreground">Months Active:</span>
-					<span class="ml-1 font-semibold">{totalMonths}</span>
+					<span>Months Active:</span>
+					<span class="text-foreground ml-1 font-semibold">{totalMonths}</span>
+				</div>
+				<div>
+					Teams: {
+						Object.entries(TEAM_URLS).map(
+							([team, url], index) => (
+								<>
+									<a
+										href={url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-foreground font-mono transition-colors duration-200 hover:underline"
+									>
+										{team}
+									</a>
+									{index <
+										Object.keys(TEAM_URLS).length - 1 &&
+										', '}
+								</>
+							),
+						)
+					}
 				</div>
 			</div>
-		</div>
 
-		<div
-			class="mt-4 rounded-lg border border-amber-200/70 bg-amber-50/80 p-4 dark:border-amber-800/50 dark:bg-amber-950/40"
-		>
-			<div class="flex items-start gap-3">
-				<Icon
-					name="lucide:info"
-					class="text-muted-foreground mt-0.5 h-5 w-5"
-				/>
-				<div class="space-y-2 text-sm">
-					<p>
-						<strong>Sorting:</strong> CTFs are sorted by month/year,
-						but probably not within each month.
-					</p>
-					<p>
-						<strong>Teams:</strong>
-						{
-							Object.entries(TEAM_URLS).map(
-								([team, url], index) => (
-									<>
-										<a
-											href={url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="font-mono transition-colors duration-200 hover:underline"
-										>
-											{team}
-										</a>
-										{index <
-											Object.keys(TEAM_URLS).length - 1 &&
-											', '}
-									</>
-								),
-							)
-						}
-					</p>
-				</div>
-			</div>
-		</div>
-
-		<div
-			class="mt-4 rounded-lg border border-emerald-200/70 bg-emerald-50/80 p-4 dark:border-emerald-800/50 dark:bg-emerald-950/40"
-		>
-			<div class="mb-3 flex items-center gap-3">
-				<Icon
-					name="lucide:lightbulb"
-					class="text-muted-foreground h-5 w-5"
-				/>
-				<div class="text-sm">
-					<strong>Tip:</strong> Click a CTF name to open its detail page.
-					You can also search & filter here. Try query operators like
-					<code>year:2025</code>, <code>team:BCA</code>, <code
-						>tier:A</code
-					>, or <code>top:10</code>.
-				</div>
+			<div class="text-muted-foreground text-xs">
+				Sorted by month/year. Use query operators like
+				<code>year:2025</code>, <code>team:BCA</code>,
+				<code>tier:A</code>, or <code>top:10</code>.
 			</div>
 
 			<!-- Search and Filter -->
@@ -172,7 +140,7 @@ const uniqueTeams = Array.from(
 					class="text-muted-foreground flex items-center gap-2 text-xs"
 				>
 					<span id="resultCount">{entries.length} CTFs</span>
-					<span>•</span>
+					<span>&middot;</span>
 					<button
 						id="clearFilters"
 						class="hover:text-foreground underline transition-colors duration-200"
