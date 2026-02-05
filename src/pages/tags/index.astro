@@ -14,7 +14,13 @@ const sortedTags = await getSortedTags()
 	<PageHead slot="head" title="Tags" />
 	<Breadcrumbs items={[{ label: 'Tags', icon: 'lucide:tags' }]} />
 
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-6">
+		<div>
+			<h1 class="text-3xl font-bold">Tags</h1>
+			<p class="text-muted-foreground mt-2">
+				Browse posts by tag. Click a tag to see all related posts.
+			</p>
+		</div>
 		<div class="flex flex-wrap gap-2">
 			{
 				sortedTags.map(({ tag, count }) => (
@@ -30,11 +36,6 @@ const sortedTags = await getSortedTags()
 					</Link>
 				))
 			}
-		</div>
-		<div>
-			Check out some of my tagged posts! You can search for specific types
-			of <Link href="/tags/writeups">writeups</Link> by clicking on a specific
-			tag/category.
 		</div>
 	</div>
 </Layout>
