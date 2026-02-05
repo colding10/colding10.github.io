@@ -127,25 +127,35 @@
 		@apply border-border outline-ring/50 tracking-tight;
 	}
 
-	/* Immediate header border - prevents FOUC and extension interference */
+	/* Header border with fallback */
 	.sticky-header {
 		border-bottom: 1px solid #d6d3c9 !important;
+		border-bottom-color: var(--border, #d6d3c9) !important;
 	}
 
 	[data-theme='dark'] .sticky-header {
-		border-bottom: 1px solid #3f3c49 !important;
+		border-bottom-color: #3f3c49 !important;
+		border-bottom-color: var(--border, #3f3c49) !important;
+	}
+
+	/* Footer border with fallback */
+	footer {
+		border-top: 1px solid #d6d3c9 !important;
+		border-top-color: var(--border, #d6d3c9) !important;
+	}
+
+	[data-theme='dark'] footer {
+		border-top-color: #3f3c49 !important;
+		border-top-color: var(--border, #3f3c49) !important;
 	}
 
 	html {
 		background: var(--background);
 		scrollbar-gutter: stable both-edges;
-		/* Remove forced scrollbar to prevent double scrollbar effect */
 	}
 
 	body {
-		/* Prevent any horizontal layout shifts */
 		overflow-x: hidden;
-		/* Ensure consistent width regardless of scrollbar */
 		width: 100%;
 		min-width: 0;
 	}
@@ -153,121 +163,9 @@
 	[data-theme='dark'] html {
 		background: var(--background);
 	}
-
-	/* Enhanced border consistency for cross-browser compatibility */
-	/* Base border styles with immediate fallbacks */
-	.border-b,
-	[class*='border-b'],
-	.sticky .border-b,
-	.sticky.border-b {
-		border-bottom-width: 1px;
-		border-bottom-style: solid;
-		/* Immediate fallback using calculated OKLCH values */
-		border-bottom-color: #d6d3c9; /* Converted from oklch(0.85 0.015 60) */
-		border-bottom-color: var(--border, #d6d3c9);
-	}
-
-	/* Border top styles for footer */
-	.border-t,
-	[class*='border-t'] {
-		border-top-width: 1px;
-		border-top-style: solid;
-		border-top-color: #d6d3c9; /* Light mode fallback */
-		border-top-color: var(--border, #d6d3c9);
-	}
-
-	/* Dark theme borders */
-	[data-theme='dark'] .border-b,
-	[data-theme='dark'] [class*='border-b'],
-	[data-theme='dark'] .sticky .border-b,
-	[data-theme='dark'] .sticky.border-b {
-		border-bottom-color: #3f3c49; /* Converted from oklch(0.25 0.02 250) */
-		border-bottom-color: var(--border, #3f3c49);
-	}
-
-	[data-theme='dark'] .border-t,
-	[data-theme='dark'] [class*='border-t'] {
-		border-top-color: #3f3c49; /* Dark mode fallback */
-		border-top-color: var(--border, #3f3c49);
-	}
-
-	/* Specific header targeting for robustness - Extension-proof */
-	header,
-	.sticky.top-0.z-50.divide-y.border-b,
-	.bg-background\/95.border-border.sticky.border-b,
-	.sticky-header,
-	.sticky-header.bg-background\/95.border-border.sticky.border-b {
-		border-bottom: 1px solid #d6d3c9 !important;
-		border-bottom: 1px solid var(--border, #d6d3c9) !important;
-	}
-
-	[data-theme='dark'] header,
-	[data-theme='dark'] .sticky.top-0.z-50.divide-y.border-b,
-	[data-theme='dark'] .bg-background\/95.border-border.sticky.border-b,
-	[data-theme='dark'] .sticky-header,
-	[data-theme='dark']
-		.sticky-header.bg-background\/95.border-border.sticky.border-b {
-		border-bottom: 1px solid #3f3c49 !important;
-		border-bottom: 1px solid var(--border, #3f3c49) !important;
-	}
-
-	/* Ultra-high specificity for extension interference */
-	html body .sticky-header.bg-background\/95.border-border.sticky.border-b {
-		border-bottom: 1px solid #d6d3c9 !important;
-	}
-
-	html
-		body[data-theme='dark']
-		.sticky-header.bg-background\/95.border-border.sticky.border-b {
-		border-bottom: 1px solid #3f3c49 !important;
-	}
-
-	/* Footer specific targeting */
-	footer,
-	.bg-secondary\/50.border-border.border-t {
-		border-top: 1px solid #d6d3c9 !important;
-		border-top: 1px solid var(--border, #d6d3c9) !important;
-	}
-
-	[data-theme='dark'] footer,
-	[data-theme='dark'] .bg-secondary\/50.border-border.border-t {
-		border-top: 1px solid #3f3c49 !important;
-		border-top: 1px solid var(--border, #3f3c49) !important;
-	}
-
-	/* CSS Variables loading state safeguards */
-	@supports not (color: var(--border)) {
-		.border-b,
-		[class*='border-b'] {
-			border-bottom-color: #d6d3c9 !important;
-		}
-
-		.border-t,
-		[class*='border-t'] {
-			border-top-color: #d6d3c9 !important;
-		}
-
-		[data-theme='dark'] .border-b,
-		[data-theme='dark'] [class*='border-b'] {
-			border-bottom-color: #3f3c49 !important;
-		}
-
-		[data-theme='dark'] .border-t,
-		[data-theme='dark'] [class*='border-t'] {
-			border-top-color: #3f3c49 !important;
-		}
-	}
 }
 
 @layer utilities {
-	/* Enhanced cross-browser compatibility utilities */
-	/* Force immediate border rendering for critical elements */
-	.border-immediate {
-		border-width: 1px;
-		border-style: solid;
-		border-color: #d6d3c9 !important;
-	}
-
 	/* Prevent layout shifts from scrollbars and dropdowns */
 	.prevent-shift {
 		/* Reserve space for scrollbar to prevent horizontal shifts */
@@ -345,96 +243,4 @@
 		transform: translateX(0);
 	}
 
-	[data-theme='dark'] .border-immediate {
-		border-color: #3f3c49 !important;
-	}
-
-	/* Chrome-specific FOUC prevention */
-	@media screen and (-webkit-min-device-pixel-ratio: 0) {
-		/* Chrome/Safari specific fixes */
-		header,
-		footer,
-		.sticky {
-			/* Force immediate style application */
-			-webkit-transform: translateZ(0);
-			transform: translateZ(0);
-			/* Ensure borders are visible immediately */
-			will-change: border-color;
-		}
-
-		header {
-			border-bottom: 1px solid #d6d3c9 !important;
-		}
-
-		footer {
-			border-top: 1px solid #d6d3c9 !important;
-		}
-
-		[data-theme='dark'] header {
-			border-bottom: 1px solid #3f3c49 !important;
-		}
-
-		[data-theme='dark'] footer {
-			border-top: 1px solid #3f3c49 !important;
-		}
-	}
-
-	/* Pre-load critical colors in inline styles */
-	.preload-colors {
-		/* Hidden element to preload color calculations */
-		position: absolute;
-		visibility: hidden;
-		pointer-events: none;
-		color: #d6d3c9;
-		background-color: #3f3c49;
-		border-color: var(--border);
-	}
-
-	/* Minimal Gradient Utilities - High Contrast */
-	.bg-gradient-subtle {
-		background: linear-gradient(
-			135deg,
-			var(--gradient-subtle-start),
-			var(--gradient-subtle-end)
-		);
-	}
-
-	.bg-gradient-accent {
-		background: linear-gradient(
-			135deg,
-			var(--gradient-accent-start),
-			var(--gradient-accent-end)
-		);
-	}
-
-	/* Subtle border gradients */
-	.border-gradient {
-		border-image: linear-gradient(
-				90deg,
-				var(--gradient-border-start),
-				var(--gradient-border-end)
-			)
-			1;
-	}
-
-	/* Minimal text accent - only for special cases */
-	.text-accent-gradient {
-		background: linear-gradient(
-			90deg,
-			var(--gradient-accent-start),
-			var(--gradient-accent-end)
-		);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		/* Fallback for better accessibility */
-		color: var(--foreground);
-	}
-
-	@supports not (-webkit-background-clip: text) {
-		.text-accent-gradient {
-			color: var(--foreground);
-			background: none;
-		}
-	}
 }

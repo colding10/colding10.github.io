@@ -14,30 +14,21 @@
 }
 
 /* Clean hover effects */
-.hover-subtle:hover {
-	background: var(--accent);
+.hover-subtle {
 	transition: all 0.2s ease;
 }
 
-/* Focus states with blue accent */
-.focus-glow:focus {
-	box-shadow: 0 0 0 2px var(--ring);
-	outline: none;
+.hover-subtle:hover {
+	background: var(--accent);
 }
 
-/* Clean section dividers */
-.section-divider {
-	height: 1px;
-	background: var(--border);
-	border: none;
-	margin: 2rem 0;
-}
 
 /* Minimal card enhancement */
 .card-subtle {
 	background: var(--secondary);
 	border: 1px solid var(--border);
 	box-shadow: 0 1px 3px oklch(0.08 0.015 250 / 0.2);
+	transition: all 0.2s ease;
 }
 
 .card-subtle:hover {
@@ -45,36 +36,4 @@
 	border-color: var(--ring);
 	box-shadow: 0 4px 12px oklch(0.08 0.015 250 / 0.3);
 	transform: translateY(-1px);
-	transition: all 0.2s ease;
-}
-
-/* Clean button styles */
-.btn-primary {
-	background: var(--primary);
-	color: var(--primary-foreground);
-	border: 1px solid var(--primary);
-	transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-	background: var(--ring);
-	border-color: var(--ring);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px oklch(0.1 0.02 250 / 0.4);
-}
-
-/* Subtle text accents */
-.text-accent {
-	color: var(--ring);
-}
-
-/* Clean link styling */
-a {
-	color: var(--ring);
-	text-decoration: none;
-	transition: color 0.2s ease;
-}
-
-a:hover {
-	color: var(--foreground);
 }
