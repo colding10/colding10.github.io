@@ -11,8 +11,17 @@ import SocialIcons from './SocialIcons.astro'
 			class="flex flex-wrap items-center justify-center gap-x-2 text-center"
 		>
 			<span class="text-muted-foreground text-sm">
-				&copy; {new Date().getFullYear()} All rights reserved.
+				&copy; {new Date().getFullYear()} cold
 			</span>
+			<span class="text-muted-foreground/50 text-sm">&middot;</span>
+			<a
+				href="https://github.com/jktrn/astro-erudite"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-muted-foreground/70 hover:text-muted-foreground text-sm transition-colors"
+			>
+				Built with astro-erudite
+			</a>
 		</div>
 		<SocialIcons links={SOCIAL_LINKS} />
 	</div>
