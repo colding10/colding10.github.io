@@ -7,10 +7,10 @@ description: 'my first ever ctf (thanks @tien for recruiting me)'
 month: 2
 year: 2025
 review: |
-  Pretty mid ngl since challs were dropped while everyone is in school. They were also easy enough that speed was the major factor. I would play again js cuz its one of the few high school stuff that you do with school teams.
+  Pretty mid ngl since challs were dropped while everyone is in school. AI slop challs and AI slopped solutions.
 quality: 5/10
-wouldPlayAgain: yes
+wouldPlayAgain: no
 notes: |
   - This was a CTF for New Jersey high schoolers only i believe. Pretty easy challs since pretty much everyone has never done ctf before
-  - Most things I did was just chatgpt if im being 100% honest. I did try to start learning ctf tho. Also there was no rev
+  - No rev and only guessy shi
 ---
