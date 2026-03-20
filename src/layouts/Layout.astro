@@ -2,6 +2,7 @@
 import '@/styles/global.css'
 import '@/styles/typography.css'
 
+import DecorativeArtifact from '@/components/DecorativeArtifact.astro'
 import Footer from '@/components/Footer.astro'
 import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
@@ -46,89 +47,7 @@ const resolvedShellClass = shellClass ?? className ?? 'max-w-3xl'
             )}
             aria-hidden="true"
           >
-            <svg
-              viewBox="0 0 800 160"
-              class="dot-grid block h-40 w-full"
-              fill="none"
-              stroke="var(--foreground)"
-              stroke-width="0.5"
-              preserveAspectRatio="xMidYMax slice"
-            >
-              {/* Dense triangular mesh — top row */}
-              <path d="M0,30 L40,5 L85,32 Z" />
-              <path d="M40,5 L110,0 L85,32 Z" />
-              <path d="M85,32 L110,0 L160,18 Z" />
-              <path d="M85,32 L160,18 L145,48 Z" />
-              <path d="M145,48 L160,18 L230,8 L215,42 Z" />
-              <path d="M215,42 L230,8 L295,15 L280,45 Z" />
-              <path d="M280,45 L295,15 L365,5 L345,38 Z" />
-              <path d="M345,38 L365,5 L435,12 L415,42 Z" />
-              <path d="M415,42 L435,12 L510,3 L490,36 Z" />
-              <path d="M490,36 L510,3 L580,10 L560,40 Z" />
-              <path d="M560,40 L580,10 L650,5 L635,35 Z" />
-              <path d="M635,35 L650,5 L725,12 L710,38 Z" />
-              <path d="M710,38 L725,12 L800,8 L800,35 Z" />
-              {/* Middle row */}
-              <path d="M0,30 L85,32 L60,68 Z" />
-              <path d="M60,68 L85,32 L145,48 L120,75 Z" />
-              <path d="M120,75 L145,48 L215,42 L195,78 Z" />
-              <path d="M195,78 L215,42 L280,45 L265,80 Z" />
-              <path d="M265,80 L280,45 L345,38 L330,75 Z" />
-              <path d="M330,75 L345,38 L415,42 L398,78 Z" />
-              <path d="M398,78 L415,42 L490,36 L470,72 Z" />
-              <path d="M470,72 L490,36 L560,40 L542,76 Z" />
-              <path d="M542,76 L560,40 L635,35 L615,72 Z" />
-              <path d="M615,72 L635,35 L710,38 L690,74 Z" />
-              <path d="M690,74 L710,38 L800,35 L800,72 Z" />
-              {/* Bottom row */}
-              <path d="M0,68 L60,68 L35,108 Z" />
-              <path d="M35,108 L60,68 L120,75 L100,112 Z" />
-              <path d="M100,112 L120,75 L195,78 L175,115 Z" />
-              <path d="M175,115 L195,78 L265,80 L248,118 Z" />
-              <path d="M248,118 L265,80 L330,75 L318,116 Z" />
-              <path d="M318,116 L330,75 L398,78 L385,118 Z" />
-              <path d="M385,118 L398,78 L470,72 L455,114 Z" />
-              <path d="M455,114 L470,72 L542,76 L528,116 Z" />
-              <path d="M528,116 L542,76 L615,72 L600,112 Z" />
-              <path d="M600,112 L615,72 L690,74 L675,115 Z" />
-              <path d="M675,115 L690,74 L800,72 L800,112 Z" />
-              {/* Lowest edge */}
-              <path d="M0,108 L35,108 L15,145 Z" />
-              <path d="M15,145 L35,108 L100,112 L80,148 Z" />
-              <path d="M80,148 L100,112 L175,115 L155,150 Z" />
-              <path d="M155,150 L175,115 L248,118 L232,152 Z" />
-              <path d="M232,152 L248,118 L318,116 L305,150 Z" />
-              <path d="M305,150 L318,116 L385,118 L375,152 Z" />
-              <path d="M375,152 L385,118 L455,114 L445,150 Z" />
-              <path d="M445,150 L455,114 L528,116 L518,152 Z" />
-              <path d="M518,152 L528,116 L600,112 L592,150 Z" />
-              <path d="M592,150 L600,112 L675,115 L668,152 Z" />
-              <path d="M668,152 L675,115 L800,112 L800,150 Z" />
-              {/* Vertices */}
-              <g fill="var(--foreground)" stroke="none">
-                <circle cx="40" cy="5" r="1.8" />
-                <circle cx="160" cy="18" r="1.5" />
-                <circle cx="295" cy="15" r="1.8" />
-                <circle cx="435" cy="12" r="1.5" />
-                <circle cx="580" cy="10" r="1.8" />
-                <circle cx="725" cy="12" r="1.5" />
-                <circle cx="85" cy="32" r="1.5" />
-                <circle cx="215" cy="42" r="1.8" />
-                <circle cx="345" cy="38" r="1.5" />
-                <circle cx="490" cy="36" r="1.8" />
-                <circle cx="635" cy="35" r="1.5" />
-                <circle cx="60" cy="68" r="1.8" />
-                <circle cx="195" cy="78" r="1.5" />
-                <circle cx="330" cy="75" r="1.8" />
-                <circle cx="470" cy="72" r="1.5" />
-                <circle cx="615" cy="72" r="1.8" />
-                <circle cx="100" cy="112" r="1.5" />
-                <circle cx="248" cy="118" r="1.8" />
-                <circle cx="385" cy="118" r="1.5" />
-                <circle cx="528" cy="116" r="1.8" />
-                <circle cx="675" cy="115" r="1.5" />
-              </g>
-            </svg>
+            <DecorativeArtifact />
           </div>
         )
       }
