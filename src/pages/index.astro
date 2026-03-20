@@ -7,6 +7,7 @@ import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
 
 const blog = await getRecentPosts(SITE.featuredPostCount)
+const latestPost = blog[0]
 ---
 
 <Layout class="max-w-3xl" decorativeGrid>
@@ -39,42 +40,79 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
     </div>
 
     <div
-      class="border-border/60 bg-background/70 rounded-2xl border px-5 py-5 shadow-xs lg:mt-9"
+      class="border-border/60 bg-background/70 rounded-2xl border shadow-xs lg:mt-10"
     >
-      <div class="space-y-4">
-        <p class="text-sm leading-relaxed">
-          Mostly reverse engineering, crypto, forensics, and whatever else is
-          worth writing down after the fact.
-        </p>
-        <div class="border-border/40 border-t pt-4">
-          <div class="text-muted-foreground flex flex-wrap gap-2 text-xs">
+      <div class="divide-border/40 divide-y">
+        <Link
+          href={`/blog/${latestPost.id}`}
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
+          >
+            Latest Post
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm leading-relaxed">
+                {latestPost.data.title}
+              </p>
+              <p class="text-muted-foreground mt-1 text-xs">
+                {
+                  latestPost.data.date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                }
+              </p>
+            </div>
             <span
-              class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+              class="text-muted-foreground inline-block pt-0.5 transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
             >
-              blog
-            </span>
-            <span
-              class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
-            >
-              ctf
-            </span>
-            <span
-              class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
-            >
-              rev
-            </span>
-            <span
-              class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
-            >
-              crypto
-            </span>
-            <span
-              class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
-            >
-              notes
-            </span>
           </div>
-        </div>
+        </Link>
+
+        <Link
+          href="/blog"
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
+          >
+            All Posts
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-sm leading-relaxed">
+              Archive of blog posts, writeups, and notes.
+            </p>
+            <span
+              class="text-muted-foreground inline-block pt-0.5 transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
+            >
+          </div>
+        </Link>
+
+        <Link
+          href="/history"
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
+          >
+            CTF History
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-sm leading-relaxed">
+              Competitions, teams, placements, and timeline.
+            </p>
+            <span
+              class="text-muted-foreground inline-block pt-0.5 transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
+            >
+          </div>
+        </Link>
       </div>
     </div>
   </section>
