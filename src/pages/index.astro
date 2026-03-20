@@ -9,49 +9,90 @@ import { getRecentPosts } from '@/lib/data-utils'
 const blog = await getRecentPosts(SITE.featuredPostCount)
 ---
 
-<Layout class="max-w-3xl" decorativeGrid>
-	<PageHead slot="head" title="Home" />
+<Layout class="max-w-4xl" decorativeGrid>
+  <PageHead slot="head" title="Home" />
 
-	<!-- Hero Section -->
-	<section class="mt-4 mb-8">
-		<h1
-			class="mb-4 font-serif text-6xl font-bold tracking-tight md:text-7xl lg:text-8xl"
-		>
-			Hi, I'm cold
-		</h1>
-		<p
-			class="text-muted-foreground mb-6 text-sm font-semibold uppercase tracking-[0.2em]"
-		>
-			AI Believer / CTF Player
-		</p>
-		<p class="text-muted-foreground max-w-2xl text-base leading-relaxed">
-			This is my site where I'll put occasional <Link
-				href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
-				class="text-foreground underline transition-colors hover:text-primary"
-				external>CTF</Link
-			> writeups, things I learn, and other random stuff! Hopefully you
-			find an occasional gem in this vast heap of yap here.
-		</p>
-	</section>
+  <section
+    class="mt-6 mb-12 grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.9fr)] lg:items-end"
+  >
+    <div>
+      <h1
+        class="mb-4 font-serif text-5xl leading-none font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-[5.75rem]"
+      >
+        Hi, I'm cold
+      </h1>
+      <p
+        class="text-muted-foreground mb-5 text-xs font-semibold tracking-[0.28em] uppercase"
+      >
+        AI Believer / CTF Player
+      </p>
+      <p class="text-muted-foreground max-w-2xl text-base leading-relaxed">
+        This is my site where I'll put occasional <Link
+          href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
+          class="text-foreground hover:text-primary underline transition-colors"
+          external>CTF</Link
+        > writeups, things I learn, and other random stuff. The goal is simple: keep
+        the good bits, skip the filler, and leave behind a useful note when something
+        interesting comes up.
+      </p>
+    </div>
 
-	<!-- Latest Posts Section -->
-	<section class="space-y-6">
-		<div class="flex items-center justify-between">
-			<h2 class="font-serif text-3xl font-bold">Latest Posts</h2>
-			<Link
-				href="/blog"
-				class="text-muted-foreground hover:text-foreground group inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
-			>
-				View all
-				<span
-					class="inline-block transition-transform duration-200 group-hover:translate-x-1"
-					>&rarr;</span
-				>
-			</Link>
-		</div>
+    <div
+      class="border-border/60 bg-background/70 rounded-2xl border px-5 py-5 shadow-xs"
+    >
+      <p
+        class="text-muted-foreground mb-3 text-[11px] font-semibold tracking-[0.24em] uppercase"
+      >
+        Current Focus
+      </p>
+      <div class="space-y-3">
+        <p class="text-sm leading-relaxed">
+          Reverse engineering, crypto, forensics, and post-CTF cleanup notes
+          that are actually worth reading later.
+        </p>
+        <div class="text-muted-foreground flex flex-wrap gap-2 text-xs">
+          <span
+            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+          >
+            rev
+          </span>
+          <span
+            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+          >
+            crypto
+          </span>
+          <span
+            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+          >
+            forensics
+          </span>
+          <span
+            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+          >
+            writeups
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-		<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:[&>*+*]:border-l lg:[&>*+*]:border-border/50 lg:[&>*+*]:pl-6">
-			{blog.map((post) => <BlogCard entry={post} variant="card" />)}
-		</div>
-	</section>
+  <section class="space-y-7">
+    <div class="flex items-center justify-between">
+      <h2 class="font-serif text-3xl font-bold">Latest Posts</h2>
+      <Link
+        href="/blog"
+        class="text-muted-foreground hover:text-foreground group inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
+      >
+        View all
+        <span
+          class="inline-block transition-transform duration-200 group-hover:translate-x-1"
+          >&rarr;</span
+        >
+      </Link>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {blog.map((post) => <BlogCard entry={post} variant="card" />)}
+    </div>
+  </section>
 </Layout>

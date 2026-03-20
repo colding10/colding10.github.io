@@ -4,7 +4,7 @@ description: "A walkthrough of Coppersmith's method against RSA with e=3"
 date: 2026-03-19
 tags: ['crypto', 'writeups', 'math']
 authors: ['cold']
-draft: false
+draft: true
 ---
 
 import Callout from '@/components/Callout.astro'
@@ -30,12 +30,15 @@ Let $N$ be an integer and $f(x)$ a monic polynomial of degree $d$. If there exis
 
 ## Challenge Files
 
-<FileTree title="crypto-smol-e" entries={[
-  { name: "server.py", highlight: true },
-  { name: "output.txt", highlight: true },
-  { name: "Dockerfile" },
-  { name: "requirements.txt" },
-]} />
+<FileTree
+  title="crypto-smol-e"
+  entries={[
+    { name: 'server.py', highlight: true },
+    { name: 'output.txt', highlight: true },
+    { name: 'Dockerfile' },
+    { name: 'requirements.txt' },
+  ]}
+/>
 
 The key file is `server.py`:
 
@@ -73,7 +76,9 @@ $$
 We need to find $x$. Since $x$ is small relative to $n^{1/3}$, Coppersmith's theorem applies directly.
 
 <Callout variant="intuition">
-Think of it this way: if $e$ is small and we know most of the message, the "search space" for the unknown part is tiny compared to $n$. Lattice reduction (LLL) finds it efficiently.
+  Think of it this way: if $e$ is small and we know most of the message, the
+  "search space" for the unknown part is tiny compared to $n$. Lattice reduction
+  (LLL) finds it efficiently.
 </Callout>
 
 ## Solution
@@ -94,7 +99,9 @@ Think of it this way: if $e$ is small and we know most of the message, the "sear
 </Steps>
 
 <Aside title="On epsilon">
-The `small_roots()` `epsilon` parameter controls the lattice dimension. Smaller epsilon = better bounds but slower. Start with `epsilon=0.03` and decrease if it doesn't find anything.
+  The `small_roots()` `epsilon` parameter controls the lattice dimension.
+  Smaller epsilon = better bounds but slower. Start with `epsilon=0.03` and
+  decrease if it doesn't find anything.
 </Aside>
 
 ## Solve Scripts
@@ -107,19 +114,21 @@ e = 3
 c = 0xCAFEBABE  # from output.txt
 
 # known prefix: "flag{"
-prefix = b"flag{"
-suffix_len = 100  # unknown bytes (flag body + 32 padding)
 
-m0 = int.from_bytes(prefix, "big") << (suffix_len * 8)
+prefix = b"flag{"
+suffix_len = 100 # unknown bytes (flag body + 32 padding)
+
+m0 = int.from_bytes(prefix, "big") << (suffix_len \* 8)
 
 P.<x> = PolynomialRing(Zmod(n))
 f = (m0 + x)^e - c
 
-roots = f.small_roots(X=2^(suffix_len*8), epsilon=0.03)
+roots = f.small_roots(X=2^(suffix_len\*8), epsilon=0.03)
 if roots:
-    m = m0 + int(roots[0])
-    print(int(m).to_bytes(200, "big").strip(b"\x00"))
-```
+m = m0 + int(roots[0])
+print(int(m).to_bytes(200, "big").strip(b"\x00"))
+
+````
   </TabPanel>
   <TabPanel>
 ```python title=solve.py
@@ -142,7 +151,8 @@ if roots:
 """
 result = subprocess.run(["sage", "-c", sage_code], capture_output=True, text=True)
 print(result.stdout)
-```
+````
+
   </TabPanel>
   <TabPanel>
 ```bash
@@ -152,7 +162,7 @@ sage -c 'n=0xDEADBEEF;e=3;c=0xCAFEBABE;P.<x>=PolynomialRing(Zmod(n));print((int(
 </Tabs>
 
 <Callout variant="warning">
-The one-liner is cursed. Don't actually do this. It's here for comedic value.
+  The one-liner is cursed. Don't actually do this. It's here for comedic value.
 </Callout>
 
 ## Output
@@ -164,16 +174,17 @@ b'flag{c0pp3rsm1th_w1th_sm4ll_e_1s_fr33_r34l_3st4t3}'
 ```
 
 <Spoiler label="Flag">
-`flag{c0pp3rsm1th_w1th_sm4ll_e_1s_fr33_r34l_3st4t3}`
+  `flag{c0pp3rsm1th_w1th_sm4ll_e_1s_fr33_r34l_3st4t3}`
 </Spoiler>
 
 ## Takeaways
 
 <Callout variant="summary">
-- RSA with $e = 3$ is dangerous when any part of the plaintext is known or predictable
-- Coppersmith's method finds small roots of polynomials mod $N$ in polynomial time
-- Sage's `small_roots()` does the heavy lifting — just set up the polynomial correctly
-- The bound on the unknown portion must be less than $N^{1/e}$
+  - RSA with $e = 3$ is dangerous when any part of the plaintext is known or
+  predictable - Coppersmith's method finds small roots of polynomials mod $N$ in
+  polynomial time - Sage's `small_roots()` does the heavy lifting — just set up
+  the polynomial correctly - The bound on the unknown portion must be less than
+  $N^{1 / e}$
 </Callout>
 
 If you want to dig deeper into lattice-based attacks on RSA, this is a great resource:
