@@ -1,13 +1,25 @@
 ---
 import { SOCIAL_LINKS } from '@/consts'
+import { cn } from '@/lib/utils'
 import SocialIcons from './SocialIcons.astro'
+
+interface Props {
+  className?: string
+}
+
+const { className } = Astro.props
 ---
 
 <footer class="border-border/30 border-t py-8">
-	<div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-		<span class="text-muted-foreground text-sm">
-			&copy; {new Date().getFullYear()} cold
-		</span>
-		<SocialIcons links={SOCIAL_LINKS} />
-	</div>
+  <div
+    class={cn(
+      'mx-auto flex flex-col items-center justify-between gap-4 px-6 sm:flex-row',
+      className,
+    )}
+  >
+    <span class="text-muted-foreground text-sm">
+      &copy; {new Date().getFullYear()} cold
+    </span>
+    <SocialIcons links={SOCIAL_LINKS} />
+  </div>
 </footer>

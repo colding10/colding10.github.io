@@ -7,17 +7,18 @@ import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
 
 const blog = await getRecentPosts(SITE.featuredPostCount)
+const latestPost = blog[0]
 ---
 
-<Layout class="max-w-4xl" decorativeGrid>
+<Layout class="max-w-3xl" decorativeGrid>
   <PageHead slot="head" title="Home" />
 
   <section
-    class="mt-6 mb-12 grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.9fr)] lg:items-end"
+    class="mt-6 mb-12 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.8fr)] lg:items-end"
   >
     <div>
       <h1
-        class="mb-4 font-serif text-5xl leading-none font-bold tracking-tight sm:text-6xl lg:text-7xl xl:text-[5.75rem]"
+        class="mb-4 font-serif text-5xl leading-none font-bold tracking-tight sm:text-6xl lg:text-[4.75rem]"
       >
         Hi, I'm cold
       </h1>
@@ -37,41 +38,75 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
       </p>
     </div>
 
-    <div
-      class="border-border/60 bg-background/70 rounded-2xl border px-5 py-5 shadow-xs"
-    >
-      <p
-        class="text-muted-foreground mb-3 text-[11px] font-semibold tracking-[0.24em] uppercase"
-      >
-        Current Focus
-      </p>
-      <div class="space-y-3">
-        <p class="text-sm leading-relaxed">
-          Reverse engineering, crypto, forensics, and post-CTF cleanup notes
-          that are actually worth reading later.
+    <div class="border-border/60 bg-background/70 rounded-2xl border shadow-xs">
+      <div class="border-border/40 border-b px-5 py-4">
+        <p
+          class="text-muted-foreground text-[11px] font-semibold tracking-[0.24em] uppercase"
+        >
+          Start Here
         </p>
-        <div class="text-muted-foreground flex flex-wrap gap-2 text-xs">
-          <span
-            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+      </div>
+
+      <div class="divide-border/40 divide-y">
+        <Link
+          href={`/blog/${latestPost.id}`}
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
           >
-            rev
-          </span>
-          <span
-            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+            Latest Writeup
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-sm leading-relaxed">
+              {latestPost.data.title}
+            </p>
+            <span
+              class="text-muted-foreground inline-block transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
+            >
+          </div>
+        </Link>
+
+        <Link
+          href="/history"
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
           >
-            crypto
-          </span>
-          <span
-            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
+            CTF History
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-sm leading-relaxed">
+              Timeline of competitions, teams, and placements.
+            </p>
+            <span
+              class="text-muted-foreground inline-block transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
+            >
+          </div>
+        </Link>
+
+        <Link
+          href="/tags"
+          class="group hover:bg-accent/30 block px-5 py-4 transition-colors duration-200"
+        >
+          <p
+            class="text-muted-foreground mb-1 text-[11px] font-semibold tracking-[0.18em] uppercase"
           >
-            forensics
-          </span>
-          <span
-            class="border-border/60 bg-muted/40 rounded-full border px-2.5 py-1"
-          >
-            writeups
-          </span>
-        </div>
+            Browse Tags
+          </p>
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-sm leading-relaxed">
+              Reverse engineering, crypto, forensics, and other writeups.
+            </p>
+            <span
+              class="text-muted-foreground inline-block transition-transform duration-200 group-hover:translate-x-0.5"
+              aria-hidden="true">&rarr;</span
+            >
+          </div>
+        </Link>
       </div>
     </div>
   </section>
@@ -91,7 +126,7 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
       </Link>
     </div>
 
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       {blog.map((post) => <BlogCard entry={post} variant="card" />)}
     </div>
   </section>
