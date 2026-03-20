@@ -1,5 +1,4 @@
 ---
-import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TOCSection } from '@/lib/data-utils'
 import { getParentId, isSubpost } from '@/lib/data-utils'
 import { cn, getHeadingMargin } from '@/lib/utils'
@@ -20,14 +19,9 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 			id="toc-sidebar-container"
 			class="sticky top-20 col-start-1 row-span-1 mr-8 ml-auto hidden h-[calc(100vh-5rem)] max-w-md xl:block"
 		>
-			<ScrollArea
-				client:load
-				className="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto"
-				type="hover"
-				data-toc-scroll-area
-			>
+			<div class="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto" style="scrollbar-width: thin;" data-toc-scroll-area>
 				<div class="flex flex-col gap-2 px-4">
-					<span class="text-lg font-medium">Table of Contents</span>
+					<span class="font-serif text-lg font-bold">Table of Contents</span>
 					{sections.map((section, index) => {
 						const isFirstSubpost =
 							section.type === 'subpost' &&
@@ -66,7 +60,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 															? `/blog/${parentId}#${heading.slug}`
 															: `#${heading.slug}`
 													}
-													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit"
+													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 													data-heading-link={
 														heading.slug
 													}
@@ -102,7 +96,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 															? '#'
 															: `/blog/${section.subpostId}`
 													}
-													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit"
+													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 													data-heading-link={
 														section.subpostId ===
 														currentPostId
@@ -133,7 +127,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 																? `#${heading.slug}`
 																: `/blog/${section.subpostId}#${heading.slug}`
 														}
-														class="marker:text-foreground/30 hover:text-foreground/60 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-all duration-200 hover:decoration-inherit"
+														class="marker:text-foreground/30 hover:text-foreground/60 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 														data-heading-link={
 															section.subpostId ===
 															currentPostId
@@ -152,7 +146,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 						)
 					})}
 				</div>
-			</ScrollArea>
+			</div>
 		</div>
 	)
 }
@@ -182,7 +176,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 			)
 			this.scrollArea =
 				tocContainer?.querySelector(
-					'[data-radix-scroll-area-viewport]',
+					'[data-toc-scroll-area]',
 				) || null
 			this.tocScrollArea =
 				tocContainer?.querySelector('[data-toc-scroll-area]') || null
@@ -280,9 +274,6 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 				link.classList.remove(
 					'text-foreground',
 					'bg-accent',
-					'border-l-2',
-					'border-primary',
-					'pl-2',
 				)
 			})
 
@@ -295,9 +286,6 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 						activeLink.classList.add(
 							'text-foreground',
 							'bg-accent',
-							'border-l-2',
-							'border-primary',
-							'pl-2',
 						)
 					}
 				}

@@ -1,0 +1,17 @@
+---
+import { cn } from '@/lib/utils'
+
+interface Props {
+	title?: string
+	class?: string
+}
+
+const { title, class: className } = Astro.props
+---
+
+<aside class={cn('not-prose my-6 rounded-md bg-secondary/40 px-5 py-4 text-sm', className)}>
+	{title && <div class="mb-2 font-serif font-bold">{title}</div>}
+	<div class="text-muted-foreground leading-relaxed">
+		<slot />
+	</div>
+</aside>

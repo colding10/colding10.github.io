@@ -3,26 +3,11 @@ import { SOCIAL_LINKS } from '@/consts'
 import SocialIcons from './SocialIcons.astro'
 ---
 
-<footer class="bg-secondary/50 border-border border-t py-4">
-	<div
-		class="mx-auto flex max-w-3xl flex-col items-center justify-center gap-y-2 px-4 sm:flex-row sm:justify-between"
-	>
-		<div
-			class="flex flex-wrap items-center justify-center gap-x-2 text-center"
-		>
-			<span class="text-muted-foreground text-sm">
-				&copy; {new Date().getFullYear()} cold
-			</span>
-			<span class="text-muted-foreground/50 text-sm">&middot;</span>
-			<a
-				href="https://github.com/jktrn/astro-erudite"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-muted-foreground/70 hover:text-muted-foreground text-sm transition-colors"
-			>
-				Built with astro-erudite
-			</a>
-		</div>
+<footer class="border-border/30 border-t py-8">
+	<div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+		<span class="text-muted-foreground text-sm">
+			&copy; {new Date().getFullYear()} cold
+		</span>
 		<SocialIcons links={SOCIAL_LINKS} />
 	</div>
 </footer>

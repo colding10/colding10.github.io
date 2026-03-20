@@ -1,8 +1,9 @@
 ---
 import Link from '@/components/Link.astro'
-import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
+
+const btnOutline = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-auto px-4 py-3"
 
 const { newerPost, olderPost, parentPost } = Astro.props
 const isSubpost = !!parentPost
@@ -17,7 +18,7 @@ const isSubpost = !!parentPost
 	<Link
 		href={olderPost ? `/blog/${olderPost.id}#post-title` : '#'}
 		class={cn(
-			buttonVariants({ variant: 'outline' }),
+			btnOutline,
 			'rounded-lg group flex items-center justify-start size-full',
 			!olderPost && 'pointer-events-none opacity-50 cursor-not-allowed',
 		)}
@@ -47,7 +48,7 @@ const isSubpost = !!parentPost
 			<Link
 				href={parentPost ? `/blog/${parentPost.id}#post-title` : '#'}
 				class={cn(
-					buttonVariants({ variant: 'outline' }),
+					btnOutline,
 					'group flex size-full items-center justify-center rounded-lg',
 					!parentPost &&
 						'pointer-events-none cursor-not-allowed opacity-50',
@@ -72,7 +73,7 @@ const isSubpost = !!parentPost
 	<Link
 		href={newerPost ? `/blog/${newerPost.id}#post-title` : '#'}
 		class={cn(
-			buttonVariants({ variant: 'outline' }),
+			btnOutline,
 			'rounded-lg group flex items-center justify-end size-full',
 			!newerPost && 'pointer-events-none opacity-50 cursor-not-allowed',
 		)}

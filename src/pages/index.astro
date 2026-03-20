@@ -2,7 +2,6 @@
 import BlogCard from '@/components/BlogCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
@@ -10,48 +9,49 @@ import { getRecentPosts } from '@/lib/data-utils'
 const blog = await getRecentPosts(SITE.featuredPostCount)
 ---
 
-<Layout class="max-w-3xl">
+<Layout class="max-w-3xl" decorativeGrid>
 	<PageHead slot="head" title="Home" />
 
 	<!-- Hero Section -->
-	<section class="mt-8 mb-16">
-		<div class="space-y-4">
-			<p class="text-muted-foreground text-sm tracking-widest uppercase">
-				CTF Player / Reverse Engineer
-			</p>
-			<h1 class="text-4xl font-bold">
-				Hi! I'm <span class="text-primary">cold</span>
-			</h1>
-			<p class="text-muted-foreground max-w-xl text-lg leading-relaxed">
-				This is my site where I'll put occasional <Link
-					href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
-					class="text-foreground hover:text-primary underline transition-colors"
-					external>CTF</Link
-				> writeups, things I learn, and other random stuff! Hopefully you
-				find an occasional gem in this vast heap of yap here.
-			</p>
-		</div>
+	<section class="mt-4 mb-8">
+		<h1
+			class="mb-4 font-serif text-6xl font-bold tracking-tight md:text-7xl lg:text-8xl"
+		>
+			Hi, I'm cold
+		</h1>
+		<p
+			class="text-muted-foreground mb-6 text-sm font-semibold uppercase tracking-[0.2em]"
+		>
+			AI Believer / CTF Player
+		</p>
+		<p class="text-muted-foreground max-w-2xl text-base leading-relaxed">
+			This is my site where I'll put occasional <Link
+				href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
+				class="text-foreground underline transition-colors hover:text-primary"
+				external>CTF</Link
+			> writeups, things I learn, and other random stuff! Hopefully you
+			find an occasional gem in this vast heap of yap here.
+		</p>
 	</section>
 
 	<!-- Latest Posts Section -->
-	<section class="space-y-8">
+	<section class="space-y-6">
 		<div class="flex items-center justify-between">
-			<h2 class="text-2xl font-semibold">Latest posts</h2>
+			<h2 class="font-serif text-3xl font-bold">Latest Posts</h2>
 			<Link
 				href="/blog"
-				class={buttonVariants({ variant: 'outline', size: 'sm' }) +
-					' group'}
+				class="text-muted-foreground hover:text-foreground group inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
 			>
-				View all <span
-					class="ml-1.5 transition-transform group-hover:translate-x-1"
+				View all
+				<span
+					class="inline-block transition-transform duration-200 group-hover:translate-x-1"
 					>&rarr;</span
 				>
 			</Link>
 		</div>
 
-		<div class="space-y-6">
-			{blog.map((post) => <BlogCard entry={post} />)}
+		<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:[&>*+*]:border-l lg:[&>*+*]:border-border/50 lg:[&>*+*]:pl-6">
+			{blog.map((post) => <BlogCard entry={post} variant="card" />)}
 		</div>
 	</section>
-
 </Layout>

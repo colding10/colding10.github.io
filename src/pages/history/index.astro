@@ -1,7 +1,6 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
-import FilterDropdowns from '@/components/ui/FilterDropdowns'
 import Layout from '@/layouts/Layout.astro'
 import {
 	getTierBadgeClasses,
@@ -10,7 +9,6 @@ import {
 	parsePlacementNumber,
 } from '@/lib/history-utils'
 import { TEAM_URLS } from '@/lib/team-utils'
-import { Icon } from 'astro-icon/components'
 import { getCollection } from 'astro:content'
 
 const ctfCollection = await getCollection('ctfs')
@@ -44,7 +42,7 @@ const uniqueTeams = Array.from(
 ).sort()
 ---
 
-<Layout class="max-w-3xl overflow-x-hidden">
+<Layout class="max-w-3xl">
 	<PageHead
 		slot="head"
 		title="CTF History"
@@ -53,25 +51,16 @@ const uniqueTeams = Array.from(
 	<Breadcrumbs items={[{ label: 'History', icon: 'lucide:calendar' }]} />
 
 	<section aria-labelledby="ctf-history-title" class="font-mono">
-		<div class="mt-5 flex items-center justify-between">
-			<div>
-				<h1 id="ctf-history-title" class="text-3xl font-bold">
-					CTF History
-				</h1>
-				<p class="text-muted-foreground mt-2">
-					Competition results over time, newest first.
-				</p>
-			</div>
-			<a
-				href="/history/stats"
-				class="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
-			>
-				<Icon name="lucide:bar-chart-3" class="h-4 w-4" />
-				Statistics
-			</a>
+		<div class="mt-5">
+			<h1 id="ctf-history-title" class="font-serif text-3xl font-bold">
+				CTF History
+			</h1>
+			<p class="text-muted-foreground mt-2">
+				Competition results over time, newest first.
+			</p>
 		</div>
 
-		<div class="mt-4 space-y-4 rounded-lg border bg-secondary/30 p-4">
+		<div class="mt-4 space-y-4">
 			<div class="text-muted-foreground flex flex-wrap gap-x-6 gap-y-1 text-sm">
 				<div>
 					<span>Total CTFs:</span>
@@ -113,27 +102,36 @@ const uniqueTeams = Array.from(
 			<!-- Search and Filter -->
 			<div class="space-y-3">
 				<div
-					class="filter-stable flex flex-col gap-2 sm:flex-row sm:items-center"
+					class="flex flex-col gap-2 sm:flex-row sm:items-center"
 				>
 					<input
 						type="text"
 						id="search"
 						placeholder="Search CTF names..."
-						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
+						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-colors duration-200 focus:ring-2 focus:outline-none"
 					/>
 
-					<div class="dropdown-container flex flex-wrap gap-2">
-						<FilterDropdowns
-							client:load
-							uniqueYears={uniqueYears.filter(
-								(y) =>
-									typeof y === 'string' ||
-									typeof y === 'number',
-							)}
-							uniqueTeams={uniqueTeams.filter(
-								(t) => typeof t === 'string',
-							)}
-						/>
+					<div class="flex flex-wrap gap-2">
+						<select id="yearFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+							<option value="">All Years</option>
+							{uniqueYears.map((year) => <option value={year}>{year}</option>)}
+						</select>
+						<select id="tierFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+							<option value="">All Placements</option>
+							<option value="SS">SS</option>
+							<option value="S">S</option>
+							<option value="A">A</option>
+							<option value="B">B</option>
+							<option value="C">C</option>
+							<option value="D">D</option>
+							<option value="TOP10">Top 10</option>
+							<option value="TOP5">Top 5</option>
+							<option value="TOP3">Top 3</option>
+						</select>
+						<select id="teamFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+							<option value="">All Teams</option>
+							{uniqueTeams.map((team) => <option value={team}>{team}</option>)}
+						</select>
 					</div>
 				</div>
 				<div
@@ -160,25 +158,20 @@ const uniqueTeams = Array.from(
 			</div>
 		</div>
 
-		<div class="relative mt-8">
-			<div class="bg-border absolute top-0 bottom-0 left-4 w-px"></div>
-
+		<div class="mt-8">
 			<div class="space-y-10">
 				{
 					groups.map((group) => (
 						<div
-							class="month-group transition-all duration-300 ease-in-out"
+							class="month-group transition-opacity duration-300"
 							data-month={group.month}
 							data-year={group.year}
 						>
-							<div class="relative pl-10">
-								<div class="bg-primary ring-background absolute top-2 left-4 h-3 w-3 -translate-x-1/2 rounded-full ring-2 transition-all duration-200" />
-								<p class="text-muted-foreground text-xs tracking-wider uppercase">
-									{MONTHS[group.month - 1]} {group.year}
-								</p>
-							</div>
+							<p class="text-muted-foreground mb-4 text-xs font-medium tracking-wider uppercase">
+								{MONTHS[group.month - 1]} {group.year}
+							</p>
 
-							<ul class="mt-4 space-y-3">
+							<ul class="space-y-2.5">
 								{group.items.map((e) => {
 									const rank = parsePlacementNumber(
 										e.placement,
@@ -186,16 +179,14 @@ const uniqueTeams = Array.from(
 									const tier = getTierFromRank(rank)
 									return (
 										<li
-											class="timeline-item relative pl-10 transition-all duration-200 ease-in-out hover:translate-x-1"
+											class="timeline-item transition-colors duration-200"
 											data-name={e.name}
 											data-year={e.year}
 											data-team={e.team || ''}
 											data-rank={rank ?? ''}
 											data-tier={tier}
 										>
-											<div class="bg-accent ring-background absolute top-2 left-4 h-2 w-2 -translate-x-1/2 rounded-full ring-2 transition-all duration-200" />
 											<div class="flex items-start gap-2">
-												{/* Tier badge at the far left of content block */}
 												<span
 													class={`mt-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded text-[10px] font-bold ${getTierBadgeClasses(tier)}`}
 												>
@@ -209,18 +200,18 @@ const uniqueTeams = Array.from(
 														{e.name}
 													</a>
 
-													<span class="text-muted-foreground text-sm font-medium">
+													<span class="text-muted-foreground text-sm">
 														{e.placement}
 													</span>
 
 													{e.team && (
-														<span class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-1.5 py-0.5 text-xs font-medium transition-all duration-200">
+														<span class="text-muted-foreground text-xs">
 															{e.team}
 														</span>
 													)}
 
 													{e.description && (
-														<span class="text-muted-foreground flex-shrink-0 text-sm italic">
+														<span class="text-muted-foreground text-sm italic opacity-60">
 															— {e.description}
 														</span>
 													)}
@@ -266,19 +257,22 @@ const uniqueTeams = Array.from(
 	let selectedTeam = ''
 	let selectedTier = ''
 
-	// Listen for custom events from the dropdown components
-	document.addEventListener('yearFilterChange', (event: any) => {
-		selectedYear = event.detail.value
+	const yearSelect = document.getElementById('yearFilter') as HTMLSelectElement
+	const tierSelect = document.getElementById('tierFilter') as HTMLSelectElement
+	const teamSelect = document.getElementById('teamFilter') as HTMLSelectElement
+
+	yearSelect?.addEventListener('change', () => {
+		selectedYear = yearSelect.value
 		filterItems()
 	})
 
-	document.addEventListener('teamFilterChange', (event: any) => {
-		selectedTeam = event.detail.value
+	tierSelect?.addEventListener('change', () => {
+		selectedTier = tierSelect.value
 		filterItems()
 	})
 
-	document.addEventListener('tierFilterChange', (event: any) => {
-		selectedTier = event.detail.value
+	teamSelect?.addEventListener('change', () => {
+		selectedTeam = teamSelect.value
 		filterItems()
 	})
 
@@ -408,10 +402,9 @@ const uniqueTeams = Array.from(
 		selectedYear = ''
 		selectedTeam = ''
 		selectedTier = ''
-
-		// Dispatch events to reset dropdowns
-		document.dispatchEvent(new CustomEvent('clearFilters'))
-
+		if (yearSelect) yearSelect.value = ''
+		if (tierSelect) tierSelect.value = ''
+		if (teamSelect) teamSelect.value = ''
 		filterItems()
 	}
 

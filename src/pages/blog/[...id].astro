@@ -7,8 +7,6 @@ import SubpostsHeader from '@/components/SubpostsHeader.astro'
 import SubpostsSidebar from '@/components/SubpostsSidebar.astro'
 import TOCHeader from '@/components/TOCHeader.astro'
 import TOCSidebar from '@/components/TOCSidebar.astro'
-import { badgeVariants } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
 import {
 	getAdjacentPosts,
@@ -82,7 +80,7 @@ const tocSections = await getTOCSections(currentPostId)
 	}
 
 	<section
-		class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)] gap-y-6"
+		class="grid grid-cols-[minmax(0px,1fr)_min(45rem,100%)_minmax(0px,1fr)] gap-y-6"
 	>
 		<div class="col-start-2">
 			<Breadcrumbs
@@ -131,18 +129,18 @@ const tocSections = await getTOCSections(currentPostId)
 		<section class="col-start-2 flex flex-col gap-y-6 text-center">
 			<div class="flex flex-col">
 				<h1
-					class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
+					class="mb-2 scroll-mt-31 font-serif text-3xl leading-tight font-bold sm:text-4xl"
 					id="post-title"
 				>
 					{post.data.title}
 				</h1>
 
 				<div
-					class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
+					class="text-muted-foreground mb-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm"
 				>
 					{
 						authors.length > 0 && (
-							<div class="flex w-full items-center justify-center gap-x-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+							<>
 								{authors.map((author) => (
 									<div class="flex items-center gap-x-1.5">
 										<Image
@@ -161,56 +159,33 @@ const tocSections = await getTOCSections(currentPostId)
 										</Link>
 									</div>
 								))}
-							</div>
+								<span class="opacity-30">&middot;</span>
+							</>
 						)
 					}
-
-					<div
-						class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-					>
-						<span>{formatDate(post.data.date)}</span>
-					</div>
-
-					<div
-						class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-					>
-						<span>
-							{postReadingTime}
-							{
-								combinedReadingTime &&
-									combinedReadingTime !== postReadingTime && (
-										<span class="text-muted-foreground">
-											{' '}
-											({combinedReadingTime} total)
-										</span>
-									)
-							}
-						</span>
-					</div>
-
+					<span>{formatDate(post.data.date)}</span>
 					{
 						subpostCount > 0 && (
-							<div class="flex w-full items-center justify-center gap-1 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
-								<Icon name="lucide:file-text" class="size-3" />
-								{subpostCount} subpost
-								{subpostCount === 1 ? '' : 's'}
-							</div>
+							<>
+								<span class="opacity-30">&middot;</span>
+								<span class="flex items-center gap-1">
+									<Icon name="lucide:file-text" class="size-3" />
+									{subpostCount} subpost{subpostCount === 1 ? '' : 's'}
+								</span>
+							</>
 						)
 					}
 				</div>
-				<div class="flex flex-wrap justify-center gap-2">
+				<div class="text-muted-foreground flex flex-wrap justify-center gap-x-3 text-xs">
 					{
 						post.data.tags &&
 							post.data.tags.length > 0 &&
 							post.data.tags.map((tag) => (
 								<a
 									href={`/tags/${tag}`}
-									class={badgeVariants({
-										variant: 'secondary',
-									})}
+									class="hover:text-foreground transition-colors duration-200"
 								>
-									<Icon name="lucide:hash" class="size-3" />
-									{tag}
+									#{tag}
 								</a>
 							))
 					}
@@ -257,19 +232,17 @@ const tocSections = await getTOCSections(currentPostId)
 		/>
 	</section>
 
-	<Button
-		variant="outline"
-		size="icon"
-		className="group fixed right-8 bottom-8 z-50 hidden"
+	<button
+		class="inline-flex items-center justify-center size-9 rounded-md border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors group fixed right-8 bottom-8 z-50 hidden"
 		id="scroll-to-top"
 		title="Scroll to top"
 		aria-label="Scroll to top"
 	>
 		<Icon
 			name="lucide:arrow-up"
-			class="mx-auto size-4 transition-all group-hover:-translate-y-0.5"
+			class="mx-auto size-4 transition-transform duration-200 group-hover:-translate-y-0.5"
 		/>
-	</Button>
+	</button>
 
 	<script>
 		document.addEventListener('astro:page-load', () => {
@@ -278,18 +251,20 @@ const tocSections = await getTOCSections(currentPostId)
 
 			if (scrollToTopButton && footer) {
 				scrollToTopButton.addEventListener('click', () => {
-					window.scrollTo({ top: 0, behavior: 'smooth' })
+					window.scrollTo({ top: 0 })
 				})
 
+				let ticking = false
 				window.addEventListener('scroll', () => {
-					const footerRect = footer.getBoundingClientRect()
-					const isFooterVisible = footerRect.top <= window.innerHeight
-
-					scrollToTopButton.classList.toggle(
-						'hidden',
-						window.scrollY <= 300 || isFooterVisible,
-					)
-				})
+					if (!ticking) {
+						ticking = true
+						requestAnimationFrame(() => {
+							const shouldHide = window.scrollY <= 300
+							scrollToTopButton.classList.toggle('hidden', shouldHide)
+							ticking = false
+						})
+					}
+				}, { passive: true })
 			}
 		})
 	</script>

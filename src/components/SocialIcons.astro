@@ -1,6 +1,5 @@
 ---
 import Link from '@/components/Link.astro'
-import { buttonVariants } from '@/components/ui/button'
 import { ICON_MAP } from '@/consts'
 import type { SocialLink } from '@/types'
 import { Icon } from 'astro-icon/components'
@@ -20,7 +19,7 @@ const { links } = Astro.props
 					href={href}
 					aria-label={label}
 					title={label}
-					class={buttonVariants({ variant: 'outline', size: 'icon' })}
+					class="text-muted-foreground hover:text-foreground inline-flex items-center justify-center size-9 rounded-md transition-colors duration-200"
 					external
 				>
 					<Icon

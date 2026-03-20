@@ -1,25 +1,22 @@
 ---
-import { Button } from '@/components/ui/button'
 import { Icon } from 'astro-icon/components'
 ---
 
-<Button
+<button
 	id="theme-toggle"
-	variant="ghost"
-	size="icon"
+	class="inline-flex items-center justify-center size-8 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors -me-2"
 	title="Toggle theme"
-	className="-me-2 size-8"
 >
 	<Icon
 		name="lucide:sun"
-		class="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+		class="size-4 scale-100 rotate-0 transition-[transform] duration-200 dark:scale-0 dark:-rotate-90"
 	/>
 	<Icon
 		name="lucide:moon"
-		class="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+		class="absolute size-4 scale-0 rotate-90 transition-[transform] duration-200 dark:scale-100 dark:rotate-0"
 	/>
 	<span class="sr-only">Toggle theme</span>
-</Button>
+</button>
 
 <script is:inline data-astro-rerun>
 	const theme = (() => {
@@ -46,18 +43,11 @@ import { Icon } from 'astro-icon/components'
 		const currentTheme = element.getAttribute('data-theme')
 		const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
 
-		element.classList.add('[&_*]:transition-none')
 		element.setAttribute('data-theme', newTheme)
 		element.classList.remove('scheme-dark', 'scheme-light')
 		element.classList.add(
 			newTheme === 'dark' ? 'scheme-dark' : 'scheme-light',
 		)
-
-		window.getComputedStyle(element).getPropertyValue('opacity')
-
-		requestAnimationFrame(() => {
-			element.classList.remove('[&_*]:transition-none')
-		})
 
 		localStorage.setItem('theme', newTheme)
 	}
@@ -75,19 +65,11 @@ import { Icon } from 'astro-icon/components'
 		const storedTheme = localStorage.getItem('theme') || 'light'
 		const element = document.documentElement
 
-		element.classList.add('[&_*]:transition-none')
-
-		window.getComputedStyle(element).getPropertyValue('opacity')
-
 		element.setAttribute('data-theme', storedTheme)
 		element.classList.remove('scheme-dark', 'scheme-light')
 		element.classList.add(
 			storedTheme === 'dark' ? 'scheme-dark' : 'scheme-light',
 		)
-
-		requestAnimationFrame(() => {
-			element.classList.remove('[&_*]:transition-none')
-		})
 
 		initThemeToggle()
 	})

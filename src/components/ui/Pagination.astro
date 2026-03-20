@@ -1,0 +1,131 @@
+---
+import { cn } from '@/lib/utils'
+
+interface Props {
+  currentPage: number
+  totalPages: number
+  baseUrl: string
+  class?: string
+}
+
+const { currentPage, totalPages, baseUrl, class: className } = Astro.props
+
+function getPageUrl(page: number): string {
+  if (page === 1) return baseUrl
+  return `${baseUrl}${page}`
+}
+
+// Build the list of page numbers to display, with ellipsis gaps
+function getPageItems(): (number | 'ellipsis')[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  const items: (number | 'ellipsis')[] = [1]
+
+  if (currentPage > 3) {
+    items.push('ellipsis')
+  }
+
+  const start = Math.max(2, currentPage - 1)
+  const end = Math.min(totalPages - 1, currentPage + 1)
+
+  for (let i = start; i <= end; i++) {
+    items.push(i)
+  }
+
+  if (currentPage < totalPages - 2) {
+    items.push('ellipsis')
+  }
+
+  items.push(totalPages)
+
+  return items
+}
+
+const pageItems = getPageItems()
+
+const linkBase = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring size-9"
+const linkActive = "border border-border bg-background shadow-xs"
+const linkInactive = "hover:bg-accent hover:text-accent-foreground"
+const linkDisabled = "pointer-events-none opacity-50"
+
+const navBase = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9 px-2.5 gap-1 hover:bg-accent hover:text-accent-foreground"
+---
+
+<nav
+  role="navigation"
+  aria-label="pagination"
+  class={cn('mx-auto flex w-full justify-center', className)}
+>
+  <ul class="flex flex-row items-center gap-1">
+    {/* Previous */}
+    <li>
+      {currentPage > 1 ? (
+        <a
+          href={getPageUrl(currentPage - 1)}
+          aria-label="Go to previous page"
+          class={navBase}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m15 18-6-6 6-6"/></svg>
+          <span class="hidden sm:block">Previous</span>
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          class={cn(navBase, linkDisabled)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m15 18-6-6 6-6"/></svg>
+          <span class="hidden sm:block">Previous</span>
+        </span>
+      )}
+    </li>
+
+    {/* Page numbers */}
+    {pageItems.map((item) =>
+      item === 'ellipsis' ? (
+        <li>
+          <span aria-hidden class="flex size-9 items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            <span class="sr-only">More pages</span>
+          </span>
+        </li>
+      ) : (
+        <li>
+          <a
+            href={getPageUrl(item)}
+            aria-current={item === currentPage ? 'page' : undefined}
+            class={cn(
+              linkBase,
+              item === currentPage ? linkActive : linkInactive,
+            )}
+          >
+            {item}
+          </a>
+        </li>
+      )
+    )}
+
+    {/* Next */}
+    <li>
+      {currentPage < totalPages ? (
+        <a
+          href={getPageUrl(currentPage + 1)}
+          aria-label="Go to next page"
+          class={navBase}
+        >
+          <span class="hidden sm:block">Next</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          class={cn(navBase, linkDisabled)}
+        >
+          <span class="hidden sm:block">Next</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+      )}
+    </li>
+  </ul>
+</nav>

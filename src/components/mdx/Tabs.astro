@@ -1,0 +1,57 @@
+---
+interface Props {
+	labels: string[]
+	class?: string
+}
+
+const { labels, class: className } = Astro.props
+const id = `tabs-${Math.random().toString(36).slice(2, 8)}`
+---
+
+<div class:list={['not-prose my-6', className]} data-tabs={id}>
+	<div class="flex gap-1 border-b border-border/50" role="tablist">
+		{labels.map((label, i) => (
+			<button
+				role="tab"
+				aria-selected={i === 0 ? 'true' : 'false'}
+				data-tab-index={i}
+				class:list={[
+					'px-4 py-2 text-sm font-medium transition-colors duration-200 -mb-px',
+					'text-muted-foreground hover:text-foreground',
+					'aria-selected:text-foreground aria-selected:border-b-2 aria-selected:border-foreground',
+				]}
+			>
+				{label}
+			</button>
+		))}
+	</div>
+	<div class="mt-4">
+		<slot />
+	</div>
+</div>
+
+<script>
+	function initTabs() {
+		document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((container) => {
+			const buttons = container.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+			const panels = container.querySelectorAll<HTMLElement>(':scope > div:last-child > [data-tab-panel]')
+
+			panels.forEach((panel, i) => {
+				panel.style.display = i === 0 ? '' : 'none'
+			})
+
+			buttons.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const index = Number(btn.dataset.tabIndex)
+					buttons.forEach((b) => b.setAttribute('aria-selected', 'false'))
+					btn.setAttribute('aria-selected', 'true')
+					panels.forEach((p, i) => {
+						p.style.display = i === index ? '' : 'none'
+					})
+				})
+			})
+		})
+	}
+	initTabs()
+	document.addEventListener('astro:after-swap', initTabs)
+</script>

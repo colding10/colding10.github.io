@@ -1,6 +1,5 @@
 ---
 import '@/styles/global.css'
-import '@/styles/gradients.css'
 import '@/styles/typography.css'
 
 import Footer from '@/components/Footer.astro'
@@ -11,68 +10,45 @@ import { cn } from '@/lib/utils'
 
 interface Props {
 	class?: string
+	decorativeGrid?: boolean
 }
 
-const { class: className } = Astro.props
+const { class: className, decorativeGrid = false } = Astro.props
 ---
 
 <!doctype html>
-<html class="bg-background text-foreground custom-scrollbar" lang={SITE.locale}>
+<html class="bg-background text-foreground" lang={SITE.locale}>
 	<Head>
 		<slot name="head" />
 	</Head>
-	<body class="prevent-shift">
-		<div class="flex h-fit min-h-screen flex-col gap-y-8 font-sans">
-			<div
-				class="bg-background/95 border-border sticky-header sticky top-0 z-50 divide-y border-b backdrop-blur-md xl:divide-none"
-				style="border-bottom: 1px solid #d6d3c9; border-bottom-color: var(--border, #d6d3c9);"
-			>
+	<body>
+		<div class="flex min-h-screen flex-col font-mono">
+			<div class="sticky top-0 z-40 border-b border-border/30 bg-background [contain:layout_style_paint]">
 				<Header />
 				<slot name="subposts-navigation" />
 				<slot name="table-of-contents" />
 			</div>
-			<main class="grow">
+			<main class="grow py-6">
 				<div
 					class={cn(
-						'mx-auto flex grow flex-col gap-y-6 px-4',
+						'mx-auto flex grow flex-col gap-y-6 px-6',
 						className,
 					)}
 				>
 					<slot />
 				</div>
 			</main>
+			{
+				decorativeGrid && (
+					<div
+						class="pointer-events-none mx-auto h-24 w-full max-w-3xl select-none px-6"
+						aria-hidden="true"
+					>
+						<div class="dot-grid h-full w-full" />
+					</div>
+				)
+			}
 			<Footer />
 		</div>
 	</body>
 </html>
-
-<script>
-	// Handle scrollbar visibility to prevent double scrollbar effect
-	document.addEventListener('DOMContentLoaded', () => {
-		const html = document.documentElement
-		let scrollTimeout: ReturnType<typeof setTimeout> | undefined
-
-		// Add scrolling class when user scrolls
-		function handleScroll() {
-			html.classList.add('scrolling')
-			clearTimeout(scrollTimeout)
-			scrollTimeout = setTimeout(() => {
-				html.classList.remove('scrolling')
-			}, 1000) // Hide scrollbar after 1 second of no scrolling
-		}
-
-		// Listen for scroll events
-		window.addEventListener('scroll', handleScroll, { passive: true })
-
-		// Show scrollbar on hover over the right edge
-		function handleMouseMove(e: MouseEvent) {
-			const rightEdge = window.innerWidth - 20 // 20px from right edge
-			if (e.clientX > rightEdge) {
-				html.classList.add('scrolling')
-			}
-		}
-
-		window.addEventListener('mousemove', handleMouseMove, { passive: true })
-
-	})
-</script>

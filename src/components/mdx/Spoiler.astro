@@ -1,0 +1,22 @@
+---
+import { cn } from '@/lib/utils'
+
+interface Props {
+	label?: string
+	class?: string
+}
+
+const { label = 'Reveal', class: className } = Astro.props
+---
+
+<details class={cn('not-prose my-4 group', className)}>
+	<summary
+		class="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 text-sm font-medium transition-colors select-none [&::-webkit-details-marker]:hidden"
+	>
+		<span class="transition-transform duration-200 group-open:rotate-90">&#9656;</span>
+		{label}
+	</summary>
+	<div class="mt-2 text-sm">
+		<slot />
+	</div>
+</details>

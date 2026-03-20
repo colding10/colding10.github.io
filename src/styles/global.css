@@ -3,14 +3,12 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme inline {
-	--font-sans:
-		'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-		'Liberation Mono', 'Courier New', monospace, 'Apple Color Emoji',
-		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 	--font-mono:
-		'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-		'Liberation Mono', 'Courier New', monospace, 'Apple Color Emoji',
-		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+		'Maple Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-sans:
+		system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--font-serif:
+		'Playfair Display', Georgia, 'Times New Roman', serif;
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -27,220 +25,135 @@
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
 
-	--color-additive: var(--additive);
-	--color-additive-foreground: var(--additive-foreground);
-
 	--color-destructive: var(--destructive);
-	--color-destructive-foreground: var(--destructive-foreground);
 
 	--color-border: var(--border);
 	--color-ring: var(--ring);
 }
 
 @font-face {
-	font-family: 'JetBrains Mono';
-	src: url('/fonts/JetBrainsMono-Light.woff2') format('woff2');
-	font-weight: 300;
+	font-family: 'Maple Mono';
 	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'JetBrains Mono';
-	src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
 	font-weight: 400;
-	font-style: normal;
 	font-display: swap;
+	src: url('/fonts/MapleMono-Regular.woff2') format('woff2');
 }
-
 @font-face {
-	font-family: 'JetBrains Mono';
-	src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+	font-family: 'Maple Mono';
+	font-style: normal;
 	font-weight: 500;
-	font-style: normal;
 	font-display: swap;
+	src: url('/fonts/MapleMono-Medium.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Maple Mono';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('/fonts/MapleMono-Bold.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Maple Mono';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/MapleMono-Italic.woff2') format('woff2');
 }
 
 @font-face {
-	font-family: 'JetBrains Mono';
-	src: url('/fonts/JetBrainsMono-Bold.woff2') format('woff2');
-	font-weight: 700;
+	font-family: 'Playfair Display';
 	font-style: normal;
+	font-weight: 400 900;
 	font-display: swap;
+	src: url('/fonts/PlayfairDisplay.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+		U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+		U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* Light theme — warm cream */
 :root {
-	/* Warm, sophisticated light theme */
-	--background: oklch(0.98 0.008 75); /* Soft warm white */
-	--foreground: oklch(0.25 0.02 25); /* Rich warm dark */
-	--primary: oklch(0.35 0.05 35); /* Sophisticated brown */
-	--primary-foreground: oklch(0.97 0.008 75);
-	--secondary: oklch(0.94 0.015 65); /* Soft warm gray */
-	--secondary-foreground: oklch(0.3 0.025 35);
-	--muted: oklch(0.92 0.012 70); /* Muted warm background */
-	--muted-foreground: oklch(0.55 0.02 45); /* Warm medium gray */
-	--accent: oklch(0.88 0.025 80); /* Light warm accent */
-	--accent-foreground: oklch(0.32 0.03 40);
-	--destructive: oklch(0.577 0.245 27.325); /* Keep red as is */
-	--border: oklch(0.85 0.015 60); /* Subtle warm border */
-	--ring: oklch(0.65 0.08 45); /* Warmer focus ring */
-
-	/* Light theme gradients - warm golden tones */
-	--gradient-accent-start: oklch(0.75 0.12 60);
-	--gradient-accent-end: oklch(0.82 0.08 80);
-	--gradient-subtle-start: oklch(0.9 0.02 70);
-	--gradient-subtle-end: oklch(0.95 0.015 85);
-	--gradient-border-start: oklch(0.7 0.15 55);
-	--gradient-border-end: oklch(0.78 0.1 75);
+	--background: oklch(0.95 0.015 75);
+	--foreground: oklch(0.15 0.008 50);
+	--primary: oklch(0.35 0.04 55);
+	--primary-foreground: oklch(0.95 0.015 75);
+	--secondary: oklch(0.91 0.013 75);
+	--secondary-foreground: oklch(0.22 0.008 50);
+	--muted: oklch(0.90 0.012 75);
+	--muted-foreground: oklch(0.45 0.012 55);
+	--accent: oklch(0.92 0.013 75);
+	--accent-foreground: oklch(0.18 0.008 50);
+	--destructive: oklch(0.55 0.22 25);
+	--border: oklch(0.86 0.013 75);
+	--ring: oklch(0.35 0.04 55);
 }
 
+/* Dark theme — warm dark */
 [data-theme='dark'] {
-	--background: oklch(0.12 0.015 250);
-	--foreground: oklch(0.95 0.01 250);
-	--primary: oklch(0.88 0.02 250);
-	--primary-foreground: oklch(0.15 0.015 250);
-	--secondary: oklch(0.18 0.02 250);
-	--secondary-foreground: oklch(0.92 0.01 250);
-	--muted: oklch(0.2 0.015 250);
-	--muted-foreground: oklch(0.65 0.01 250);
-	--accent: oklch(0.22 0.025 250);
-	--accent-foreground: oklch(0.92 0.01 250);
-	--destructive: oklch(0.6 0.2 15);
-	--border: oklch(0.25 0.02 250);
-	--ring: oklch(0.5 0.05 250);
-
-	/* Blue-Tinted Gradients */
-	--gradient-accent-start: oklch(0.3 0.46 245);
-	--gradient-accent-end: oklch(0.4 0.44 255);
-	--gradient-subtle-start: oklch(0.14 0.42 248);
-	--gradient-subtle-end: oklch(0.16 0.065 252);
-	--gradient-border-start: oklch(0.28 0.64 246);
-	--gradient-border-end: oklch(0.32 0.63 254);
+	--background: oklch(0.15 0.01 55);
+	--foreground: oklch(0.90 0.01 75);
+	--primary: oklch(0.65 0.06 55);
+	--primary-foreground: oklch(0.15 0.01 55);
+	--secondary: oklch(0.20 0.01 55);
+	--secondary-foreground: oklch(0.85 0.008 75);
+	--muted: oklch(0.22 0.008 55);
+	--muted-foreground: oklch(0.60 0.01 75);
+	--accent: oklch(0.23 0.01 55);
+	--accent-foreground: oklch(0.88 0.008 75);
+	--destructive: oklch(0.60 0.20 15);
+	--border: oklch(0.28 0.01 55);
+	--ring: oklch(0.65 0.06 55);
 }
 
 @layer base {
-	*,
-	::after,
-	::before,
-	::backdrop,
-	::file-selector-button {
-		@apply border-border outline-ring/50 tracking-tight;
-	}
-
-	/* Header border with fallback */
-	.sticky-header {
-		border-bottom: 1px solid #d6d3c9 !important;
-		border-bottom-color: var(--border, #d6d3c9) !important;
-	}
-
-	[data-theme='dark'] .sticky-header {
-		border-bottom-color: #3f3c49 !important;
-		border-bottom-color: var(--border, #3f3c49) !important;
-	}
-
-	/* Footer border with fallback */
-	footer {
-		border-top: 1px solid #d6d3c9 !important;
-		border-top-color: var(--border, #d6d3c9) !important;
-	}
-
-	[data-theme='dark'] footer {
-		border-top-color: #3f3c49 !important;
-		border-top-color: var(--border, #3f3c49) !important;
-	}
-
 	html {
 		background: var(--background);
-		scrollbar-gutter: stable both-edges;
+		--tw-border-color: var(--border);
 	}
 
-	body {
-		overflow-x: hidden;
-		width: 100%;
-		min-width: 0;
-	}
-
-	[data-theme='dark'] html {
-		background: var(--background);
+	::selection {
+		background: oklch(from var(--primary) l c h / 0.2);
 	}
 }
 
-@layer utilities {
-	/* Prevent layout shifts from scrollbars and dropdowns */
-	.prevent-shift {
-		/* Reserve space for scrollbar to prevent horizontal shifts */
-		overflow-y: scroll;
-		scrollbar-gutter: stable;
+/* Decorative dot grid */
+@layer components {
+	.dot-grid {
+		background-image:
+			radial-gradient(circle, currentColor 1.2px, transparent 1.2px),
+			radial-gradient(circle, currentColor 0.8px, transparent 0.8px),
+			radial-gradient(circle, currentColor 0.4px, transparent 0.4px);
+		background-size:
+			12px 10px,
+			7px 13px,
+			19px 7px;
+		background-position:
+			0 0,
+			3px 5px,
+			9px 2px;
+		color: var(--foreground);
+		opacity: 0.1;
+		mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
 	}
+}
 
-	/* Better scrollbar styling for consistent appearance */
-	.custom-scrollbar {
-		scrollbar-width: thin;
-		scrollbar-color: transparent transparent; /* Make scrollbar invisible by default */
-	}
-
-	.custom-scrollbar::-webkit-scrollbar {
-		width: 6px; /* Slightly thinner */
-		height: 6px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background-color: transparent; /* Invisible by default */
-		border-radius: 3px;
-		border: 1px solid transparent;
-		background-clip: content-box;
-		transition: all 0.3s ease;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-		background-color: var(--muted-foreground); /* Only show on hover */
-		opacity: 0.7;
-	}
-
-	/* Show scrollbar when scrolling */
-	.custom-scrollbar.scrolling::-webkit-scrollbar-thumb {
-		background-color: var(--muted-foreground);
-		opacity: 0.4;
-	}
-
-	/* Hide scrollbar completely when not needed */
-	.custom-scrollbar::-webkit-scrollbar-corner {
-		background: transparent;
-	}
-
-	/* Prevent dropdown-related layout shifts */
-	.dropdown-container {
+/* Nav link animated underline */
+@layer components {
+	.nav-link {
 		position: relative;
-		/* Ensure dropdowns don't affect parent layout */
-		contain: layout;
 	}
-
-	/* Stable layout for filter components */
-	.filter-stable {
-		/* Prevent reflow when dropdowns open */
-		contain: layout style;
-		/* Reserve space to prevent shifts */
-		min-height: 2.5rem;
+	.nav-link::after {
+		content: '';
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		width: 0;
+		height: 1px;
+		background: currentColor;
+		transition: width 0.3s ease;
 	}
-
-	/* Prevent header shifts from dropdown interactions */
-	.sticky-header {
-		/* Ensure header stays stable during dropdown interactions */
-		contain: layout;
-		/* Prevent any layout shifts */
-		will-change: auto;
+	.nav-link:hover::after {
+		width: 100%;
 	}
-
-	/* Better dropdown positioning to prevent page shifts */
-	.dropdown-content {
-		/* Ensure dropdowns don't cause horizontal scrolling */
-		max-width: calc(100vw - 2rem);
-		/* Prevent dropdowns from extending beyond viewport */
-		transform: translateX(0);
-	}
-
 }

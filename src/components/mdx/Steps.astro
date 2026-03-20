@@ -1,0 +1,40 @@
+---
+interface Props {
+	class?: string
+}
+const { class: className } = Astro.props
+---
+
+<div
+	class:list={[
+		'not-prose my-6 space-y-6 [counter-reset:step]',
+		className,
+	]}
+>
+	<slot />
+</div>
+
+<style>
+	div :global(> *) {
+		position: relative;
+		padding-left: 2.5rem;
+	}
+	div :global(> *)::before {
+		counter-increment: step;
+		content: counter(step);
+		position: absolute;
+		left: 0;
+		top: 0.1em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 9999px;
+		background: var(--secondary);
+		color: var(--foreground);
+		font-size: 0.75rem;
+		font-weight: 700;
+		font-family: var(--font-mono);
+	}
+</style>

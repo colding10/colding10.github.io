@@ -1,0 +1,190 @@
+---
+title: 'Breaking RSA with Small Public Exponent'
+description: "A walkthrough of Coppersmith's method against RSA with e=3"
+date: 2026-03-19
+tags: ['crypto', 'writeups', 'math']
+authors: ['cold']
+draft: false
+---
+
+import Callout from '@/components/Callout.astro'
+import Tabs from '@/components/mdx/Tabs.astro'
+import TabPanel from '@/components/mdx/TabPanel.astro'
+import Steps from '@/components/mdx/Steps.astro'
+import Step from '@/components/mdx/Step.astro'
+import Spoiler from '@/components/mdx/Spoiler.astro'
+import FileTree from '@/components/mdx/FileTree.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import LinkCard from '@/components/mdx/LinkCard.astro'
+import Kbd from '@/components/mdx/Kbd.astro'
+
+# Introduction
+
+This was a fun crypto challenge from FakeCTF 2026. We're given an RSA encryption with $e = 3$ and a partially known plaintext — classic Coppersmith setup.
+
+The server encrypts `flag + random_padding` under textbook RSA with a tiny public exponent. Since most of the plaintext is known, we can recover the unknown bits using lattice-based methods.
+
+<Callout variant="definition" title="Coppersmith's Theorem">
+Let $N$ be an integer and $f(x)$ a monic polynomial of degree $d$. If there exists $x_0 < N^{1/d}$ such that $f(x_0) \equiv 0 \pmod{N}$, then $x_0$ can be found in polynomial time.
+</Callout>
+
+## Challenge Files
+
+<FileTree title="crypto-smol-e" entries={[
+  { name: "server.py", highlight: true },
+  { name: "output.txt", highlight: true },
+  { name: "Dockerfile" },
+  { name: "requirements.txt" },
+]} />
+
+The key file is `server.py`:
+
+```python title=server.py
+from Crypto.Util.number import getPrime, bytes_to_long
+
+flag = open("flag.txt", "rb").read()
+p, q = getPrime(512), getPrime(512)
+n = p * q
+e = 3
+
+# pad flag with 32 random bytes
+import os
+padded = flag + os.urandom(32)
+m = bytes_to_long(padded)
+c = pow(m, e, n)
+
+print(f"{n = }")
+print(f"{e = }")
+print(f"{c = }")
+```
+
+And `output.txt` gives us $n$, $e = 3$, and $c$.
+
+## The Math
+
+We know the flag format is `flag{...}` so we know the upper bits of $m$. Let $m = m_0 + x$ where $m_0$ is the known prefix shifted left, and $x$ is the unknown suffix (the flag content + padding).
+
+Then:
+
+$$
+c \equiv (m_0 + x)^3 \pmod{n}
+$$
+
+We need to find $x$. Since $x$ is small relative to $n^{1/3}$, Coppersmith's theorem applies directly.
+
+<Callout variant="intuition">
+Think of it this way: if $e$ is small and we know most of the message, the "search space" for the unknown part is tiny compared to $n$. Lattice reduction (LLL) finds it efficiently.
+</Callout>
+
+## Solution
+
+<Steps>
+  <Step title="Parse the output">
+    Extract $n$, $e$, and $c$ from `output.txt`. Confirm $e = 3$.
+  </Step>
+  <Step title="Construct the known prefix">
+    We know the flag starts with `flag{`. Convert to an integer and shift left by the number of unknown bits (flag content + 32 bytes of padding).
+  </Step>
+  <Step title="Build the polynomial">
+    Define $f(x) = (m_0 + x)^3 - c$ over $\mathbb{Z}/n\mathbb{Z}$. The small root $x_0$ is our unknown bytes.
+  </Step>
+  <Step title="Run Coppersmith">
+    Use Sage's `small_roots()` to find $x_0$. Recover the full plaintext as $m = m_0 + x_0$.
+  </Step>
+</Steps>
+
+<Aside title="On epsilon">
+The `small_roots()` `epsilon` parameter controls the lattice dimension. Smaller epsilon = better bounds but slower. Start with `epsilon=0.03` and decrease if it doesn't find anything.
+</Aside>
+
+## Solve Scripts
+
+<Tabs labels={["Sage", "Python + subprocess", "One-liner"]}>
+  <TabPanel>
+```sage title=solve.sage
+n = 0xDEADBEEF  # from output.txt
+e = 3
+c = 0xCAFEBABE  # from output.txt
+
+# known prefix: "flag{"
+prefix = b"flag{"
+suffix_len = 100  # unknown bytes (flag body + 32 padding)
+
+m0 = int.from_bytes(prefix, "big") << (suffix_len * 8)
+
+P.<x> = PolynomialRing(Zmod(n))
+f = (m0 + x)^e - c
+
+roots = f.small_roots(X=2^(suffix_len*8), epsilon=0.03)
+if roots:
+    m = m0 + int(roots[0])
+    print(int(m).to_bytes(200, "big").strip(b"\x00"))
+```
+  </TabPanel>
+  <TabPanel>
+```python title=solve.py
+import subprocess
+
+# Write the sage script and call it
+sage_code = """
+n = 0xDEADBEEF
+e = 3
+c = 0xCAFEBABE
+prefix = b"flag{"
+suffix_len = 100
+m0 = int.from_bytes(prefix, "big") << (suffix_len * 8)
+P.<x> = PolynomialRing(Zmod(n))
+f = (m0 + x)^e - c
+roots = f.small_roots(X=2^(suffix_len*8), epsilon=0.03)
+if roots:
+    m = m0 + int(roots[0])
+    print(int(m).to_bytes(200, "big").strip(b"\\x00"))
+"""
+result = subprocess.run(["sage", "-c", sage_code], capture_output=True, text=True)
+print(result.stdout)
+```
+  </TabPanel>
+  <TabPanel>
+```bash
+sage -c 'n=0xDEADBEEF;e=3;c=0xCAFEBABE;P.<x>=PolynomialRing(Zmod(n));print((int(P((int.from_bytes(b"flag{","big")<<800)+x)^3-c).small_roots(X=2^800,epsilon=.03)[0]).to_bytes(200,"big"))'
+```
+  </TabPanel>
+</Tabs>
+
+<Callout variant="warning">
+The one-liner is cursed. Don't actually do this. It's here for comedic value.
+</Callout>
+
+## Output
+
+Running the Sage script:
+
+```text
+b'flag{c0pp3rsm1th_w1th_sm4ll_e_1s_fr33_r34l_3st4t3}'
+```
+
+<Spoiler label="Flag">
+`flag{c0pp3rsm1th_w1th_sm4ll_e_1s_fr33_r34l_3st4t3}`
+</Spoiler>
+
+## Takeaways
+
+<Callout variant="summary">
+- RSA with $e = 3$ is dangerous when any part of the plaintext is known or predictable
+- Coppersmith's method finds small roots of polynomials mod $N$ in polynomial time
+- Sage's `small_roots()` does the heavy lifting — just set up the polynomial correctly
+- The bound on the unknown portion must be less than $N^{1/e}$
+</Callout>
+
+If you want to dig deeper into lattice-based attacks on RSA, this is a great resource:
+
+<LinkCard
+  href="https://cr.yp.to/bib/2001/coppersmith.pdf"
+  title="Coppersmith (2001) — Finding Small Solutions to Low Degree Polynomials"
+  description="The original paper describing the lattice-based method"
+  external
+/>
+
+> "Any sufficiently advanced cryptanalysis is indistinguishable from magic." — me, after spending 4 hours on this
+
+Press <Kbd>Ctrl</Kbd>+<Kbd>D</Kbd> to close your sage session when you're done :)

@@ -2,8 +2,6 @@
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
-import AvatarComponent from '@/components/ui/avatar'
-import { buttonVariants } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
 ---
@@ -15,15 +13,15 @@ import { Icon } from 'astro-icon/components'
 	<section class="space-y-8">
 		<!-- Hero Section -->
 		<div class="flex items-center gap-6">
-			<AvatarComponent
-				client:load
+			<img
 				src="/static/logo.png"
 				alt="Profile picture of cold"
-				fallback="C"
-				className="ring-primary/20 hover:ring-primary/40 size-24 shrink-0 rounded-full ring-4 transition-all duration-300"
+				class="ring-border size-24 shrink-0 rounded-full ring-2"
+				loading="lazy"
+				decoding="async"
 			/>
 			<div class="space-y-4">
-				<h1 class="text-4xl font-bold">About Me</h1>
+				<h1 class="font-serif text-4xl font-bold">About Me</h1>
 				<p>
 					Hi there! I'm <b>cold</b>. I like computers whether hard or
 					soft. This means hardware and software. Right now, I study
@@ -85,7 +83,7 @@ import { Icon } from 'astro-icon/components'
 			<div class="flex gap-3">
 				<Link
 					href="https://github.com/colding10"
-					class={buttonVariants({ variant: 'outline' })}
+					class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
 					external
 				>
 					<Icon name="lucide:github" class="size-4" />
@@ -93,7 +91,7 @@ import { Icon } from 'astro-icon/components'
 				</Link>
 				<Link
 					href="/history"
-					class={buttonVariants({ variant: 'outline' })}
+					class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
 				>
 					<Icon name="lucide:trophy" class="size-4" />
 					CTF History

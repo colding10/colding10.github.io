@@ -6,7 +6,7 @@ export const SITE: Site = {
 	href: 'https://cold.is-a.dev',
 	author: 'cold',
 	locale: 'en-US',
-	featuredPostCount: 2,
+	featuredPostCount: 3,
 	postsPerPage: 3,
 }
 

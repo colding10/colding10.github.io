@@ -17,7 +17,7 @@
 	h4,
 	h5,
 	h6 {
-		@apply text-balance;
+		@apply text-balance font-bold;
 	}
 
 	p {
@@ -27,49 +27,68 @@
 
 @layer components {
 	.prose {
-		@apply text-foreground text-base leading-7;
+		@apply text-foreground leading-7;
+		font-size: 0.9375rem;
 		@apply [&>link[rel="stylesheet"]+*]:mt-0! [&>link[rel="stylesheet"]+*>*]:mt-0!;
 
 		:where(p):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply text-foreground/80 my-5;
+			@apply text-foreground/80;
+			margin-bottom: 1.25rem;
 		}
 
 		:where(h1, h2, h3, h4, h5, h6):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
-			@apply text-foreground scroll-mt-32 font-medium xl:scroll-mt-20;
+			@apply text-foreground scroll-mt-32 font-serif font-bold xl:scroll-mt-20;
+			line-height: 1.2;
 		}
 
 		:where(h1):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply mt-8 mb-6 text-4xl;
+			font-size: clamp(1.75rem, 4vw, 2.5rem);
+			margin-top: 0;
+			margin-bottom: 1rem;
 		}
 
 		:where(h2):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply mt-8 mb-4 text-2xl;
+			font-size: clamp(1.35rem, 3vw, 1.75rem);
+			margin-top: 2.5rem;
+			margin-bottom: 0.75rem;
 		}
 
 		:where(h3):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply mt-8 mb-4 text-xl;
+			font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+			margin-top: 2rem;
+			margin-bottom: 0.75rem;
 		}
 
 		:where(h4):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply mt-7 mb-3 text-lg;
+			font-size: clamp(1rem, 2vw, 1.15rem);
+			margin-top: 1.75rem;
+			margin-bottom: 0.5rem;
 		}
 
 		:where(h5, h6):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
-			@apply mt-5 mb-3;
+			font-size: 0.9375rem;
+			margin-top: 1.5rem;
+			margin-bottom: 0.5rem;
 		}
 
 		:where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply text-foreground decoration-muted-foreground hover:decoration-foreground font-medium break-words underline underline-offset-[3px] transition-colors;
+			@apply text-primary font-medium break-words underline transition-colors duration-200;
+			text-decoration-color: oklch(from var(--primary) l c h / 0.4);
+			text-underline-offset: 3px;
+		}
+
+		:where(a:hover):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+			text-decoration-color: var(--primary);
 		}
 
 		:where(strong):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
-			@apply text-foreground font-medium;
+			@apply text-foreground font-bold;
 		}
 
 		:where(ul):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
@@ -92,24 +111,38 @@
 		}
 
 		:where(code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply bg-muted/60 text-foreground relative rounded-sm px-[0.3rem] py-[0.2rem] text-base font-normal break-words;
-			letter-spacing: 0.005em;
+			font-family: var(--font-mono);
+			font-size: 0.875em;
+			background: var(--muted);
+			padding: 0.15em 0.35em;
+			border-radius: 0.25rem;
+			@apply text-foreground font-normal break-words;
 			@apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
 		}
 
 		:where(pre code, .expressive-code code):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
+			font-family: var(--font-mono);
 			font-size: 1em;
 			font-weight: 500 !important;
 			letter-spacing: 0;
-			font-feature-settings: 'calt' 0; /* disable contextual alternates for consistency */
+			font-feature-settings: 'calt' 0;
 		}
 
 		:where(blockquote):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
-			@apply [&_*]:text-muted-foreground small my-6 border-l-2 pl-6;
+			@apply my-6 rounded-md px-5 py-3 italic;
+			background: var(--secondary);
+			color: var(--muted-foreground);
+		}
+
+		:where(blockquote *):not(
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
+			color: var(--muted-foreground);
+			@apply my-0!;
 		}
 
 		:where(hr):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
@@ -119,7 +152,9 @@
 		:where(table):not(
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
-			@apply mx-auto my-6 block max-w-fit overflow-x-auto text-sm;
+			@apply mx-auto my-6 block max-w-fit overflow-x-auto;
+			border-collapse: collapse;
+			font-size: 0.875rem;
 		}
 
 		:where(thead):not(
@@ -129,7 +164,7 @@
 		}
 
 		:where(th):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply px-4 py-2 font-medium;
+			@apply px-4 py-2 font-bold;
 			@apply text-left [&[align=center]]:text-center [&[align=right]]:text-right;
 		}
 
@@ -146,6 +181,10 @@
 			:where([class~='not-prose'], [class~='not-prose'] *)
 		) {
 			@apply mx-auto my-6;
+		}
+
+		:where(img):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+			@apply rounded-md dark:ring-1 dark:ring-border/30;
 		}
 
 		:where(pre):not(:where([class~='not-prose'], [class~='not-prose'] *)) {

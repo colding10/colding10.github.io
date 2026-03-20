@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config'
 
 import mdx from '@astrojs/mdx'
-import react from '@astrojs/react'
+
 import sitemap from '@astrojs/sitemap'
 import icon from 'astro-icon'
 
@@ -12,7 +12,6 @@ import rehypeKatex from 'rehype-katex'
 import rehypePrettyCode from 'rehype-pretty-code'
 import remarkEmoji from 'remark-emoji'
 import remarkMath from 'remark-math'
-import rehypeDocument from 'rehype-document'
 
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections'
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
@@ -23,10 +22,14 @@ export default defineConfig({
   site: 'https://cold.is-a.dev',
   integrations: [
     expressiveCode({
-      themes: ['github-light', 'github-dark'],
+      themes: ['vitesse-light', 'vitesse-dark'],
       plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
       useDarkModeMediaQuery: false,
-      themeCssSelector: (theme) => `[data-theme="${theme.name.split('-')[1]}"]`,
+      themeCssSelector: (theme) => {
+        const name = theme.name.toLowerCase()
+        if (name.includes('light') || name.includes('dawn')) return '[data-theme="light"]'
+        return '[data-theme="dark"]'
+      },
       defaultProps: {
         wrap: true,
         collapseStyle: 'collapsible-auto',
@@ -62,11 +65,11 @@ export default defineConfig({
         lineNumbers: {
           foreground: 'var(--muted-foreground)',
         },
-        uiFontFamily: 'var(--font-sans)',
+        uiFontFamily: 'var(--font-mono)',
       },
     }),
     mdx(),
-    react(),
+
     sitemap(),
     icon(),
   ],
@@ -85,12 +88,6 @@ export default defineConfig({
     syntaxHighlight: false,
     rehypePlugins: [
       [
-        rehypeDocument,
-        {
-          css: 'https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css',
-        },
-      ],
-      [
         rehypeExternalLinks,
         {
           target: '_blank',
@@ -103,8 +100,8 @@ export default defineConfig({
         rehypePrettyCode,
         {
           theme: {
-            light: 'github-light',
-            dark: 'github-dark',
+            light: 'vitesse-light',
+            dark: 'vitesse-dark',
           },
         },
       ],

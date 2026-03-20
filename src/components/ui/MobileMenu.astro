@@ -1,0 +1,45 @@
+---
+import { cn } from '@/lib/utils'
+
+interface Props {
+  links: { text: string; href: string }[]
+  class?: string
+}
+
+const { links, class: className } = Astro.props
+---
+
+<details class={cn('relative sm:hidden', className)}>
+  <summary
+    class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground list-none [&::-webkit-details-marker]:hidden"
+    title="Menu"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="size-5"
+    >
+      <line x1="4" x2="20" y1="12" y2="12" />
+      <line x1="4" x2="20" y1="6" y2="6" />
+      <line x1="4" x2="20" y1="18" y2="18" />
+    </svg>
+    <span class="sr-only">Toggle menu</span>
+  </summary>
+  <div class="absolute right-0 top-full z-50 mt-1 min-w-[8rem] rounded-md border bg-background p-1 shadow-sm">
+    {links.map((item) => (
+      <a
+        href={item.href}
+        class="block w-full rounded-sm px-2 py-1.5 text-lg font-medium capitalize transition-colors hover:bg-accent hover:text-accent-foreground"
+      >
+        {item.text}
+      </a>
+    ))}
+  </div>
+</details>
