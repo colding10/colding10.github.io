@@ -29,15 +29,8 @@ const activePostCombinedReadingTime =
 	activePost && subposts.length > 0
 		? await getCombinedReadingTime(activePost.id)
 		: null
-const subpostsWithReadingTime = await Promise.all(
-	subposts.map(async (subpost) => ({
-		...subpost,
-		readingTime: await getPostReadingTime(subpost.id),
-	})),
-)
-
 const currentSubpostDetails = isCurrentSubpost
-	? subpostsWithReadingTime.find((subpost) => subpost.id === currentPostId)
+	? subposts.find((subpost) => subpost.id === currentPostId)
 	: null
 ---
 
@@ -152,9 +145,9 @@ const currentSubpostDetails = isCurrentSubpost
 								</li>
 							)}
 
-							{subpostsWithReadingTime.length > 0 && (
+							{subposts.length > 0 && (
 								<div class="ml-4 space-y-1">
-									{subpostsWithReadingTime.map((subpost) =>
+									{subposts.map((subpost) =>
 										currentPostId === subpost.id ? (
 											<div class="text-foreground bg-muted mobile-subposts-active-item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium">
 												<Icon
@@ -166,10 +159,7 @@ const currentSubpostDetails = isCurrentSubpost
 													<span class="line-clamp-2">
 														{subpost.data.title}
 													</span>
-													<span class="text-muted-foreground/80 text-xs">
-														{subpost.readingTime}
-													</span>
-												</div>
+													</div>
 											</div>
 										) : (
 											<a
@@ -184,9 +174,6 @@ const currentSubpostDetails = isCurrentSubpost
 												<div class="flex flex-col">
 													<span class="line-clamp-2">
 														{subpost.data.title}
-													</span>
-													<span class="text-muted-foreground/80 hover:text-foreground/80 text-xs">
-														{subpost.readingTime}
 													</span>
 												</div>
 											</a>

@@ -119,20 +119,7 @@
 /* Decorative dot grid */
 @layer components {
 	.dot-grid {
-		background-image:
-			radial-gradient(circle, currentColor 1.2px, transparent 1.2px),
-			radial-gradient(circle, currentColor 0.8px, transparent 0.8px),
-			radial-gradient(circle, currentColor 0.4px, transparent 0.4px);
-		background-size:
-			12px 10px,
-			7px 13px,
-			19px 7px;
-		background-position:
-			0 0,
-			3px 5px,
-			9px 2px;
-		color: var(--foreground);
-		opacity: 0.1;
+		opacity: 0.45;
 		mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
 		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
 	}
@@ -156,4 +143,14 @@
 	.nav-link:hover::after {
 		width: 100%;
 	}
+}
+
+/* Make expressive-code annotation labels sit above the code line instead of overlaying */
+.expressive-code .ec-line.tm-label .code {
+	padding-top: 1.6em;
+}
+.expressive-code .ec-line.tm-label .code::before {
+	position: absolute;
+	top: 0;
+	left: 0;
 }

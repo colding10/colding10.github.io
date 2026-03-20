@@ -60,7 +60,7 @@ src/
 - **Subtle interactions** — hover effects use opacity, translate, and color transitions (not borders/shadows appearing)
 - **Tags** render as plain `#tag` text, not pills with backgrounds
 - **Metadata separators** use middots (`&middot;`) with `opacity-30`, not pipes or vertical bars
-- **No reading time displayed** — removed from all views
+- **Reading time** only shown for active post in subpost navigation, not on blog cards or post headers
 
 ### Animations
 - `animate-fade-up` — staggered entrance animation using `animation-delay` inline styles

@@ -30,12 +30,6 @@ const activePostCombinedReadingTime =
 	activePost && subposts.length > 0
 		? await getCombinedReadingTime(activePost.id)
 		: null
-const subpostsWithReadingTime = await Promise.all(
-	subposts.map(async (subpost) => ({
-		...subpost,
-		readingTime: await getPostReadingTime(subpost.id),
-	})),
-)
 ---
 
 <div
@@ -121,9 +115,9 @@ const subpostsWithReadingTime = await Promise.all(
 				}
 
 				{
-					subpostsWithReadingTime.length > 0 && (
+					subposts.length > 0 && (
 						<li class="ml-4 space-y-1">
-							{subpostsWithReadingTime.map((subpost) =>
+							{subposts.map((subpost) =>
 								currentPostId === subpost.id ? (
 									<div class="text-foreground bg-muted subposts-sidebar-active-item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-pretty">
 										<Icon
@@ -134,9 +128,6 @@ const subpostsWithReadingTime = await Promise.all(
 										<div class="flex flex-col">
 											<span class="line-clamp-2 text-pretty">
 												{subpost.data.title}
-											</span>
-											<span class="text-muted-foreground/80 text-xs">
-												{subpost.readingTime}
 											</span>
 										</div>
 									</div>
@@ -153,9 +144,6 @@ const subpostsWithReadingTime = await Promise.all(
 										<div class="flex flex-col">
 											<span class="line-clamp-2 text-pretty">
 												{subpost.data.title}
-											</span>
-											<span class="text-muted-foreground/80 text-xs">
-												{subpost.readingTime}
 											</span>
 										</div>
 									</Link>
