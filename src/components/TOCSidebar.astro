@@ -17,11 +17,17 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 	sections.length > 0 && (
 		<div
 			id="toc-sidebar-container"
-			class="sticky top-20 col-start-1 row-span-1 mr-8 ml-auto hidden h-[calc(100vh-5rem)] max-w-md xl:block"
+			class="sticky top-20 col-start-1 row-span-1 mr-8 ml-auto hidden h-[calc(100vh-5rem)] max-w-md self-start xl:block"
 		>
-			<div class="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto" style="scrollbar-width: thin;" data-toc-scroll-area>
+			<div
+				class="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto"
+				style="scrollbar-width: thin;"
+				data-toc-scroll-area
+			>
 				<div class="flex flex-col gap-2 px-4">
-					<span class="font-serif text-lg font-bold">Table of Contents</span>
+					<span class="font-serif text-lg font-bold">
+						Table of Contents
+					</span>
 					{sections.map((section, index) => {
 						const isFirstSubpost =
 							section.type === 'subpost' &&
@@ -60,7 +66,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 															? `/blog/${parentId}#${heading.slug}`
 															: `#${heading.slug}`
 													}
-													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+													class="marker:text-foreground/30 -mx-2 block list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 													data-heading-link={
 														heading.slug
 													}
@@ -96,7 +102,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 															? '#'
 															: `/blog/${section.subpostId}`
 													}
-													class="marker:text-foreground/30 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+													class="marker:text-foreground/30 -mx-2 block list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 													data-heading-link={
 														section.subpostId ===
 														currentPostId
@@ -127,7 +133,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 																? `#${heading.slug}`
 																: `/blog/${section.subpostId}#${heading.slug}`
 														}
-														class="marker:text-foreground/30 hover:text-foreground/60 -mx-2 list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+														class="marker:text-foreground/30 hover:text-foreground/60 -mx-2 block list-none rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 														data-heading-link={
 															section.subpostId ===
 															currentPostId
@@ -153,31 +159,44 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 
 <script>
 	const HEADER_OFFSET = 80
+	const getDocumentHeight = () =>
+		Math.max(
+			document.body.scrollHeight,
+			document.documentElement.scrollHeight,
+		)
+	const areIdsEqual = (left: string[], right: string[]) =>
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
 
 	class TOCState {
-		links: NodeListOf<Element> = document.querySelectorAll(
-			'[data-heading-link]',
-		)
+		links: HTMLElement[] = []
+		linkById = new Map<string, HTMLElement>()
 		activeIds: string[] = []
-		headings: HTMLElement[] = []
 		regions: { id: string; start: number; end: number }[] = []
 		scrollArea: HTMLElement | null = null
 		tocScrollArea: HTMLElement | null = null
 
 		reset() {
-			this.links = document.querySelectorAll(
-				'#toc-sidebar-container [data-heading-link]',
+			this.links = Array.from(
+				document.querySelectorAll<HTMLElement>(
+					'#toc-sidebar-container [data-heading-link]',
+				),
+			)
+			this.linkById = new Map(
+				this.links
+					.map((link) => {
+						const id = link.dataset.headingLink
+						return id ? [id, link] : null
+					})
+					.filter((entry): entry is [string, HTMLElement] => !!entry),
 			)
 			this.activeIds = []
-			this.headings = []
 			this.regions = []
 			const tocContainer = document.getElementById(
 				'toc-sidebar-container',
 			)
 			this.scrollArea =
-				tocContainer?.querySelector(
-					'[data-toc-scroll-area]',
-				) || null
+				tocContainer?.querySelector('[data-toc-scroll-area]') || null
 			this.tocScrollArea =
 				tocContainer?.querySelector('[data-toc-scroll-area]') || null
 		}
@@ -187,69 +206,59 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 
 	class HeadingRegions {
 		static build() {
-			state.headings = Array.from(
+			const headings = Array.from(
 				document.querySelectorAll<HTMLElement>(
-					'.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+					'.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
 				),
 			)
 
-			if (state.headings.length === 0) {
+			if (headings.length === 0) {
 				state.regions = []
 				return
 			}
 
-			state.regions = state.headings.map((heading, index) => {
-				const nextHeading = state.headings[index + 1]
+			const documentHeight = getDocumentHeight()
+
+			state.regions = headings.map((heading, index) => {
+				const nextHeading = headings[index + 1]
 				return {
 					id: heading.id,
-					start: heading.offsetTop,
+					start: heading.getBoundingClientRect().top + window.scrollY,
 					end: nextHeading
-						? nextHeading.offsetTop
-						: document.body.scrollHeight,
+						? nextHeading.getBoundingClientRect().top +
+							window.scrollY
+						: documentHeight,
 				}
 			})
 		}
 
 		static getVisibleIds(): string[] {
-			if (state.headings.length === 0) return []
+			if (state.regions.length === 0) return []
 
-			const viewportTop = window.scrollY + HEADER_OFFSET
 			const viewportBottom = window.scrollY + window.innerHeight
-			const visibleIds = new Set<string>()
+			const position = window.scrollY + HEADER_OFFSET + 1
 
-			const isInViewport = (top: number, bottom: number) =>
-				(top >= viewportTop && top <= viewportBottom) ||
-				(bottom >= viewportTop && bottom <= viewportBottom) ||
-				(top <= viewportTop && bottom >= viewportBottom)
+			if (position < state.regions[0].start) {
+				return state.regions[0].start <= viewportBottom
+					? [state.regions[0].id]
+					: []
+			}
 
-			state.headings.forEach((heading) => {
-				const headingBottom = heading.offsetTop + heading.offsetHeight
-				if (isInViewport(heading.offsetTop, headingBottom)) {
-					visibleIds.add(heading.id)
+			let left = 0
+			let right = state.regions.length - 1
+			let currentIndex = right
+
+			while (left <= right) {
+				const middle = Math.floor((left + right) / 2)
+				if (state.regions[middle].start <= position) {
+					currentIndex = middle
+					left = middle + 1
+				} else {
+					right = middle - 1
 				}
-			})
+			}
 
-			state.regions.forEach((region) => {
-				if (
-					region.start <= viewportBottom &&
-					region.end >= viewportTop
-				) {
-					const heading = document.getElementById(region.id)
-					if (heading) {
-						const headingBottom =
-							heading.offsetTop + heading.offsetHeight
-						if (
-							region.end > headingBottom &&
-							(headingBottom < viewportBottom ||
-								viewportTop < region.end)
-						) {
-							visibleIds.add(region.id)
-						}
-					}
-				}
-			})
-
-			return Array.from(visibleIds)
+			return [state.regions[currentIndex].id]
 		}
 	}
 
@@ -269,37 +278,27 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 	}
 
 	class TOCLinks {
-		static update(headingIds: string[]) {
+		static update(_previousIds: string[], nextIds: string[]) {
 			state.links.forEach((link) => {
-				link.classList.remove(
-					'text-foreground',
-					'bg-accent',
-				)
+				link.classList.remove('text-foreground', 'bg-accent')
+				link.removeAttribute('aria-current')
 			})
 
-			headingIds.forEach((id) => {
-				if (id) {
-					const activeLink = document.querySelector(
-						`#toc-sidebar-container [data-heading-link="${id}"]`,
-					)
-					if (activeLink) {
-						activeLink.classList.add(
-							'text-foreground',
-							'bg-accent',
-						)
-					}
-				}
+			nextIds.forEach((id) => {
+				const activeLink = state.linkById.get(id)
+				if (!activeLink) return
+
+				activeLink.classList.add('text-foreground', 'bg-accent')
+				activeLink.setAttribute('aria-current', 'true')
 			})
 
-			this.scrollToActive(headingIds)
+			this.scrollToActive(nextIds)
 		}
 
 		static scrollToActive(headingIds: string[]) {
 			if (!state.scrollArea || !headingIds.length) return
 
-			const activeLink = document.querySelector(
-				`#toc-sidebar-container [data-heading-link="${headingIds[0]}"]`,
-			)
+			const activeLink = state.linkById.get(headingIds[0])
 			if (!activeLink) return
 
 			const { top: areaTop, height: areaHeight } =
@@ -325,30 +324,35 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 	}
 
 	class TOCController {
-		static handleScroll() {
-			const newActiveIds = HeadingRegions.getVisibleIds()
+		static _scrollTicking = false
+		static _tocScrollTicking = false
 
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				TOCLinks.update(state.activeIds)
-			}
+		static _onScroll() {
+			if (TOCController._scrollTicking) return
+			TOCController._scrollTicking = true
+			requestAnimationFrame(() => {
+				const newActiveIds = HeadingRegions.getVisibleIds()
+				if (!areIdsEqual(newActiveIds, state.activeIds)) {
+					const previousActiveIds = state.activeIds
+					state.activeIds = newActiveIds
+					TOCLinks.update(previousActiveIds, newActiveIds)
+				}
+				TOCController._scrollTicking = false
+			})
 		}
 
-		static handleTOCScroll = () => TOCScrollMask.update()
+		static _onTOCScroll() {
+			if (TOCController._tocScrollTicking) return
+			TOCController._tocScrollTicking = true
+			requestAnimationFrame(() => {
+				TOCScrollMask.update()
+				TOCController._tocScrollTicking = false
+			})
+		}
 
 		static handleResize() {
 			HeadingRegions.build()
-			const newActiveIds = HeadingRegions.getVisibleIds()
-
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				TOCLinks.update(state.activeIds)
-			}
-
+			TOCController._onScroll()
 			TOCScrollMask.update()
 		}
 
@@ -356,35 +360,35 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 			state.reset()
 			HeadingRegions.build()
 
-			if (state.headings.length === 0) {
-				TOCLinks.update([])
+			if (state.regions.length === 0) {
+				TOCLinks.update(state.activeIds, [])
+				state.activeIds = []
 				return
 			}
 
-			this.handleScroll()
+			TOCController._onScroll()
 			setTimeout(TOCScrollMask.update, 100)
 
 			const options = { passive: true }
-			window.addEventListener('scroll', this.handleScroll, options)
+			window.addEventListener('scroll', TOCController._onScroll, options)
 			window.addEventListener('resize', this.handleResize, options)
 			state.scrollArea?.addEventListener(
 				'scroll',
-				this.handleTOCScroll,
+				TOCController._onTOCScroll,
 				options,
 			)
 		}
 
 		static cleanup() {
-			window.removeEventListener('scroll', this.handleScroll)
+			window.removeEventListener('scroll', TOCController._onScroll)
 			window.removeEventListener('resize', this.handleResize)
 			state.scrollArea?.removeEventListener(
 				'scroll',
-				this.handleTOCScroll,
+				TOCController._onTOCScroll,
 			)
 
 			Object.assign(state, {
 				activeIds: [],
-				headings: [],
 				regions: [],
 				scrollArea: null,
 				tocScrollArea: null,
@@ -392,7 +396,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 		}
 	}
 
-	document.addEventListener('astro:page-load', () => TOCController.init())
+	TOCController.init()
 	document.addEventListener('astro:after-swap', () => {
 		TOCController.cleanup()
 		TOCController.init()
@@ -401,3 +405,11 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 		TOCController.cleanup(),
 	)
 </script>
+
+<style>
+	#toc-sidebar-container [data-heading-link][aria-current='true'] {
+		color: var(--foreground);
+		background: color-mix(in oklab, var(--accent) 88%, transparent);
+		box-shadow: inset 2px 0 0 var(--primary);
+	}
+</style>

@@ -42,7 +42,11 @@ const subpostsWithReadingTime = await Promise.all(
 	id="subposts-sidebar-container"
 	class="sticky top-20 col-start-3 row-span-1 mr-auto ml-8 hidden h-[calc(100vh-5rem)] max-w-md xl:block"
 >
-	<div class="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto" style="scrollbar-width: thin;" data-subposts-sidebar-scroll>
+	<div
+		class="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-auto"
+		style="scrollbar-width: thin;"
+		data-subposts-sidebar-scroll
+	>
 		<div class="px-4">
 			<ul class="space-y-1">
 				{
@@ -271,7 +275,7 @@ const subpostsWithReadingTime = await Promise.all(
 		}
 	}
 
-	document.addEventListener('astro:page-load', () => SidebarController.init())
+	SidebarController.init()
 	document.addEventListener('astro:after-swap', () => {
 		SidebarController.cleanup()
 		SidebarController.init()

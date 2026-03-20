@@ -76,7 +76,11 @@ const currentSubpostDetails = isCurrentSubpost
 					</div>
 				</summary>
 
-				<div class="mx-auto max-w-3xl overflow-y-auto" style="scrollbar-width: thin;" data-subposts-header-scroll>
+				<div
+					class="mx-auto max-w-3xl overflow-y-auto"
+					style="scrollbar-width: thin;"
+					data-subposts-header-scroll
+				>
 					<div class="max-h-[30vh]">
 						<ul class="flex list-none flex-col gap-y-1 px-4 pb-4">
 							{activePost && (
@@ -318,9 +322,7 @@ const currentSubpostDetails = isCurrentSubpost
 		}
 	}
 
-	document.addEventListener('astro:page-load', () =>
-		SubpostsController.init(),
-	)
+	SubpostsController.init()
 	document.addEventListener('astro:after-swap', () => {
 		SubpostsController.cleanup()
 		SubpostsController.init()

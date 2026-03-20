@@ -17,7 +17,7 @@
 	h4,
 	h5,
 	h6 {
-		@apply text-balance font-bold;
+		@apply font-bold text-balance;
 	}
 
 	p {
@@ -81,7 +81,9 @@
 			text-underline-offset: 3px;
 		}
 
-		:where(a:hover):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+		:where(a:hover):not(
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
 			text-decoration-color: var(--primary);
 		}
 
@@ -146,7 +148,9 @@
 		}
 
 		:where(hr):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply my-8 border-t;
+			@apply my-8 border-0;
+			height: 2px;
+			background-color: oklch(from var(--border) l c h / 0.38);
 		}
 
 		:where(table):not(
@@ -184,11 +188,22 @@
 		}
 
 		:where(img):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
-			@apply rounded-md dark:ring-1 dark:ring-border/30;
+			@apply dark:ring-border/30 rounded-md dark:ring-1;
+			content-visibility: auto;
+			contain-intrinsic-size: auto 400px;
 		}
 
 		:where(pre):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
 			@apply max-h-[min(68vh,1000px)]! overflow-y-auto [&::-webkit-scrollbar-corner]:hidden;
+			content-visibility: auto;
+			contain-intrinsic-size: auto 300px;
+		}
+
+		:where(.expressive-code):not(
+			:where([class~='not-prose'], [class~='not-prose'] *)
+		) {
+			content-visibility: auto;
+			contain-intrinsic-size: auto 200px;
 		}
 
 		:where(summary):not(

@@ -57,7 +57,11 @@ const { headings } = Astro.props
 					</div>
 				</summary>
 
-				<div class="mx-auto max-w-3xl overflow-y-auto" style="scrollbar-width: thin;" data-toc-header-scroll>
+				<div
+					class="mx-auto max-w-3xl overflow-y-auto"
+					style="scrollbar-width: thin;"
+					data-toc-header-scroll
+				>
 					<div class="max-h-[30vh]">
 						<ul
 							class="flex list-none flex-col gap-y-2 px-4 pb-4"
@@ -73,7 +77,7 @@ const { headings } = Astro.props
 								>
 									<a
 										href={`#${heading.slug}`}
-										class="mobile-toc-item underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
+										class="mobile-toc-item block rounded px-2 py-1 underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
 										data-heading-id={heading.slug}
 									>
 										{heading.text}
@@ -93,6 +97,14 @@ const { headings } = Astro.props
 	const HEADER_OFFSET = 102 + 36
 	const PROGRESS_CIRCLE_RADIUS = 10
 	const PROGRESS_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS
+	const getDocumentHeight = () =>
+		Math.max(
+			document.body.scrollHeight,
+			document.documentElement.scrollHeight,
+		)
+	const areIdsEqual = (left: string[], right: string[]) =>
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
 
 	class MobileTOCState {
 		progressCircle: HTMLElement | null = null
@@ -100,7 +112,8 @@ const { headings } = Astro.props
 		detailsElement: HTMLDetailsElement | null = null
 		listElement: HTMLElement | null = null
 		scrollArea: HTMLElement | null = null
-		headings: HTMLElement[] = []
+		itemById = new Map<string, HTMLElement>()
+		headingTextById = new Map<string, string>()
 		regions: { id: string; start: number; end: number }[] = []
 		activeIds: string[] = []
 
@@ -119,10 +132,20 @@ const { headings } = Astro.props
 			)
 			const tocContainer = document.getElementById('mobile-toc-container')
 			this.scrollArea =
-				tocContainer?.querySelector(
-					'[data-toc-header-scroll]',
-				) || null
-			this.headings = []
+				tocContainer?.querySelector('[data-toc-header-scroll]') || null
+			this.itemById = new Map(
+				Array.from(
+					this.listElement?.querySelectorAll<HTMLElement>(
+						'.mobile-toc-item',
+					) ?? [],
+				)
+					.map((item) => {
+						const id = item.dataset.headingId
+						return id ? [id, item] : null
+					})
+					.filter((entry): entry is [string, HTMLElement] => !!entry),
+			)
+			this.headingTextById = new Map()
 			this.regions = []
 			this.activeIds = []
 
@@ -139,69 +162,66 @@ const { headings } = Astro.props
 
 	class HeadingRegions {
 		static build() {
-			state.headings = Array.from(
+			const headings = Array.from(
 				document.querySelectorAll<HTMLElement>(
-					'.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
+					'.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
 				),
 			)
 
-			if (state.headings.length === 0) {
+			state.headingTextById = new Map(
+				headings.map((heading) => [
+					heading.id,
+					heading.textContent?.trim() ?? '',
+				]),
+			)
+
+			if (headings.length === 0) {
 				state.regions = []
 				return
 			}
 
-			state.regions = state.headings.map((heading, index) => {
-				const nextHeading = state.headings[index + 1]
+			const documentHeight = getDocumentHeight()
+
+			state.regions = headings.map((heading, index) => {
+				const nextHeading = headings[index + 1]
 				return {
 					id: heading.id,
-					start: heading.offsetTop,
+					start: heading.getBoundingClientRect().top + window.scrollY,
 					end: nextHeading
-						? nextHeading.offsetTop
-						: document.body.scrollHeight,
+						? nextHeading.getBoundingClientRect().top +
+							window.scrollY
+						: documentHeight,
 				}
 			})
 		}
 
 		static getVisibleIds(): string[] {
-			if (state.headings.length === 0) return []
+			if (state.regions.length === 0) return []
 
-			const viewportTop = window.scrollY + HEADER_OFFSET
 			const viewportBottom = window.scrollY + window.innerHeight
-			const visibleIds = new Set<string>()
+			const position = window.scrollY + HEADER_OFFSET + 1
 
-			const isInViewport = (top: number, bottom: number) =>
-				(top >= viewportTop && top <= viewportBottom) ||
-				(bottom >= viewportTop && bottom <= viewportBottom) ||
-				(top <= viewportTop && bottom >= viewportBottom)
+			if (position < state.regions[0].start) {
+				return state.regions[0].start <= viewportBottom
+					? [state.regions[0].id]
+					: []
+			}
 
-			state.headings.forEach((heading) => {
-				const headingBottom = heading.offsetTop + heading.offsetHeight
-				if (isInViewport(heading.offsetTop, headingBottom)) {
-					visibleIds.add(heading.id)
+			let left = 0
+			let right = state.regions.length - 1
+			let currentIndex = right
+
+			while (left <= right) {
+				const middle = Math.floor((left + right) / 2)
+				if (state.regions[middle].start <= position) {
+					currentIndex = middle
+					left = middle + 1
+				} else {
+					right = middle - 1
 				}
-			})
+			}
 
-			state.regions.forEach((region) => {
-				if (
-					region.start <= viewportBottom &&
-					region.end >= viewportTop
-				) {
-					const heading = document.getElementById(region.id)
-					if (heading) {
-						const headingBottom =
-							heading.offsetTop + heading.offsetHeight
-						if (
-							region.end > headingBottom &&
-							(headingBottom < viewportBottom ||
-								viewportTop < region.end)
-						) {
-							visibleIds.add(region.id)
-						}
-					}
-				}
-			})
-
-			return Array.from(visibleIds)
+			return [state.regions[currentIndex].id]
 		}
 	}
 
@@ -221,26 +241,27 @@ const { headings } = Astro.props
 	}
 
 	class MobileTOCLinks {
-		static update(headingIds: string[]) {
+		static update(_previousIds: string[], nextIds: string[]) {
 			if (!state.listElement || !state.currentSectionText) return
 
-			state.listElement
-				.querySelectorAll('.mobile-toc-item')
-				.forEach((item) => {
-					const tocItem = item as HTMLElement
-					const headingId = tocItem.dataset.headingId
-					if (headingId && headingIds.includes(headingId)) {
-						tocItem.classList.add('text-foreground')
-					} else {
-						tocItem.classList.remove('text-foreground')
-					}
-				})
+			state.itemById.forEach((item) => {
+				item.classList.remove('text-foreground')
+				item.removeAttribute('aria-current')
+			})
 
-			if (headingIds.length > 0) {
-				this.scrollToActive(headingIds[0])
+			nextIds.forEach((id) => {
+				const activeItem = state.itemById.get(id)
+				if (!activeItem) return
+
+				activeItem.classList.add('text-foreground')
+				activeItem.setAttribute('aria-current', 'true')
+			})
+
+			if (nextIds.length > 0) {
+				this.scrollToActive(nextIds[0])
 			}
 
-			this.updateCurrentSectionText(headingIds)
+			this.updateCurrentSectionText(nextIds)
 		}
 
 		static updateCurrentSectionText(headingIds: string[]) {
@@ -249,13 +270,9 @@ const { headings } = Astro.props
 			let textToShow = INITIAL_OVERVIEW_TEXT
 
 			if (headingIds.length > 0) {
-				const activeTexts = state.headings
-					.filter(
-						(heading) =>
-							headingIds.includes(heading.id) &&
-							heading.textContent,
-					)
-					.map((heading) => heading.textContent!.trim())
+				const activeTexts = headingIds
+					.map((id) => state.headingTextById.get(id))
+					.filter((text): text is string => !!text)
 
 				if (activeTexts.length > 0) {
 					textToShow = activeTexts.join(', ')
@@ -266,11 +283,7 @@ const { headings } = Astro.props
 		}
 
 		static scrollToActive(activeHeadingId: string) {
-			if (!state.listElement) return
-
-			const activeItem = state.listElement.querySelector(
-				`[data-heading-id="${activeHeadingId}"]`,
-			)
+			const activeItem = state.itemById.get(activeHeadingId)
 			if (!activeItem) return
 
 			const scrollContainer = state.scrollArea
@@ -348,31 +361,26 @@ const { headings } = Astro.props
 	}
 
 	class MobileTOCController {
-		static handleScroll() {
-			const newActiveIds = HeadingRegions.getVisibleIds()
+		static _ticking = false
 
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				MobileTOCLinks.update(state.activeIds)
-			}
-
-			ProgressCircle.update()
+		static _onScroll() {
+			if (MobileTOCController._ticking) return
+			MobileTOCController._ticking = true
+			requestAnimationFrame(() => {
+				const newActiveIds = HeadingRegions.getVisibleIds()
+				if (!areIdsEqual(newActiveIds, state.activeIds)) {
+					const previousActiveIds = state.activeIds
+					state.activeIds = newActiveIds
+					MobileTOCLinks.update(previousActiveIds, newActiveIds)
+				}
+				ProgressCircle.update()
+				MobileTOCController._ticking = false
+			})
 		}
 
 		static handleResize() {
 			HeadingRegions.build()
-
-			const newActiveIds = HeadingRegions.getVisibleIds()
-			if (
-				JSON.stringify(newActiveIds) !== JSON.stringify(state.activeIds)
-			) {
-				state.activeIds = newActiveIds
-				MobileTOCLinks.update(state.activeIds)
-			}
-
-			ProgressCircle.update()
+			MobileTOCController._onScroll()
 		}
 
 		static init() {
@@ -381,21 +389,25 @@ const { headings } = Astro.props
 
 			if (!state.currentSectionText) return
 
-			if (state.headings.length === 0) {
+			if (state.regions.length === 0) {
 				state.currentSectionText.textContent = INITIAL_OVERVIEW_TEXT
-				window.addEventListener('scroll', ProgressCircle.update, {
-					passive: true,
-				})
+				window.addEventListener(
+					'scroll',
+					MobileTOCController._onScroll,
+					{
+						passive: true,
+					},
+				)
 				ProgressCircle.update()
 				return
 			}
 
 			state.activeIds = HeadingRegions.getVisibleIds()
-			MobileTOCLinks.update(state.activeIds)
+			MobileTOCLinks.update([], state.activeIds)
 			ProgressCircle.update()
 
 			MobileTOCLinks.setupInteraction()
-			window.addEventListener('scroll', this.handleScroll, {
+			window.addEventListener('scroll', MobileTOCController._onScroll, {
 				passive: true,
 			})
 			window.addEventListener('resize', this.handleResize, {
@@ -404,18 +416,16 @@ const { headings } = Astro.props
 		}
 
 		static cleanup() {
-			window.removeEventListener('scroll', this.handleScroll)
-			window.removeEventListener('scroll', ProgressCircle.update)
+			window.removeEventListener('scroll', MobileTOCController._onScroll)
 			window.removeEventListener('resize', this.handleResize)
 			state.activeIds = []
-			state.headings = []
+			state.headingTextById = new Map()
+			state.itemById = new Map()
 			state.regions = []
 		}
 	}
 
-	document.addEventListener('astro:page-load', () =>
-		MobileTOCController.init(),
-	)
+	MobileTOCController.init()
 	document.addEventListener('astro:after-swap', () => {
 		MobileTOCController.cleanup()
 		MobileTOCController.init()
@@ -424,3 +434,11 @@ const { headings } = Astro.props
 		MobileTOCController.cleanup(),
 	)
 </script>
+
+<style>
+	#mobile-table-of-contents [data-heading-id][aria-current='true'] {
+		color: var(--foreground);
+		background: color-mix(in oklab, var(--accent) 82%, transparent);
+		font-weight: 600;
+	}
+</style>
