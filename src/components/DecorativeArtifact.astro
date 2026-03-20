@@ -1,100 +1,222 @@
+---
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value))
+
+const gaussian = (x: number, mean: number, sigma: number) =>
+  Math.exp(-((x - mean) ** 2) / (2 * sigma ** 2))
+
+const layerCount = 40
+const layers = Array.from({ length: layerCount }, (_, index) => index)
+const sampleLayers = new Set([2, 5, 9, 14, 20, 27, 34])
+
+function ridgeValue(t: number, layer: number, jitter = 0) {
+  const phase = layer * 0.17 + jitter * 0.11
+  const broad =
+    24 * gaussian(t, 0.18 + 0.015 * Math.sin(phase), 0.1) +
+    34 * gaussian(t, 0.47 + 0.02 * Math.cos(phase * 0.9), 0.105) +
+    26 * gaussian(t, 0.78 + 0.016 * Math.sin(phase * 1.1), 0.1) +
+    10 * gaussian(t, 0.63 + 0.01 * Math.cos(phase * 1.4), 0.065)
+  const ripple =
+    5.4 * Math.sin(t * 15 + phase * 1.8) + 2.8 * Math.cos(t * 24 - phase * 1.2)
+  return broad + ripple
+}
+
+function ridgePath(layer: number, jitter = 0) {
+  const inset = layer * 4.8
+  const left = 70 + inset
+  const right = 730 - inset * 0.94
+  const base = 170 - layer * 1.95
+  const points = Array.from({ length: 46 }, (_, step) => {
+    const t = step / 45
+    const x = left + (right - left) * t
+    const y = base - ridgeValue(t, layer, jitter)
+    return `${step === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`
+  })
+  return points.join(' ')
+}
+
+function meanCurveY(t: number) {
+  return 150 - ridgeValue(t, 4, 0.22) * 0.78
+}
+
+function bandPath(multiplier: number) {
+  const upper = Array.from({ length: 40 }, (_, step) => {
+    const t = step / 39
+    const x = 102 + 598 * t
+    const spread =
+      8 +
+      13 * gaussian(t, 0.24, 0.13) +
+      18 * gaussian(t, 0.5, 0.12) +
+      12 * gaussian(t, 0.76, 0.14)
+    const y = meanCurveY(t) - spread * multiplier
+    return `${step === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`
+  })
+
+  const lower = Array.from({ length: 40 }, (_, step) => {
+    const t = 1 - step / 39
+    const x = 102 + 598 * t
+    const spread =
+      8 +
+      13 * gaussian(t, 0.24, 0.13) +
+      18 * gaussian(t, 0.5, 0.12) +
+      12 * gaussian(t, 0.76, 0.14)
+    const y = meanCurveY(t) + spread * multiplier
+    return `L${x.toFixed(2)} ${y.toFixed(2)}`
+  })
+
+  return `${upper.join(' ')} ${lower.join(' ')} Z`
+}
+
+const observations = [
+  0.06, 0.11, 0.17, 0.23, 0.29, 0.36, 0.43, 0.5, 0.57, 0.64, 0.71, 0.79, 0.86,
+  0.93,
+].map((t, index) => {
+  const x = 102 + 598 * t
+  const noise = Math.sin(index * 1.31) * 8 + Math.cos(index * 0.9) * 4
+  const y = meanCurveY(t) + noise
+  const err = 10 + (index % 4) * 3
+  return {
+    x,
+    y,
+    top: y - err,
+    bottom: y + err,
+  }
+})
+
+const dust = Array.from({ length: 36 }, (_, index) => {
+  const t = index / 35
+  return {
+    x: 120 + 560 * t + Math.sin(index * 1.17) * 16,
+    y: clamp(
+      84 + Math.cos(index * 0.73) * 18 + Math.sin(index * 1.9) * 7,
+      52,
+      128,
+    ),
+    r: index % 5 === 0 ? 1.55 : 1.1,
+  }
+})
+---
+
 <svg
-  viewBox="0 0 800 180"
-  class="dot-grid block h-44 w-full"
+  viewBox="0 0 800 200"
+  class="dot-grid block h-56 w-full"
+  style="opacity: 0.9;"
   fill="none"
-  stroke="var(--foreground)"
   preserveAspectRatio="xMidYMid slice"
   aria-hidden="true"
 >
-  <g opacity="0.1" stroke-width="0.7">
-    <path d="M28 34H772"></path>
-    <path d="M28 74H772"></path>
-    <path d="M28 114H772"></path>
-    <path d="M28 154H772"></path>
-    <path d="M110 18V162"></path>
-    <path d="M270 18V162"></path>
-    <path d="M430 18V162"></path>
-    <path d="M590 18V162"></path>
-    <path d="M750 18V162"></path>
+  <defs>
+    <linearGradient id="artifact-band" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--foreground)" stop-opacity="0.03"
+      ></stop>
+      <stop offset="25%" stop-color="var(--foreground)" stop-opacity="0.08"
+      ></stop>
+      <stop offset="50%" stop-color="var(--primary)" stop-opacity="0.22"></stop>
+      <stop offset="75%" stop-color="var(--foreground)" stop-opacity="0.08"
+      ></stop>
+      <stop offset="100%" stop-color="var(--foreground)" stop-opacity="0.03"
+      ></stop>
+    </linearGradient>
+
+    <linearGradient id="artifact-line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--foreground)" stop-opacity="0.22"
+      ></stop>
+      <stop offset="50%" stop-color="var(--primary)" stop-opacity="0.82"></stop>
+      <stop offset="100%" stop-color="var(--foreground)" stop-opacity="0.22"
+      ></stop>
+    </linearGradient>
+
+    <linearGradient id="artifact-grid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--foreground)" stop-opacity="0.24"
+      ></stop>
+      <stop offset="100%" stop-color="var(--foreground)" stop-opacity="0.05"
+      ></stop>
+    </linearGradient>
+
+    <clipPath id="artifact-plane">
+      <path d="M70 170L222 72H606L730 170Z"></path>
+    </clipPath>
+  </defs>
+
+  <g stroke="url(#artifact-grid)" stroke-width="1">
+    <path d="M70 170H730"></path>
+    <path d="M100 154H700"></path>
+    <path d="M130 138H670"></path>
+    <path d="M160 122H640"></path>
+    <path d="M190 106H610"></path>
+    <path d="M220 90H580"></path>
+
+    <path d="M70 170L238 78"></path>
+    <path d="M122 170L272 78"></path>
+    <path d="M174 170L306 78"></path>
+    <path d="M226 170L340 78"></path>
+    <path d="M278 170L374 78"></path>
+    <path d="M330 170L408 78"></path>
+    <path d="M382 170L442 78"></path>
+    <path d="M434 170L476 78"></path>
+    <path d="M486 170L510 78"></path>
+    <path d="M538 170L544 78"></path>
+    <path d="M590 170L578 78"></path>
+    <path d="M642 170L612 78"></path>
+    <path d="M694 170L646 78"></path>
   </g>
 
-  <g opacity="0.34" stroke-width="1.15">
-    <path
-      d="M18 128C72 76 128 46 196 48C252 50 308 88 360 90C422 92 476 42 544 42C616 42 676 88 782 124"
-    ></path>
-    <path
-      d="M18 142C78 94 132 68 198 68C262 68 312 112 370 112C434 112 488 64 548 64C616 64 680 100 782 138"
-    ></path>
-    <path
-      d="M18 158C88 118 144 92 210 92C272 92 322 130 382 130C446 130 500 88 560 88C630 88 692 114 782 154"
-    ></path>
+  <path d={bandPath(1.9)} fill="url(#artifact-band)" opacity="0.84"></path>
+  <path d={bandPath(1.08)} fill="url(#artifact-band)" opacity="0.68"></path>
+
+  <g clip-path="url(#artifact-plane)">
+    {
+      layers.map((layer) => (
+        <path
+          d={ridgePath(layer)}
+          stroke="var(--foreground)"
+          stroke-width={sampleLayers.has(layer) ? 1.18 : 1.02}
+          opacity={0.1 + layer * 0.014}
+        />
+      ))
+    }
+
+    {
+      [-1.05, -0.75, -0.35, 0.18, 0.5, 0.88].map((jitter) => (
+        <path
+          d={ridgePath(5, jitter)}
+          stroke="url(#artifact-line)"
+          stroke-width="1.55"
+          opacity="0.72"
+        />
+      ))
+    }
   </g>
 
-  <g opacity="0.46" stroke-width="1.4">
-    <path
-      d="M64 122C102 64 156 28 222 26C290 24 342 64 394 96C446 128 496 150 558 146C630 142 692 106 744 58"
-    ></path>
-    <path
-      d="M72 150C118 100 172 78 226 80C286 82 336 120 392 142C448 164 500 170 556 160C624 148 682 114 730 78"
-    ></path>
-  </g>
+  <path
+    d="M102 147.86C117.33 140.81 132.67 134.01 148 127.71C163.33 121.4 178.67 116.06 194 111.95C209.33 107.84 224.67 104.98 240 102.43C255.33 99.88 270.67 97.14 286 94.57C301.33 92 316.67 89.83 332 88.9C347.33 87.97 362.67 88.83 378 91.08C393.33 93.33 408.67 96.83 424 99.91C439.33 102.99 454.67 105.56 470 106.18C485.33 106.8 500.67 104.77 516 100.68C531.33 96.58 546.67 90.57 562 84.96C577.33 79.35 592.67 74.56 608 70.96C623.33 67.35 638.67 64.93 654 61.9C669.33 58.87 684.67 54.98 700 50.88"
+    stroke="url(#artifact-line)"
+    stroke-width="1.9"
+    opacity="0.96"></path>
 
-  <g opacity="0.52" stroke-width="1.25">
-    <circle cx="392" cy="94" r="16"></circle>
-    <circle cx="392" cy="94" r="34"></circle>
-    <circle cx="392" cy="94" r="58" opacity="0.66"></circle>
-    <ellipse cx="392" cy="94" rx="92" ry="26"></ellipse>
-    <ellipse
-      cx="392"
-      cy="94"
-      rx="92"
-      ry="26"
-      transform="rotate(-22 392 94)"
-      opacity="0.7"></ellipse>
-    <ellipse
-      cx="392"
-      cy="94"
-      rx="92"
-      ry="26"
-      transform="rotate(22 392 94)"
-      opacity="0.7"></ellipse>
-  </g>
-
-  <g opacity="0.44" stroke-width="1.05">
-    <path d="M452 72L568 48L684 74"></path>
-    <path d="M452 94L568 94L684 94"></path>
-    <path d="M452 116L568 140L684 114"></path>
-    <path d="M568 48L568 140"></path>
-    <path d="M626 60L626 128"></path>
-  </g>
-
-  <g opacity="0.28" stroke-width="0.9">
-    <rect x="618" y="42" width="116" height="104" rx="10"></rect>
-    <path d="M642 42V146"></path>
-    <path d="M666 42V146"></path>
-    <path d="M690 42V146"></path>
-    <path d="M714 42V146"></path>
-    <path d="M618 68H734"></path>
-    <path d="M618 94H734"></path>
-    <path d="M618 120H734"></path>
+  <g stroke="var(--foreground)" stroke-width="1.02" opacity="0.54">
+    {
+      observations.map((point) => (
+        <>
+          <path
+            d={`M${point.x.toFixed(2)} ${point.top.toFixed(2)}V${point.bottom.toFixed(2)}`}
+          />
+          <path
+            d={`M${(point.x - 4).toFixed(2)} ${point.top.toFixed(2)}H${(point.x + 4).toFixed(2)}`}
+          />
+          <path
+            d={`M${(point.x - 4).toFixed(2)} ${point.bottom.toFixed(2)}H${(point.x + 4).toFixed(2)}`}
+          />
+        </>
+      ))
+    }
   </g>
 
   <g fill="var(--foreground)" stroke="none" opacity="0.72">
-    <circle cx="392" cy="94" r="3.2"></circle>
-    <circle cx="330" cy="74" r="2.3"></circle>
-    <circle cx="344" cy="130" r="2.2"></circle>
-    <circle cx="450" cy="63" r="2.2"></circle>
-    <circle cx="448" cy="124" r="2.2"></circle>
-    <circle cx="568" cy="48" r="2.6"></circle>
-    <circle cx="568" cy="94" r="2.8"></circle>
-    <circle cx="568" cy="140" r="2.6"></circle>
-    <circle cx="684" cy="74" r="2.4"></circle>
-    <circle cx="684" cy="94" r="2.4"></circle>
-    <circle cx="684" cy="114" r="2.4"></circle>
-    <circle cx="110" cy="120" r="2"></circle>
-    <circle cx="196" cy="48" r="2"></circle>
-    <circle cx="226" cy="80" r="1.9"></circle>
-    <circle cx="556" cy="160" r="1.9"></circle>
-    <circle cx="744" cy="58" r="1.9"></circle>
+    {observations.map((point) => <circle cx={point.x} cy={point.y} r="2.55" />)}
+  </g>
+
+  <g fill="var(--foreground)" stroke="none" opacity="0.32">
+    {dust.map((point) => <circle cx={point.x} cy={point.y} r={point.r} />)}
   </g>
 </svg>
