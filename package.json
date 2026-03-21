@@ -3,6 +3,10 @@
   "type": "module",
   "version": "1.6.2",
   "private": true,
+  "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": "22.16.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
