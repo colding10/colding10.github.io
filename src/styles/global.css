@@ -154,3 +154,13 @@
 	top: 0;
 	left: 0;
 }
+
+/* Keep code fence scrollbars aligned with the active site theme */
+.expressive-code pre {
+	color-scheme: light;
+	scrollbar-color: var(--ec-sbThumbCol) transparent;
+}
+
+[data-theme='dark'] .expressive-code pre {
+	color-scheme: dark;
+}
