@@ -108,15 +108,15 @@ const uniqueTeams = Array.from(
 						type="text"
 						id="search"
 						placeholder="Search CTF names..."
-						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-ring/50 flex-1 rounded-md border px-3 py-2 text-sm transition-colors duration-200 focus:ring-2 focus:outline-none"
+						class="bg-background placeholder:text-muted-foreground focus:ring-ring hover:border-muted-foreground/30 flex-1 rounded-md border border-border/50 px-3 py-2 text-sm transition-colors duration-200 focus:ring-2 focus:outline-none"
 					/>
 
 					<div class="flex flex-wrap gap-2">
-						<select id="yearFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+						<select id="yearFilter" class="bg-background border border-border/50 rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
 							<option value="">All Years</option>
 							{uniqueYears.map((year) => <option value={year}>{year}</option>)}
 						</select>
-						<select id="tierFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+						<select id="tierFilter" class="bg-background border border-border/50 rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
 							<option value="">All Placements</option>
 							<option value="SS">SS</option>
 							<option value="S">S</option>
@@ -128,7 +128,7 @@ const uniqueTeams = Array.from(
 							<option value="TOP5">Top 5</option>
 							<option value="TOP3">Top 3</option>
 						</select>
-						<select id="teamFilter" class="bg-background border border-border rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
+						<select id="teamFilter" class="bg-background border border-border/50 rounded-md px-3 py-2 text-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none">
 							<option value="">All Teams</option>
 							{uniqueTeams.map((team) => <option value={team}>{team}</option>)}
 						</select>

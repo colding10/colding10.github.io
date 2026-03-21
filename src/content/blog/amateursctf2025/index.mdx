@@ -16,14 +16,20 @@ This CTF I played with [Cosmic Bit Flip](https://cosmicbitflip.org). We managed 
 * brew
 * mathlegend
 
-![leaderboard](lb.png)
+| Rank | Team | Points |
+|------|------|--------|
+| **1** | **Cosmic Bit Flip** | **3994** |
+| 2 | 0xf1sh | 3255 |
+| 3 | tjcsc | 3121 |
+| 4 | coderdojotm | 1127 |
+| 5 | Dead Pirate Society | 673 |
 
 More thanks to [les amateurs](https://amateurs.team) for organizing a great CTF with high quality challenges. 
 
 Here I'll write about two crypto challenges that wjat and I solved using a timing side-channel. *This writeup won a writeup award*.
 
-![add2](add2.png)
-![add3](add3.png)
+- **crypto/addition 2** &mdash; 309 pts, solved 11/17/2025 at 11:17 PM
+- **crypto/addition 3** &mdash; 430 pts, solved 11/18/2025 at 4:07 PM
 
 ## What the server did
 
@@ -55,7 +61,7 @@ while True:
 
 That was the server for the first challenge, addition2. The second one (addition3) only had a few minor changes:
 
-```python title=addition3.py {"n is now regenerated each time":12-13} {"lshift 512 instead of 256":8-9}
+```python title=addition3.py {"n is now regenerated each time":11-12} {"lshift 512 instead of 256":7-8}
 from Crypto.Util.number import *
 import os
 from random import getrandbits, choice
@@ -63,11 +69,9 @@ import hashlib
 
 flag = open('flag.txt','rb').read().strip()
 assert len(flag) == 52
-
 flag = bytes_to_long(flag) << 512
 
 while True:
-
     n = int(os.popen('openssl genrsa 2048 | openssl rsa -noout -modulus').read()[8:], 16)
     e = 3
 
@@ -80,7 +84,7 @@ while True:
     print('scrambling...')
 
     c = choice([pow(m, e, n) for m in ms])
-    print(f'{c = }')%
+    print(f'{c = }')
 ```
 
 Here, the server:

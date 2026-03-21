@@ -1,0 +1,580 @@
+---
+title: 'PicoCTF 2026'
+description: 'hash length extension on a dot product oracle'
+date: 2026-03-20
+tags: ['writeups', 'crypto']
+authors: ['cold']
+image: ./logo.png
+---
+
+import Callout from '@/components/Callout.astro'
+import Spoiler from '@/components/mdx/Spoiler.astro'
+
+# Introduction
+
+PicoCTF 2026 just dropped and I won with **Cosmic Bit Flip** this year. See the leaderboard [here](https://play.picoctf.org/events/79/scoreboards). AI proved itself here, auto-solving all challenges in a very short time span.
+
+## crypto/Dot-Product
+
+> Our intern thought it was a great idea to vibe code a secure dot product server using our AES key. Having taken a class in linear algebra, they're confident the server can't ever leak our key, but I'm not so sure...
+
+### Reading the source
+
+Here's the full server. It generates a 32-byte AES key, encrypts the flag, then runs a dot product oracle:
+
+```python title=remote.py
+import ast
+import hashlib
+import os
+import random
+import secrets
+import sys
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+
+KEY_SIZE = 32
+SALT_SIZE = 256
+
+class SecureDotProductService:
+    def __init__(self, key):
+        self.key_vector = [byte for byte in key]
+        self.salt = secrets.token_bytes(SALT_SIZE)
+        self.trusted_vectors = self.generate_trusted_vectors()
+
+    def hash_vector(self, vector):
+        vector_encoding = vector[1:-1].encode('latin-1')
+        return hashlib.sha512(self.salt + vector_encoding).digest().hex()
+
+    def generate_trusted_vectors(self):
+        trusted_vectors = []
+
+        for _ in range(5):
+            length = random.randint(1, 32)
+            vector = [random.randint(-2**8, 2**8) for _ in range(length)]
+            trusted_vectors.append((vector, self.hash_vector(str(vector))))
+
+        return trusted_vectors
+
+    def parse_vector(self, vector):
+        sanitized = "".join(c if c in '0123456789,[]' else '' for c in vector)
+        try:
+            parsed = ast.literal_eval(sanitized)
+        except (ValueError, SyntaxError, TypeError):
+            return None
+
+        if isinstance(parsed, list):
+            return parsed
+        return None
+
+    def dot_product(self, vector):
+        return sum(vector_entry * key_entry for vector_entry, key_entry in zip(vector, self.key_vector))
+
+    def run(self):
+        print("============== Secure Dot Product Service ==============")
+        print("I will compute the dot product of my key vector with any trustworthy vector you choose!")
+        print("Here are the vectors I trust won't leak my key:")
+
+        for pair in self.trusted_vectors:
+            print(pair)
+
+        while True:
+            print("========================================================")
+            vector_input = input("Enter your vector: ")
+            vector_input = vector_input.encode().decode('unicode_escape')
+            vector = self.parse_vector(vector_input)
+            vector_hash = self.hash_vector(vector_input)
+
+            if not vector:
+                print("Invalid vector! Please enter your vector as a list of ints.")
+                continue
+
+            input_hash = input("Enter its salted hash: ")
+
+            if not vector_hash == input_hash:
+                print("Untrusted vector detected!")
+                break
+
+            dot_product = self.dot_product(vector)
+
+            print("The computed dot product is: " + str(dot_product))
+
+def read_flag():
+    flag_path = 'flag.txt'
+
+    if os.path.exists(flag_path):
+        with open(flag_path, 'r') as f:
+            flag = f.read().strip()
+    else:
+        print("flag.txt not found in the current directory.")
+        sys.exit()
+
+    return flag
+
+def encrypt_flag(flag, key):
+    iv = secrets.token_bytes(16)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    ciphertext = cipher.encrypt(pad(flag.encode(), AES.block_size))
+
+    return iv, ciphertext
+
+def main():
+    flag = read_flag()
+    key = secrets.token_bytes(KEY_SIZE)
+    iv, ciphertext = encrypt_flag(flag, key)
+
+    print("==================== Encrypted Flag ====================")
+    print(f"IV: {iv.hex()}")
+    print(f"Ciphertext: {ciphertext.hex()}")
+
+    service = SecureDotProductService(key)
+    service.run()
+
+if __name__ == "__main__":
+    main()
+```
+
+There's a lot here so let me break down the important parts.
+
+### How the oracle works
+
+The server gives us 5 "trusted" random vectors (length 1–32, entries in $[-256, 256]$) alongside their salted SHA-512 hashes. Then it lets us query dot products in a loop, but only if we can provide the correct hash.
+
+Three things jump out. First, the hash function (line 21) is an **insecure MAC**&mdash;it's just `sha512(salt || message)`:
+
+```python title=remote.py {"insecure MAC: sha512(salt || msg)":2-3} startLineNumber=21
+def hash_vector(self, vector):
+    vector_encoding = vector[1:-1].encode('latin-1')
+    return hashlib.sha512(self.salt + vector_encoding).digest().hex()
+```
+
+Second, our input gets **`unicode_escape` decoded** (line 58), and then the **same decoded string** is used for both parsing and hashing (lines 59–60):
+
+```python title=remote.py {"unicode_escape decoding":2} {"hash on decoded string":4} startLineNumber=57
+vector_input = input("Enter your vector: ")
+vector_input = vector_input.encode().decode('unicode_escape')
+vector = self.parse_vector(vector_input)
+vector_hash = self.hash_vector(vector_input)
+```
+
+Third, the parser **strips everything except `0123456789,[]`** (line 35), so non-printable bytes just vanish:
+
+```python title=remote.py {"only keeps 0-9 , [ ]":2} startLineNumber=34
+def parse_vector(self, vector):
+    sanitized = "".join(c if c in '0123456789,[]' else '' for c in vector)
+    try:
+        parsed = ast.literal_eval(sanitized)
+    except (ValueError, SyntaxError, TypeError):
+        return None
+```
+
+### The intern's linear algebra argument
+
+The intern's logic is straightforward: the key has 32 unknown bytes, and we only get 5 dot products. That's 5 equations in 32 unknowns, a massively underdetermined system. No amount of linear algebra can recover the key from just 5 inner products.
+
+This reasoning is actually correct! **If** we could only query those 5 vectors, we'd be stuck.
+
+But the MAC construction is broken.
+
+### The vulnerability: `sha512(salt || message)`
+
+<Callout variant="important">
+The hash is computed as `sha512(salt + message)`. This is the textbook insecure MAC construction&mdash;it's vulnerable to a **hash length extension attack**.
+</Callout>
+
+SHA-512 is based on the Merkle–Damgard construction. The output hash is literally the internal state after processing all blocks. Given:
+
+$$H = \text{SHA-512}(\text{salt} \| m)$$
+
+we can compute:
+
+$$H' = \text{SHA-512}(\text{salt} \| m \| \text{padding} \| m')$$
+
+for **any** extension $m'$ of our choice, without knowing the salt. We just initialize a new SHA-512 computation starting from state $H$ and feed in $m'$.
+
+The padding is deterministic (it's the standard SHA-512 padding for the original message length), so we know exactly what bytes sit between $m$ and $m'$.
+
+### Why this is exploitable here
+
+There are two more pieces that make this work:
+
+**1. `unicode_escape` lets us inject arbitrary bytes.**
+
+The `vector_input.encode().decode('unicode_escape')` on our input means if we send the literal text `\x80`, it gets decoded into the actual byte `0x80`. We can inject the SHA-512 padding bytes this way.
+
+**2. Sanitization strips non-digit characters.**
+
+The parser only keeps `0123456789,[]` and throws everything else away. The SHA-512 padding bytes (`\x80`, null bytes, length encoding) are all non-printable&mdash;they vanish during sanitization.
+
+So the parsed vector only sees the original trusted entries plus whatever extension entries we append.
+
+### Putting it together
+
+Say the server gives us a trusted vector `[5, 3]` with hash $H$.
+
+The hash was computed on the string `"5, 3"` (that's `str([5, 3])[1:-1]`). Using length extension, we can compute:
+
+$$H' = \text{SHA-512}(\text{salt} \| \texttt{"5, 3"} \| \text{pad} \| \texttt{",0,0,...,0,1,0,...,0"})$$
+
+We construct our input as:
+
+```
+[5, 3\x80\x00\x00...\x00\x08\x20,0,0,...,0,1,0,...,0]
+```
+
+After `unicode_escape` decoding, the string contains the original content, then padding bytes, then our extension. The server hashes `[1:-1]` of this string, which is `"5, 3" + padding + ",0,0,...,0,1,0,...,0"`&mdash;exactly matching our length-extended hash $H'$.
+
+After sanitization, the padding bytes vanish and we get:
+
+```
+[5,3,0,0,...,0,1,0,...,0]
+```
+
+A 32-element vector with a `1` at position $j$ of our choosing. The dot product gives us:
+
+$$\text{dp}_j = 5 \cdot k_0 + 3 \cdot k_1 + k_j$$
+
+And from the base query (just `[5, 3]`):
+
+$$\text{dp}_{\text{base}} = 5 \cdot k_0 + 3 \cdot k_1$$
+
+Subtracting:
+
+$$k_j = \text{dp}_j - \text{dp}_{\text{base}}$$
+
+We can isolate every single key byte.
+
+### The full attack
+
+<Callout variant="note">
+One minor detail: the sanitizer strips minus signs too, so `[-5, 3]` parses as `[5, 3]`. This doesn't affect the attack since we use absolute values in our equations.
+</Callout>
+
+1. Pick the shortest trusted vector of length $n$
+2. Query the base dot product: $B = \sum_{i=0}^{n-1} |v_i| \cdot k_i$
+3. For each $j \in [n, 31]$: extend with a `1` at position $j$, get $B + k_j$. Recover $k_j = \text{dp}_j - B$.
+4. For $k_0$ through $k_{n-1}$: use the base equations from all 5 trusted vectors. Each gives a linear equation in the first $n$ unknowns (after subtracting the now-known $k_n \ldots k_{31}$ contributions). Solve the system.
+5. Decrypt the flag with the recovered 32-byte AES key.
+
+### Implementation
+
+The SHA-512 length extension needs us to reimplement the compression function. The core idea: parse the known hash into 8 state words, then continue processing extension blocks from that state.
+
+```python title=solve.py
+def sha512_length_extend(known_hash_hex, known_msg_bytes, salt_len, extension_bytes):
+    state = struct.unpack('>8Q', bytes.fromhex(known_hash_hex))
+
+    original_len = salt_len + len(known_msg_bytes)
+    padding = sha512_pad(original_len)
+    padded_len = original_len + len(padding)
+
+    forged_suffix = known_msg_bytes + padding + extension_bytes
+
+    # process extension starting from the known state
+    total_len = padded_len + len(extension_bytes)
+    ext_padding = sha512_pad(total_len)
+    data = extension_bytes + ext_padding
+
+    for i in range(0, len(data), 128):
+        state = sha512_compress(state, data[i:i+128])
+
+    return struct.pack('>8Q', *state).hex(), forged_suffix
+```
+
+For each query, we encode the padding bytes as `\xNN` escape sequences so that `unicode_escape` decoding produces the exact raw bytes we need:
+
+```python title=solve.py
+def bytes_to_escaped(b):
+    return ''.join('\\x{:02x}'.format(byte) for byte in b)
+
+# payload: [ + original_content + escaped_padding + extension + ]
+payload = '[' + original_content + bytes_to_escaped(padding_bytes) + ext_str + ']'
+```
+
+The server's `unicode_escape` decoding turns our `\xNN` text into actual bytes. Sanitization strips them. The hash matches our length-extended value. Clean.
+
+### Running it
+
+```
+$ python3 solve.py REMOTE HOST=lonely-island.picoctf.net PORT=51773
+[+] Opening connection to lonely-island.picoctf.net on port 51773: Done
+[*] IV: b72ae6cf1782e2164f403c0b17734e54
+[*] Using shortest vector (length 1): [131]
+[*] Base dot product: 15196
+[*] key[ 1] = 104
+[*] key[ 2] = 66
+...
+[*] key[31] = 127
+[*] key[ 0] = 116
+[*] Key: 74684226745ea09aff63bcc36b13e09a772a5aa92df8d44dacf90435046bd87f
+[+] Flag: picoCTF{n0t_so_s3cure_.x_w1th_sh@512_REDACTED}
+```
+
+We got lucky with a length-1 trusted vector, which makes the solve trivial: $B = 131 \cdot k_0$, so $k_0 = B / 131$, and all other bytes come from single extensions. 32 queries total.
+
+<Spoiler label="Full solve.py (click to expand)">
+
+```python title=solve.py
+#!/usr/bin/env python3
+from pwn import *
+import struct
+import ast
+import numpy as np
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+# ======================== SHA-512 Length Extension ========================
+
+SHA512_K = [
+    0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
+    0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
+    0xd807aa98a3030242, 0x12835b0145706fbe, 0x243185be4ee4b28c, 0x550c7dc3d5ffb4e2,
+    0x72be5d74f27b896f, 0x80deb1fe3b1696b1, 0x9bdc06a725c71235, 0xc19bf174cf692694,
+    0xe49b69c19ef14ad2, 0xefbe4786384f25e3, 0x0fc19dc68b8cd5b5, 0x240ca1cc77ac9c65,
+    0x2de92c6f592b0275, 0x4a7484aa6ea6e483, 0x5cb0a9dcbd41fbd4, 0x76f988da831153b5,
+    0x983e5152ee66dfab, 0xa831c66d2db43210, 0xb00327c898fb213f, 0xbf597fc7beef0ee4,
+    0xc6e00bf33da88fc2, 0xd5a79147930aa725, 0x06ca6351e003826f, 0x142929670a0e6e70,
+    0x27b70a8546d22ffc, 0x2e1b21385c26c926, 0x4d2c6dfc5ac42aed, 0x53380d139d95b3df,
+    0x650a73548baf63de, 0x766a0abb3c77b2a8, 0x81c2c92e47edaee6, 0x92722c851482353b,
+    0xa2bfe8a14cf10364, 0xa81a664bbc423001, 0xc24b8b70d0f89791, 0xc76c51a30654be30,
+    0xd192e819d6ef5218, 0xd69906245565a910, 0xf40e35855771202a, 0x106aa07032bbd1b8,
+    0x19a4c116b8d2d0c8, 0x1e376c085141ab53, 0x2748774cdf8eeb99, 0x34b0bcb5e19b48a8,
+    0x391c0cb3c5c95a63, 0x4ed8aa4ae3418acb, 0x5b9cca4f7763e373, 0x682e6ff3d6b2b8a3,
+    0x748f82ee5defb2fc, 0x78a5636f43172f60, 0x84c87814a1f0ab72, 0x8cc702081a6439ec,
+    0x90befffa23631e28, 0xa4506cebde82bde9, 0xbef9a3f7b2c67915, 0xc67178f2e372532b,
+    0xca273eceea26619c, 0xd186b8c721c0c207, 0xeada7dd6cde0eb1e, 0xf57d4f7fee6ed178,
+    0x06f067aa72176fba, 0x0a637dc5a2c898a6, 0x113f9804bef90dae, 0x1b710b35131c471b,
+    0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 0x431d67c49c100d4c,
+    0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817,
+]
+
+M64 = 0xFFFFFFFFFFFFFFFF
+
+
+def rotr64(x, n):
+    return ((x >> n) | (x << (64 - n))) & M64
+
+
+def sha512_compress(state, block):
+    W = list(struct.unpack('>16Q', block))
+    for i in range(16, 80):
+        s0 = rotr64(W[i-15], 1) ^ rotr64(W[i-15], 8) ^ (W[i-15] >> 7)
+        s1 = rotr64(W[i-2], 19) ^ rotr64(W[i-2], 61) ^ (W[i-2] >> 6)
+        W.append((W[i-16] + s0 + W[i-7] + s1) & M64)
+
+    a, b, c, d, e, f, g, h = state
+    for i in range(80):
+        S1 = rotr64(e, 14) ^ rotr64(e, 18) ^ rotr64(e, 41)
+        ch = (e & f) ^ ((~e & M64) & g)
+        temp1 = (h + S1 + ch + SHA512_K[i] + W[i]) & M64
+        S0 = rotr64(a, 28) ^ rotr64(a, 34) ^ rotr64(a, 39)
+        maj = (a & b) ^ (a & c) ^ (b & c)
+        temp2 = (S0 + maj) & M64
+        h = g; g = f; f = e; e = (d + temp1) & M64
+        d = c; c = b; b = a; a = (temp1 + temp2) & M64
+
+    return tuple((sv + wv) & M64 for sv, wv in zip(state, (a, b, c, d, e, f, g, h)))
+
+
+def sha512_pad(msg_len_bytes):
+    bit_len = msg_len_bytes * 8
+    pad = b'\x80'
+    k = (112 - (msg_len_bytes + 1) % 128) % 128
+    pad += b'\x00' * k
+    pad += struct.pack('>QQ', 0, bit_len)
+    return pad
+
+
+def sha512_length_extend(known_hash_hex, known_msg_bytes, salt_len, extension_bytes):
+    state = struct.unpack('>8Q', bytes.fromhex(known_hash_hex))
+
+    original_len = salt_len + len(known_msg_bytes)
+    padding = sha512_pad(original_len)
+    padded_len = original_len + len(padding)
+
+    forged_suffix = known_msg_bytes + padding + extension_bytes
+
+    total_len = padded_len + len(extension_bytes)
+    ext_padding = sha512_pad(total_len)
+    data = extension_bytes + ext_padding
+    assert len(data) % 128 == 0
+
+    for i in range(0, len(data), 128):
+        state = sha512_compress(state, data[i:i+128])
+
+    new_hash = struct.pack('>8Q', *state).hex()
+    return new_hash, forged_suffix
+
+
+# ======================== Exploit Logic ========================
+
+SALT_SIZE = 256
+
+
+def bytes_to_escaped(b):
+    return ''.join('\\x{:02x}'.format(byte) for byte in b)
+
+
+def do_query(p, payload_str, hash_hex):
+    p.recvuntil(b'Enter your vector: ')
+    p.sendline(payload_str.encode())
+
+    resp = p.recvuntil([b'Enter its salted hash: ', b'Invalid vector!'])
+    if b'Invalid vector!' in resp:
+        log.error("Server rejected vector as invalid!")
+        return None
+
+    p.sendline(hash_hex.encode())
+
+    resp = p.recvuntil([b'The computed dot product is: ', b'Untrusted vector detected!'])
+    if b'Untrusted vector' in resp:
+        log.error("Hash mismatch!")
+        return None
+
+    dp = int(p.recvline().strip())
+    return dp
+
+
+def query_base(p, vec, hash_val):
+    return do_query(p, str(vec), hash_val)
+
+
+def query_extended(p, vec, hash_val, extension_entries):
+    original_content = str(vec)[1:-1]
+    original_content_bytes = original_content.encode('latin-1')
+
+    ext_str = ''.join(f',{e}' for e in extension_entries)
+    ext_bytes = ext_str.encode('latin-1')
+
+    new_hash, forged_suffix = sha512_length_extend(
+        hash_val, original_content_bytes, SALT_SIZE, ext_bytes
+    )
+
+    padding_bytes = forged_suffix[len(original_content_bytes):-len(ext_bytes)]
+    payload = '[' + original_content + bytes_to_escaped(padding_bytes) + ext_str + ']'
+
+    return do_query(p, payload, new_hash)
+
+
+def main():
+    if args.REMOTE:
+        p = remote(args.HOST or 'lonely-island.picoctf.net', int(args.PORT or 64888))
+    else:
+        p = process(['python3', 'remote.py'])
+
+    # Read encrypted flag
+    p.recvuntil(b'IV: ')
+    iv = bytes.fromhex(p.recvline().strip().decode())
+    p.recvuntil(b'Ciphertext: ')
+    ct = bytes.fromhex(p.recvline().strip().decode())
+
+    # Read trusted vectors
+    p.recvuntil(b"Here are the vectors I trust won't leak my key:\n")
+    trusted = []
+    for _ in range(5):
+        line = p.recvline().strip().decode()
+        vec, hash_val = ast.literal_eval(line)
+        trusted.append((vec, hash_val))
+
+    # Sort by length (shortest first)
+    trusted.sort(key=lambda x: len(x[0]))
+    base_vec, base_hash = trusted[0]
+    n_min = len(base_vec)
+    log.info(f"Using shortest vector (length {n_min}): {base_vec}")
+
+    # Step 1: base dot product for shortest vector
+    base_dp = query_base(p, base_vec, base_hash)
+    log.info(f"Base dot product: {base_dp}")
+
+    # Step 2: extract key[n_min..31] via length extension
+    key = [None] * 32
+    for j in range(n_min, 32):
+        ext = [0] * (32 - n_min)
+        ext[j - n_min] = 1
+        ext_dp = query_extended(p, base_vec, base_hash, ext)
+        key[j] = ext_dp - base_dp
+        log.info(f"key[{j:2d}] = {key[j]}")
+
+    # Step 3: solve for key[0..n_min-1] using all 5 trusted vectors
+    if n_min == 1:
+        key[0] = base_dp // abs(base_vec[0])
+        log.info(f"key[ 0] = {key[0]}")
+    else:
+        equations_A = []
+        equations_b = []
+
+        known_sum = sum(abs(base_vec[i]) * key[i] for i in range(n_min, min(len(base_vec), 32)))
+        equations_A.append([abs(base_vec[i]) for i in range(n_min)])
+        equations_b.append(base_dp - known_sum)
+
+        for vec, hash_val in trusted[1:]:
+            dp = query_base(p, vec, hash_val)
+            known_sum = sum(abs(vec[i]) * key[i] for i in range(n_min, min(len(vec), 32)))
+            coeffs = [abs(vec[i]) for i in range(min(n_min, len(vec)))]
+            coeffs += [0] * (n_min - len(coeffs))
+            equations_A.append(coeffs)
+            equations_b.append(dp - known_sum)
+
+        A_all = np.array(equations_A, dtype=np.float64)
+        b_all = np.array(equations_b, dtype=np.float64)
+        n_eq = len(equations_A)
+
+        if n_eq >= n_min:
+            x, _, _, _ = np.linalg.lstsq(A_all, b_all, rcond=None)
+            for i in range(n_min):
+                key[i] = int(round(x[i]))
+        else:
+            n_free = n_min - n_eq
+            A_pivot = A_all[:, :n_eq]
+            A_free = A_all[:, n_eq:]
+            found = False
+            from itertools import product as iprod
+            for free_vals in iprod(range(256), repeat=n_free):
+                free_arr = np.array(free_vals, dtype=np.float64)
+                rhs = b_all - A_free @ free_arr
+                try:
+                    pivot_vals = np.linalg.solve(A_pivot, rhs)
+                except np.linalg.LinAlgError:
+                    continue
+                rounded = [int(round(v)) for v in pivot_vals]
+                if all(0 <= v <= 255 and abs(v - pv) < 0.01 for v, pv in zip(rounded, pivot_vals)):
+                    for i in range(n_eq):
+                        key[i] = rounded[i]
+                    for i in range(n_free):
+                        key[n_eq + i] = free_vals[i]
+                    test_key = bytes(key)
+                    try:
+                        test_cipher = AES.new(test_key, AES.MODE_CBC, iv)
+                        test_flag = unpad(test_cipher.decrypt(ct), AES.block_size)
+                        test_flag.decode()
+                        found = True
+                        break
+                    except Exception:
+                        continue
+            if not found:
+                log.error("Brute force failed!")
+                p.close()
+                return
+
+    key_bytes = bytes(key)
+    log.info(f"Key: {key_bytes.hex()}")
+    cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
+    try:
+        flag = unpad(cipher.decrypt(ct), AES.block_size)
+        log.success(f"Flag: {flag.decode()}")
+    except ValueError as e:
+        log.error(f"Decryption failed: {e}")
+
+    p.close()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+</Spoiler>
+
+### Takeaway
+
+The intern's linear algebra argument was solid&mdash;5 equations in 32 unknowns really can't leak a key. The problem was the MAC. Using `sha512(secret || message)` instead of HMAC let us forge hashes for arbitrary extended vectors, turning 5 trusted vectors into as many as we want.
+
+`picoCTF{n0t_so_s3cure_.x_w1th_sh@512_REDACTED}`
