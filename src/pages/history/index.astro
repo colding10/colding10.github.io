@@ -55,7 +55,7 @@ const uniqueTeams = Array.from(
 			<h1 id="ctf-history-title" class="font-serif text-3xl font-bold">
 				CTF History
 			</h1>
-			<p class="text-muted-foreground mt-2">
+			<p class="text-foreground/70 mt-2">
 				Competition results over time, newest first.
 			</p>
 		</div>
@@ -167,7 +167,7 @@ const uniqueTeams = Array.from(
 							data-month={group.month}
 							data-year={group.year}
 						>
-							<p class="text-muted-foreground mb-4 text-xs font-medium tracking-wider uppercase">
+							<p class="text-muted-foreground mb-4 text-sm font-semibold tracking-wider uppercase">
 								{MONTHS[group.month - 1]} {group.year}
 							</p>
 
@@ -211,7 +211,7 @@ const uniqueTeams = Array.from(
 													)}
 
 													{e.description && (
-														<span class="text-muted-foreground text-sm italic opacity-60">
+														<span class="text-muted-foreground text-sm italic opacity-75">
 															— {e.description}
 														</span>
 													)}
