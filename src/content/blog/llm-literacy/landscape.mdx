@@ -1,0 +1,278 @@
+---
+title: 'The State of AI in 2026'
+description: 'who builds what, what matters, what is overrated, and where this is going'
+date: 2026-04-15
+order: 6
+tags: ['blog', 'ai', 'explainer']
+authors: ['cold']
+---
+
+import Callout from '@/components/Callout.astro'
+import Tabs from '@/components/mdx/Tabs.astro'
+import TabPanel from '@/components/mdx/TabPanel.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import LinkCard from '@/components/mdx/LinkCard.astro'
+
+# The State of AI in 2026
+
+<Callout variant="remark" title="Shelf life warning">
+This section will age. Model names, rankings, and capabilities are a snapshot of early 2026. The structural observations&mdash;closed vs open, scaling trends, the hype cycle&mdash;should last longer. Read the specific model comparisons with an expiration date in mind.
+</Callout>
+
+## The major players
+
+<Tabs labels={["OpenAI", "Anthropic", "Google DeepMind", "Open weights"]}>
+<TabPanel>
+GPT-5.4 (March 2026) is their current flagship&mdash;available in Thinking and Pro variants, with native computer-use capabilities and 1M token context. The o-series reasoning models (o3, o4-mini) handle tasks requiring deep thinking. ChatGPT remains the product that put LLMs on the map.
+
+**Strengths**: Broadest product ecosystem. GPT-5.4 has native agentic computer-use. Strong reasoning models (o3-pro). Massive consumer base.
+**Weaknesses**: Increasingly opaque&mdash;GPT-5 architecture was never published. Aggressive pricing. The rapid release cadence (5.0 → 5.2 → 5.4 in under a year) means each version feels incremental.
+**My take**: They set the standard and still have the biggest user base, but the technical lead they had in 2023 is gone. Claude and Gemini are competitive or better in their respective strengths.
+</TabPanel>
+
+<TabPanel>
+Claude Opus 4.6 (February 2026) is Anthropic's flagship. 1M token context window, 128K output tokens, and "agent teams" that split tasks across parallel subagents. Sonnet 4.6 is the fast/cheap option. Haiku 4.5 for high-volume lightweight tasks. Claude Code is their agentic coding tool.
+
+**Strengths**: Best instruction following in the industry. Leads on Terminal-Bench 2.0 (agentic coding) and Humanity's Last Exam (multidisciplinary reasoning). 1M context at standard pricing. Claude Code is the best coding agent right now.
+**Weaknesses**: Less multimodal than competitors (no native image generation). More cautious refusals (the alignment tax in action). Smaller model lineup.
+**My take**: The best models for serious technical work. If you're a developer, researcher, or doing anything that requires sustained reasoning over long contexts, Claude is the daily driver.
+</TabPanel>
+
+<TabPanel>
+Gemini 3 (late 2025) was the first model to cross 1,500 Elo on LMArena&mdash;a genuine milestone. Gemini 2.5 Pro with Deep Think mode preceded it. Massive multimodal capabilities (text, image, video, audio). 1M+ token context windows. Deep integration with Google's ecosystem.
+
+**Strengths**: Best multimodal capabilities, period. Absurd context windows. Gemini 3's reasoning benchmarks are genuinely impressive. Integration with Search, YouTube, Google Workspace.
+**Weaknesses**: Google's product execution remains uneven. The Gemini brand has taken hits from early embarrassments. Developer experience lags behind OpenAI and Anthropic.
+**My take**: Gemini 3 was a wake-up call for the other labs. The infrastructure advantage Google has (TPUs, data, distribution) is starting to show in model quality. Still inconsistent as a product, but the models themselves are real.
+</TabPanel>
+
+<TabPanel>
+**Meta (Llama 4)**: Released April 2025 with Scout (10M token context, MoE architecture) and Maverick variants. Llama 4 is natively multimodal and competitive with frontier closed models from a year prior. The "open source" label is still a stretch&mdash;the license restricts commercial use for large companies.
+
+**Mistral**: Continues punching above its weight. Mixtral pioneered open MoE models. Strong technical team, competitive with much larger labs, and more genuinely open than Meta's releases.
+
+**DeepSeek**: The disruptor. DeepSeek-R1 (January 2025) proved open-weight reasoning models could compete with o1. V3 showed you could train a frontier model for a fraction of the cost. R2 has been delayed, but their impact on the field is already permanent.
+
+**Chinese labs (Kimi, GLM, Qwen)**: The sleeping giants that aren't sleeping anymore. Kimi K2.5 (Moonshot AI) and GLM-5 (Zhipu AI) are strong, cheap, and capable&mdash;you can get 90% of frontier performance at a fraction of the price. They're slightly behind on raw reasoning compared to Claude or GPT-5.4, but for high-volume production tasks, the cost-capability tradeoff is hard to beat. Qwen (Alibaba) continues to be a top open-weight option. The Chinese AI ecosystem is producing real competition, and ignoring it means you're overpaying for inference.
+
+**My take**: The open-weight ecosystem is the most exciting part of AI right now. Llama 4, Mistral, DeepSeek, Qwen, Kimi, and GLM collectively ensure no single company&mdash;or country&mdash;controls access to capable AI. The quality gap with frontier closed models is maybe 6-12 months and shrinking. For most use cases, open and affordable models are good enough *today*.
+</TabPanel>
+</Tabs>
+
+## Closed vs. open weights
+
+This is the most important structural divide in AI right now.
+
+**Closed models** (OpenAI, Anthropic, Google): better performance on hard tasks, API-only access, no fine-tuning the base model. You pay per token. Your data goes to their servers (for non-enterprise tiers).
+
+**Open-weight models** (Llama, Mistral, DeepSeek, Qwen) and **cheap API models** (Kimi, GLM, DeepSeek): run locally or access via low-cost APIs, fine-tune freely. Lower performance ceiling on the hardest tasks, but improving rapidly. Full data privacy for local deployment.
+
+<Callout variant="warning" title="'Open source' is mostly marketing">
+Meta's Llama license restricts commercial use for companies with 700M+ monthly active users and requires attribution. That's not open source by any standard definition. It's "open weights with a restrictive license." The distinction matters because it affects who can actually use these models at scale.
+
+True open source (permissive license, training code, training data all published) is rare. Mistral and DeepSeek come closer but still typically only release the weights, not the full training recipe.
+</Callout>
+
+<Callout variant="tip" title="Practical advice">
+- **Hard tasks where accuracy matters**: use frontier closed models (Claude Opus 4.6, GPT-5.4)
+- **Privacy-sensitive data**: use open-weight models locally
+- **High volume, moderate complexity**: Chinese API models (Kimi K2.5, GLM-5) give great cost-capability ratio
+- **High volume, low complexity**: open-weight models locally (free per query after hardware cost)
+- **Experimentation and fine-tuning**: open-weight models are the only option
+</Callout>
+
+## Benchmarks: why you shouldn't trust leaderboards
+
+<Callout variant="explanation" title="What benchmarks actually measure">
+Common benchmarks:
+- **MMLU**: multiple-choice questions across 57 academic subjects. Measures broad knowledge.
+- **HumanEval**: code generation tasks. Measures ability to write correct Python functions.
+- **GPQA**: graduate-level science questions. Measures deep domain knowledge.
+- **MATH**: competition math problems. Measures mathematical reasoning.
+- **ARC**: commonsense reasoning. Measures basic logical thinking.
+
+Each measures a narrow slice of capability. None measures the thing you actually care about: "is this model good at the tasks I use it for?"
+</Callout>
+
+The problems with benchmarks:
+
+1. **Contamination**: if the benchmark questions appeared in the training data, the model isn't reasoning&mdash;it's remembering. This is rampant and hard to detect.
+2. **Overfitting**: labs optimize specifically for benchmark performance. Publish a new benchmark, and within months, models are trained to ace it. The benchmark stops measuring general capability and starts measuring benchmark-specific tuning.
+3. **Narrow metrics**: MMLU is multiple-choice. Real tasks are open-ended. A model that aces MMLU might still struggle with "write me a function that does X" because the skills don't transfer perfectly.
+4. **Cherry-picking**: labs report the benchmarks where their model performs best. The full picture is always messier.
+
+<Callout variant="warning" title="Benchmark leaderboards are advertising">
+When a lab publishes a model card showing it beating competitors on 8 out of 10 benchmarks, they chose those 10 benchmarks. The models they lost to on other benchmarks aren't shown. Treat benchmark results as marketing material, not ground truth.
+
+The most reliable way to evaluate a model: try it on *your* actual tasks.
+</Callout>
+
+## Reasoning models
+
+The o-series (o3, o4-mini from OpenAI), extended thinking (Claude), and DeepSeek-R1 represent a genuine paradigm shift: inference-time compute scaling, productized.
+
+These models generate long chains of thought (sometimes thousands of tokens) before answering. They explore multiple approaches, catch their own errors, and build toward correct answers on hard problems.
+
+<Callout variant="example" title="When reasoning models shine">
+Problem: "Find all integers $n$ such that $n^2 + 2n + 2$ is divisible by $n + 4$."
+
+A standard model might try algebraic manipulation and get lost or make an error. A reasoning model will:
+1. Try polynomial division: $n^2 + 2n + 2 = (n+4)(n-2) + 10$
+2. Realize this means $n+4$ must divide 10
+3. List the divisors of 10: $\pm 1, \pm 2, \pm 5, \pm 10$
+4. Solve $n + 4 = d$ for each divisor
+5. Return $n \in \{-14, -9, -6, -5, -3, -2, 1, 6\}$
+
+Each step is a token generation pass. The model is literally computing across its reasoning tokens.
+</Callout>
+
+When reasoning models help vs. waste tokens:
+
+- **Helps**: hard math, complex logic, multi-step code problems, anything where "getting it right" requires exploring multiple paths
+- **Wastes tokens**: simple factual questions, creative writing, formatting tasks, anything where the answer is obvious and thinking just adds latency and cost
+
+Don't use reasoning models for everything. They're a specialized tool for hard problems.
+
+## Multimodality
+
+Models that see images, hear audio, and (increasingly) watch video.
+
+**Vision works.** GPT-5.4, Claude Opus 4.6, and Gemini 3 all handle images well: OCR, diagram understanding, screenshot analysis, chart reading. OpenAI's o3 and o4-mini can even "think with images"&mdash;reasoning about visual inputs in their chain-of-thought. If you're not using vision capabilities, you're leaving performance on the table. Screenshot a confusing error message instead of typing it out. Upload a diagram instead of describing it in words.
+
+**Audio is solid.** Real-time voice modes (GPT-5.4, Gemini Live) work well for conversation. Transcription (Whisper) is excellent. Audio understanding beyond speech is improving but still limited.
+
+**Video is mostly hype.** Models can process video as sequences of frames, but the context window cost is enormous (video = many images = many tokens). Useful for short clips. Not practical for long-form video analysis at consumer prices.
+
+<Callout variant="tip" title="Start using vision">
+The lowest-hanging fruit in AI right now is sending images to LLMs instead of describing things in text. Take a photo of a whiteboard, screenshot an error, upload a chart. The model handles visual input surprisingly well, and most people never use it.
+</Callout>
+
+## Agentic AI: the paradigm shift
+
+This is the biggest change happening in AI right now, and most people haven't caught up.
+
+The shift isn't that models got smarter at answering questions. It's that models can now *do things*&mdash;autonomously, over extended periods, across multiple tools and environments. The move from "chatbot" to "agent" is as fundamental as the move from keyword search to LLMs.
+
+<Callout variant="important" title="What 'agentic' actually means">
+An agent is an LLM in a loop: **think → plan → act (tool call) → observe (read result) → think again → act again → ... until done.** The model decides what to do next at each step. It's not following a script. It's making decisions, handling errors, and adapting to what it finds.
+
+This is qualitatively different from a chatbot. A chatbot answers a question. An agent completes a task.
+</Callout>
+
+### Coding agents
+
+This is where the agentic paradigm is most mature.
+
+**Claude Code** operates autonomously with agent teams: reads your codebase, plans changes, splits work across parallel subagents, edits files across the project, runs tests, and iterates on failures. Opus 4.6 powers it with 1M context and 128K output tokens. It's not autocomplete&mdash;it's a collaborator that understands your full codebase and ships features across multiple files.
+
+**Cursor** integrates LLM capabilities directly into the editor. Inline edits, multi-file refactors, codebase-aware suggestions. Supports multiple model backends.
+
+**GitHub Copilot** has evolved from inline completion to agent-mode, with PR-writing and issue-solving capabilities.
+
+**Codex** (OpenAI) runs cloud-based coding agents powered by GPT-5.4's native computer-use capabilities, forking repos, writing code, and submitting PRs autonomously.
+
+The capability ceiling has moved from "writes a function" to "ships a feature." A single person with a coding agent can now do what used to require a small team.
+
+### Computer use and general agents
+
+Beyond coding, agents are learning to use computers the way humans do&mdash;clicking buttons, filling forms, navigating websites. GPT-5.4 has native computer-use capabilities. Claude can operate in browser environments. These agents can:
+
+- Fill out forms and navigate web interfaces
+- Operate spreadsheets, slides, and documents
+- Chain together multi-step workflows across different applications
+- Monitor systems and respond to events
+
+This is early. Computer-use agents are slow, sometimes unreliable, and struggle with complex UIs. But the trajectory is obvious: if an LLM can reason about a screenshot and decide what to click next, the entire category of "repetitive computer work" is on the table.
+
+### Multi-agent systems
+
+The next evolution: instead of one agent doing everything, multiple specialized agents coordinate on complex tasks. Claude Code's "agent teams" feature is an early example&mdash;a planning agent breaks a task into subtasks, spawns worker agents that operate in parallel, and synthesizes their results.
+
+This matters because it addresses the biggest limitation of single-agent systems: context window pressure. One agent working a huge task eventually fills its context and loses track. Multiple agents with focused scopes can divide and conquer while staying within their context limits.
+
+<Callout variant="remark" title="Hot take: agents are the next platform">
+The chatbot era (2022-2024) was about text in, text out. The agent era (2025+) is about intent in, outcomes out. The companies that build the best agent frameworks&mdash;the orchestration layers, tool ecosystems, and reliability infrastructure&mdash;will matter as much as the companies that build the best models.
+
+This is the single most underappreciated shift in AI right now. Most people are still thinking about LLMs as "smart text boxes." The ones paying attention are building autonomous workflows that run 24/7.
+</Callout>
+
+## The hype check
+
+Time for opinions.
+
+<Callout variant="important" title="Overrated">
+- **AGI timelines.** Anyone giving you a confident date is selling something. "2-3 years" has been "2-3 years" for the last 4 years. Progress is real and fast, but the gap between "impressive on benchmarks" and "generally intelligent" is wider than the hype suggests.
+- **Benchmarks as capability measures.** MMLU scores don't tell you if the model will be good at your specific task. Benchmark leaderboards are marketing, not science.
+- **"We've hit a wall."** This take resurfaces every few months, usually right before a new model drops that's significantly better. Scaling hasn't stopped working. New axes keep opening up (data quality, MoE, inference-time compute, synthetic data).
+- **Prompt engineering as a career.** "Write clear instructions to a computer" is a skill. It's not a profession with a 10-year career arc. The models are getting better at handling bad prompts, which means the value of prompt optimization is declining over time.
+</Callout>
+
+<Callout variant="important" title="Underrated">
+- **Agentic workflows.** The shift from chatbot to agent is the most important thing happening in AI right now. Most people are still using LLMs as smart text boxes. The ones building autonomous agent loops are operating on a different level.
+- **Tool use and function calling.** This is where the real power is. An LLM that can call APIs, search databases, and execute code is qualitatively different from one that just generates text. Most people don't use tool-capable models to their full potential.
+- **Chinese labs.** Kimi, GLM, Qwen, and DeepSeek are producing models that are 90% as good as frontier Western models at a fraction of the cost. If you're not evaluating them, you're overpaying.
+- **Small model efficiency.** An 8B model in 2026 rivals a 175B model from 2022. For most tasks, you don't need a frontier model. A well-trained small model running locally is fast, free, and private.
+- **The open-weight ecosystem.** Llama, Mistral, DeepSeek, Qwen, and the Chinese labs collectively ensure no single company controls access to capable AI. This is enormously important and under-discussed.
+</Callout>
+
+## Open questions
+
+Some things I don't know the answer to, and neither does anyone else:
+
+**Will synthetic data solve the data wall?** Using models to generate training data for the next generation of models sounds like perpetual motion. There's evidence it works for some things (math, code) and fails for others (creative writing, nuanced reasoning). The jury is out.
+
+**Where does alignment go from here?** RLHF works for current models but it's a behavioral patch, not a deep solution. As models become more capable and more autonomous, the alignment problem gets harder. I'm cautiously optimistic that the research community is taking this seriously enough, but "cautiously" is doing a lot of work in that sentence.
+
+**Is the transformer the endgame?** Maybe. The bitter lesson says simple general architectures win, and the transformer is about as simple as they come. But state-space models (Mamba), linear attention variants, and hybrid architectures are all active research directions. The transformer has a monopoly right now, but monopolies can end.
+
+**What happens when AI generates most of the internet?** If models are trained on web data, and the web is increasingly filled with AI-generated content, you get a feedback loop. The quality implications of model collapse (where models trained on synthetic data degrade in specific ways) are still being studied.
+
+## What LLM literacy buys you
+
+We started with a question: why should you understand how LLMs work?
+
+Here's the answer: because understanding the mechanism transforms how you use the tool.
+
+You know why prompts need to be specific (probability distributions), why chain-of-thought helps (more compute), why hallucinations happen (plausibility ≠ truth), why context windows matter (quadratic attention), why models refuse requests (RLHF), why bigger isn't always better (MoE, distillation), and why the field keeps accelerating (scaling laws).
+
+You're not cargo-culting anymore. You have a mental model that makes predictions. When a new technique appears ("use XML tags to structure your prompt!"), you can evaluate whether it makes sense mechanistically, instead of trying it blindly. When a new model drops, you can evaluate its claims against what you know about architecture and training, instead of trusting the marketing benchmarks.
+
+That's literacy. Not expertise&mdash;you're not an ML researcher. But you understand enough to be a thoughtful user, a critical evaluator, and someone who can actually reason about what AI can and can't do, rather than arguing from vibes.
+
+The bar is rising. Understanding the tool you're using is the minimum to stay above it.
+
+<Callout variant="summary" title="Key takeaways from the series">
+1. **LLMs predict the next token.** Everything else&mdash;reasoning, coding, creativity&mdash;emerges from this simple objective at scale.
+2. **Attention is the core mechanism.** It lets tokens communicate, and its quadratic cost drives most practical limitations.
+3. **Training is three stages.** Pretraining gives knowledge, SFT gives format, RLHF gives alignment. Each shapes behavior.
+4. **Scale keeps working.** More compute, more data, more thinking time = better models. No ceiling in sight.
+5. **Hallucinations are architectural.** The model optimizes for plausibility, not truth. Always verify.
+6. **Prompting techniques have mechanistic explanations.** They're not magic; they're consequences of how attention and prediction work.
+7. **The open-weight ecosystem matters.** No single company should control access to this technology.
+</Callout>
+
+## Further reading
+
+<LinkCard
+  title="Intro to Large Language Models — Andrej Karpathy"
+  description="The best one-hour introduction to LLMs. Start here if you want a video version of this series."
+  href="https://www.youtube.com/watch?v=zjkBMFhNj_g"
+/>
+
+<LinkCard
+  title="The Illustrated Transformer — Jay Alammar"
+  description="The classic visual explainer. Great diagrams of the attention mechanism."
+  href="https://jalammar.github.io/illustrated-transformer/"
+/>
+
+<LinkCard
+  title="Lilian Weng's Blog"
+  description="Deep technical posts on everything from attention to RLHF to agents. More academic than this series, but excellent."
+  href="https://lilianweng.github.io/"
+/>
+
+<LinkCard
+  title="Neural Networks — 3Blue1Brown"
+  description="If you want to go deeper on the fundamentals (backpropagation, gradient descent), this series is the best visual introduction."
+  href="https://www.3blue1brown.com/topics/neural-networks"
+/>

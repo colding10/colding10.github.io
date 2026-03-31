@@ -11,47 +11,47 @@ const latestPost = blog[0]
 ---
 
 <Layout class="max-w-3xl" decorativeGrid>
-  <PageHead slot="head" title="Home" />
+	<PageHead slot="head" title="Home" />
 
-  <section class="mt-6 mb-12">
-    <h1
-      class="mb-4 font-serif text-5xl leading-none font-bold tracking-tight sm:text-6xl lg:text-[4.75rem]"
-    >
-      Hi, I'm cold
-    </h1>
-    <p
-      class="text-muted-foreground mb-5 text-xs font-semibold tracking-[0.28em] uppercase"
-    >
-      AI Believer / CTF Player
-    </p>
-    <p class="text-foreground/75 max-w-2xl text-base leading-relaxed">
-      This is my site where I'll put blog posts, things I learn, and other
-      random stuff. Some of it is <Link
-        href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
-        class="text-foreground hover:text-primary underline transition-colors"
-        external>CTF</Link
-      >, some of it is not. Hopefully you can learn something here.
-    </p>
+	<section class="mt-6 mb-12">
+		<h1
+			class="mb-4 font-serif text-5xl leading-none font-bold tracking-tight sm:text-6xl lg:text-[4.75rem]"
+		>
+			Hi, I'm cold
+		</h1>
+		<p
+			class="text-muted-foreground mb-5 text-xs font-semibold tracking-[0.28em] uppercase"
+		>
+			AI Believer / CTF Player
+		</p>
+		<p class="text-foreground/75 max-w-2xl text-base leading-relaxed">
+			I do <Link
+				href="https://en.wikipedia.org/wiki/Capture_the_flag_(cybersecurity)"
+				class="text-foreground hover:text-primary underline transition-colors"
+				external>CTFs</Link
+			>, build things with AI, and write about both. Mostly crypto, rev, and
+			whatever else catches my attention. This is where the writeups and
+			deep dives live.
+		</p>
+	</section>
 
-  </section>
+	<section class="space-y-7">
+		<div class="flex items-center justify-between">
+			<h2 class="font-serif text-3xl font-bold">Latest Posts</h2>
+			<Link
+				href="/blog"
+				class="text-muted-foreground hover:text-foreground group inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
+			>
+				View all
+				<span
+					class="inline-block transition-transform duration-200 group-hover:translate-x-1"
+					>&rarr;</span
+				>
+			</Link>
+		</div>
 
-  <section class="space-y-7">
-    <div class="flex items-center justify-between">
-      <h2 class="font-serif text-3xl font-bold">Latest Posts</h2>
-      <Link
-        href="/blog"
-        class="text-muted-foreground hover:text-foreground group inline-flex items-center gap-1.5 text-sm transition-colors duration-200"
-      >
-        View all
-        <span
-          class="inline-block transition-transform duration-200 group-hover:translate-x-1"
-          >&rarr;</span
-        >
-      </Link>
-    </div>
-
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      {blog.map((post) => <BlogCard entry={post} variant="card" />)}
-    </div>
-  </section>
+		<div class="flex flex-col gap-4">
+			{blog.map((post) => <BlogCard entry={post} variant="list" />)}
+		</div>
+	</section>
 </Layout>

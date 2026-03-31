@@ -1,0 +1,231 @@
+---
+title: 'The Transformer'
+description: 'self-attention, multi-head attention, and how next-token prediction creates intelligence'
+date: 2026-04-15
+order: 2
+tags: ['blog', 'ai', 'explainer']
+authors: ['cold']
+---
+
+import Callout from '@/components/Callout.astro'
+import Tabs from '@/components/mdx/Tabs.astro'
+import TabPanel from '@/components/mdx/TabPanel.astro'
+import Steps from '@/components/mdx/Steps.astro'
+import Step from '@/components/mdx/Step.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import Spoiler from '@/components/mdx/Spoiler.astro'
+
+# The Transformer
+
+You know how text becomes vectors (Part 1). Now: what does the transformer actually do with those vectors?
+
+The answer is deceptively simple. A transformer is a function that takes a sequence of token vectors and produces a sequence of *contextualized* token vectors&mdash;meaning each output vector now encodes not just what that token means in isolation, but what it means in the context of every other token in the sequence.
+
+That's it. Everything else is the "how."
+
+## Self-attention: the core mechanism
+
+Self-attention is the single most important idea in modern AI. If you understand one thing from this entire series, make it this.
+
+Every token in the sequence needs to "talk to" every other token to build context. Self-attention is the mechanism that makes this happen. It works through three learned projections called **Query**, **Key**, and **Value**.
+
+<Callout variant="intuition" title="The dictionary analogy">
+Self-attention is a differentiable dictionary lookup. Every token generates a **query** ("what am I looking for?"), a **key** ("what do I contain?"), and a **value** ("what do I provide if you attend to me?"). The query searches across all the keys, and the result is a weighted blend of all the values, with weights proportional to how well each key matched the query.
+
+It's like Googling something. Your search query is matched against an index (keys), and you get back a blend of the relevant content (values).
+</Callout>
+
+Here's the math, step by step:
+
+<Steps>
+<Step title="Project into Q, K, V">
+Each token's embedding vector gets multiplied by three different learned weight matrices to produce a query vector $Q$, a key vector $K$, and a value vector $V$. These projections are learned during training&mdash;the model figures out what kinds of "questions" and "answers" are useful.
+
+For a sequence of $n$ tokens with embedding dimension $d$, this gives us three matrices: $Q$, $K$, and $V$, each of shape $n \times d_k$ (where $d_k$ is the dimension of each head).
+</Step>
+
+<Step title="Compute attention scores">
+Take the dot product of each query with every key: $QK^T$. This produces an $n \times n$ matrix where entry $(i, j)$ is how much token $i$'s query matches token $j$'s key. High dot product = strong match = "pay attention to this token."
+</Step>
+
+<Step title="Scale">
+Divide by $\sqrt{d_k}$. This prevents the dot products from getting too large as the dimension increases. Without scaling, the softmax in the next step saturates&mdash;it pushes all the weight onto one token and the gradients vanish. It's just normalization.
+</Step>
+
+<Step title="Softmax">
+Apply softmax across each row to turn the scores into probabilities. Now each row sums to 1, and each entry represents the fraction of attention token $i$ pays to token $j$. This is the **attention pattern**&mdash;a probability distribution over the sequence for each token.
+</Step>
+
+<Step title="Weighted sum of values">
+Multiply the attention weights by the value matrix $V$. Each token's output is a weighted blend of every other token's value, weighted by how much attention it paid. Tokens that got high attention contribute more to the output.
+</Step>
+</Steps>
+
+The full equation:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+<Callout variant="example" title="Pronoun resolution through attention">
+Consider: "The cat sat on the mat because **it** was tired."
+
+When processing "it," the model's self-attention should figure out what "it" refers to. The query for "it" is essentially asking "what entity am I?" The key for "cat" responds with "I'm an entity that does things." The attention weight from "it" to "cat" should be high, and from "it" to "mat" should be low.
+
+After attention, the vector for "it" now contains information from "cat"&mdash;it has been *contextualized*. The model has resolved the pronoun reference, not through a rule, but through learned attention patterns. This is one of the things that makes transformers so powerful: they learn to solve language problems by learning which tokens to attend to.
+</Callout>
+
+<Callout variant="remark" title="On the $\sqrt{d_k}$ scaling">
+This is a detail that's often glossed over or presented as mysterious. It's not. Dot products grow with the dimension of the vectors. If $d_k = 64$, two random unit vectors will have a dot product with standard deviation $\sqrt{64} = 8$. Without dividing by $\sqrt{d_k}$, the softmax inputs would be large, softmax would produce near-one-hot distributions (almost all weight on one token), and gradients would be tiny. Scaling keeps the distribution well-behaved. It's the same reason you normalize things in statistics.
+</Callout>
+
+## Multi-head attention
+
+One attention head can only focus on one "type" of relationship at a time. That's limiting. In a sentence like "The nervous cat quickly jumped over the lazy brown dog," there are multiple things going on simultaneously:
+
+- Syntactic structure: "cat" is the subject of "jumped"
+- Adverbial modification: "quickly" modifies "jumped"
+- Adjective-noun binding: "nervous" goes with "cat," "lazy brown" goes with "dog"
+- Prepositional phrase: "over" connects "jumped" to "dog"
+
+One attention pattern can't capture all of these at once. The solution: run multiple attention heads in parallel, each with their own learned $Q$, $K$, $V$ projections.
+
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O$$
+
+where each $\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$.
+
+<Tabs labels={["Syntactic head", "Positional head", "Semantic head"]}>
+<TabPanel>
+One head might learn to track syntactic dependencies. It attends from verbs to their subjects and objects, building sentence structure. The attention pattern for "jumped" would concentrate on "cat" (subject) and "dog" (object).
+</TabPanel>
+
+<TabPanel>
+Another head might learn a simple proximity pattern: attend to the tokens immediately before and after. This captures local structure&mdash;adjective-noun pairs, compound words, punctuation patterns. Not sophisticated, but reliably useful.
+</TabPanel>
+
+<TabPanel>
+A third head might track semantic similarity regardless of position. If "cat" and "dog" appear in the same sentence, this head might attend between them because they're semantically related (both animals), even though they're far apart.
+</TabPanel>
+</Tabs>
+
+GPT-3 uses 96 attention heads per layer. Each one learns a different pattern. The concatenated output captures a richer view of the relationships in the sequence than any single head could.
+
+<Callout variant="tip" title="Why this matters in practice">
+Multi-head attention is part of why LLMs can handle so many different tasks. Different heads specialize for different kinds of reasoning, and the model routes information through whichever heads are relevant. This is also why pruning attention heads (removing some to make the model faster) works surprisingly well&mdash;many heads are redundant or only useful for niche tasks.
+</Callout>
+
+## The full transformer block
+
+Self-attention is one layer in a transformer block. A complete block also includes:
+
+1. **Layer normalization**: stabilizes training by normalizing the activations. Without it, the model's internal values can drift wildly during training.
+2. **Feed-forward network (FFN)**: two linear transformations with a nonlinearity (usually GeLU) in between. This is where each token processes what it learned from attention.
+3. **Residual connections**: skip connections that add the input directly to the output. These help gradients flow during training and let the model preserve information from earlier layers.
+
+The block formula:
+
+$$x' = \text{LayerNorm}(x + \text{MultiHeadAttention}(x))$$
+$$\text{output} = \text{LayerNorm}(x' + \text{FFN}(x'))$$
+
+<Callout variant="intuition" title="Discussion and reflection">
+The attention layer lets tokens talk to each other&mdash;it's a round of group discussion. The FFN lets each token think about what it heard&mdash;it's a round of individual reflection. Stacking these alternating layers gives you repeated cycles of "gather information from the group" and "process that information privately."
+
+A GPT-4-class model has ~120 of these blocks stacked on top of each other. That's 120 rounds of discussion and reflection. The depth is what gives the model its reasoning capacity.
+</Callout>
+
+<Callout variant="tip" title="Where knowledge lives">
+The FFN is often 4x the hidden dimension. In GPT-3 ($d_\text{model} = 12288$), the FFN inner dimension is 49,152. This is where most of the model's parameters live, and research suggests this is where most "knowledge" is stored&mdash;factual associations, learned heuristics, and domain expertise. Attention handles routing and composition; the FFN handles the actual knowledge retrieval.
+</Callout>
+
+## Decoder-only vs. encoder-decoder vs. encoder-only
+
+There are three transformer architectures. By 2026, one of them has decisively won.
+
+<Tabs labels={["Encoder-only (BERT)", "Encoder-decoder (T5)", "Decoder-only (GPT, Claude, Llama)"]}>
+<TabPanel>
+**Bidirectional attention**: every token can see every other token, in both directions. Good for understanding tasks (classification, named entity recognition, sentiment analysis) because the model can look at the full context. Trained with masked language modeling&mdash;"fill in the blank."
+
+Not used for text generation. BERT can't write a paragraph because it wasn't trained to generate text left-to-right.
+</TabPanel>
+
+<TabPanel>
+The original architecture. An encoder processes the input with bidirectional attention. A decoder generates the output autoregressively (one token at a time, left to right), attending to both previous output tokens and the encoder's representation of the input.
+
+Used for tasks with clear input-output structure: translation, summarization. Still used in some specialized systems, but not the dominant paradigm.
+</TabPanel>
+
+<TabPanel>
+**Causal (left-to-right) attention**: each token can only see tokens before it in the sequence. A triangular mask blocks attention to future tokens. The model is trained to predict the next token, always.
+
+This is what ChatGPT, Claude, Gemini, Llama, and every other major LLM uses. One architecture, one objective (predict the next token), scaled to absurd sizes. The simplicity is the point.
+</TabPanel>
+</Tabs>
+
+<Callout variant="important" title="Decoder-only won">
+Almost every major LLM in 2025-2026 is decoder-only. When people say "transformer," they almost always mean a decoder-only transformer with a causal attention mask.
+
+This has a direct practical implication: **LLMs are better at continuing text than editing it.** The architecture is literally designed to predict the next token, not to go back and revise previous tokens. This is why "rewrite this paragraph" sometimes feels worse than "write a paragraph about X"&mdash;continuation is native, revision is simulated.
+</Callout>
+
+The causal mask is simple: a triangular matrix where position $i$ can only attend to positions $\leq i$. When the model is generating token 50, it can see tokens 1-49 but not tokens 51+. This is what makes generation autoregressive&mdash;each new token is conditioned on all previous tokens.
+
+## Next-token prediction
+
+The final piece: how does a transformer generate text?
+
+After all the transformer blocks process the input, the final layer projects each position's vector to the size of the vocabulary (typically 50,000-100,000+ tokens) and applies softmax. The result is a **probability distribution** over all possible next tokens.
+
+<Callout variant="example" title="What next-token prediction actually looks like">
+Given the prompt "The best programming language is", the model might output:
+
+| Token | Probability |
+|-------|------------|
+| "Python" | 18.2% |
+| "the" | 9.7% |
+| "Rust" | 6.4% |
+| "a" | 5.1% |
+| "Java" | 4.8% |
+| "C" | 3.9% |
+| ... | ... |
+
+Notice: there's no single "right answer." The model outputs a probability distribution. "Python" is most likely, but "Rust," "Java," and "C" are all plausible continuations. The model doesn't "believe" Python is the best&mdash;it predicts that text saying Python is the best is the most likely continuation of this prompt, based on its training data. This distinction matters.
+</Callout>
+
+The punchline: **that's it.** The entire sophistication of ChatGPT, Claude, Gemini&mdash;all of it&mdash;emerges from training a transformer to predict the next token. The architecture is the same. The magic is in the training data, the scale, and the post-training (which we'll cover in Part 3).
+
+<Callout variant="warning" title="Misconception: 'AI is just autocomplete'">
+You'll hear people dismiss LLMs as "just autocomplete" or "stochastic parrots." This is technically correct and practically useless, like calling a human brain "just electrochemistry." Yes, next-token prediction is the mechanism. But the capabilities that emerge from doing next-token prediction at sufficient scale&mdash;reasoning, coding, translation, creative writing, mathematical proof&mdash;are genuinely new. Reductive descriptions of the mechanism don't explain the capabilities. Nobody predicted that next-token prediction would produce systems that can write working code, and the fact that it does tells us something deep about the relationship between language prediction and intelligence.
+</Callout>
+
+## KV-cache and the quadratic cost
+
+There's a practical detail that matters a lot for how you interact with LLMs: self-attention is $O(n^2)$ in the sequence length. Every token attends to every other token, so the computation grows quadratically with context length. Double the context, quadruple the compute.
+
+<Callout variant="explanation" title="Why long context is expensive">
+For a 128K-token context window, the attention matrix has $128000 \times 128000 \approx 16.4$ billion entries *per head per layer*. This is why:
+
+- API pricing often charges per input token *and* per output token
+- Very long prompts are noticeably slower
+- Context window limits exist (the model was trained up to some maximum, and going beyond it requires architectural tricks)
+- Providers charge a premium for large-context models
+</Callout>
+
+To avoid redundant computation during text generation, models use a **KV-cache**: they store the key and value vectors for all previously generated tokens, so each new token only needs to compute attention against the cache rather than reprocessing the entire sequence. This is why the first token of a response is slower (processing the full prompt) but subsequent tokens are faster (incrementally extending the cache).
+
+<Callout variant="tip" title="Practical implications">
+Knowing about the quadratic cost helps you write better prompts:
+
+- **Front-load important context.** Don't pad your prompt with unnecessary filler. Every extra token makes everything slower.
+- **Use summaries for long documents.** Feeding a 50-page document into the context is possible but expensive and slow. Summarize or extract the relevant sections first.
+- **Understand the "lost in the middle" problem.** Research shows that models attend most strongly to the beginning and end of the context, and are worse at using information buried in the middle. This is a consequence of how attention patterns form during training. Put your most important instructions at the start or end, not in the middle.
+</Callout>
+
+---
+
+You now understand the complete forward pass of a modern LLM:
+
+1. **Tokenize**: text → token IDs
+2. **Embed**: token IDs → vectors (lookup table + positional encoding)
+3. **Transform**: vectors → contextualized vectors (self-attention + FFN, repeated ~100 times)
+4. **Predict**: contextualized vector at the last position → probability distribution over next token
+5. **Sample**: pick a token from the distribution, append it, repeat from step 3
+
+The architecture is elegant and, frankly, not that complicated. What makes it powerful is the scale of training. Which is exactly what we'll cover next.

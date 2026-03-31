@@ -1,0 +1,201 @@
+---
+title: 'How Models Are Trained'
+description: 'pretraining, fine-tuning, RLHF, and the alignment tax — why training choices shape everything'
+date: 2026-04-15
+order: 3
+tags: ['blog', 'ai', 'explainer']
+authors: ['cold']
+---
+
+import Callout from '@/components/Callout.astro'
+import Tabs from '@/components/mdx/Tabs.astro'
+import TabPanel from '@/components/mdx/TabPanel.astro'
+import Steps from '@/components/mdx/Steps.astro'
+import Step from '@/components/mdx/Step.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import Spoiler from '@/components/mdx/Spoiler.astro'
+
+# How Models Are Trained
+
+You know the architecture. Now: how does a transformer go from random weights to something that can write code, explain quantum mechanics, and argue about philosophy?
+
+The answer is a three-stage pipeline that progressively shapes the model from a raw text completer into a useful assistant. Each stage has a different objective, different data, and different implications for how the model behaves.
+
+<Steps>
+<Step title="Pretraining">
+Learn language from the internet. Trillions of tokens. Months of training. The model learns grammar, facts, reasoning patterns, code structure, world knowledge&mdash;everything&mdash;by predicting the next token.
+</Step>
+
+<Step title="Supervised Fine-Tuning (SFT)">
+Learn to follow instructions. Thousands of curated (instruction, response) pairs teach the model the assistant format. This is where it goes from "babbling text completer" to "thing that answers questions."
+</Step>
+
+<Step title="RLHF / Preference Optimization">
+Learn to be helpful, harmless, and honest. Human feedback teaches the model which responses are better, shaping its behavior toward what users actually want.
+</Step>
+</Steps>
+
+<Callout variant="important" title="Each stage profoundly shapes behavior">
+A pretrained model is a babbling text completer&mdash;give it "What is photosynthesis?" and it'll continue with more questions, not an answer. After SFT it's an assistant. After RLHF it's an assistant that tries to be helpful without being harmful. These aren't minor adjustments. Each stage fundamentally changes what the model does with the same prompt.
+</Callout>
+
+## Pretraining: reading the internet
+
+The objective is dead simple: predict the next token. Given a sequence of tokens, output a probability distribution over the vocabulary for what comes next, and minimize the gap between your prediction and reality.
+
+The loss function is cross-entropy:
+
+$$\mathcal{L} = -\sum_{t=1}^{T} \log P(x_t \mid x_1, \ldots, x_{t-1}; \theta)$$
+
+<Callout variant="explanation" title="What the loss function actually says">
+For each position in the training text, the model predicts a distribution over possible next tokens. The loss measures how surprised the model was by the actual next token&mdash;specifically, the negative log of the probability it assigned to the correct token. If the model gave the correct token 90% probability, the loss is low. If it gave it 0.1% probability, the loss is high. Training adjusts the model's parameters to be less surprised over time.
+</Callout>
+
+The scale is hard to overstate:
+
+- **Data**: trillions of tokens. Llama 3 was trained on 15 trillion tokens. GPT-4's training data is estimated at 13+ trillion.
+- **Hardware**: thousands of GPUs (H100s, TPUs) running in parallel for months.
+- **Cost**: a frontier model training run costs $50-100M+ in compute alone. This is before salaries, data licensing, infrastructure, and the failed runs you never hear about.
+
+<Callout variant="example" title="The capital expenditure problem">
+This is why only a handful of companies can train frontier models. It's not a software problem&mdash;the transformer architecture is public, the training code is relatively straightforward. It's a capital expenditure problem. You need tens of thousands of GPUs, the engineering team to keep them running, and the cash to pay the electricity bill for months. The moat isn't the algorithm. It's the budget.
+</Callout>
+
+What does the model learn? Everything. Grammar, syntax, facts about the world, reasoning patterns, code idioms, mathematical proofs, conversation structure, humor, poetry, lies, biases, and the formatting of every type of document on the internet. All from predicting the next token.
+
+<Callout variant="intuition" title="The compression hypothesis">
+Pretraining is, in a sense, compression. The model is forced to compress the patterns of the entire internet into a fixed number of parameters. To predict text well, it has to learn the underlying structures that generate text&mdash;which means learning something about the world that text describes. It doesn't "memorize" the internet (mostly). It develops a compressed model of how language works and what facts are commonly expressed.
+</Callout>
+
+## Data: the unsung hero
+
+The training data for frontier models typically includes:
+
+- **Common Crawl**: a massive scrape of the public web. Petabytes of raw HTML, filtered and deduplicated.
+- **Wikipedia**: high-quality, factual, well-structured. Overrepresented relative to its size because the quality is so much higher than random web pages.
+- **Books**: scanned and digitized. Gives the model exposure to long-form reasoning and narrative structure.
+- **Code** (GitHub, StackOverflow): this is why LLMs can code. Not because they have special code modules, but because code was a significant fraction of their training data.
+- **Scientific papers**: ArXiv, PubMed. This is where domain-specific knowledge comes from.
+- **Synthetic data**: increasingly, model-generated data is used to supplement human-written data. Models generate, other models filter, and the best examples go back into training.
+
+Data quality matters enormously. The same architecture trained on garbage data produces a garbage model. Deduplication (removing repeated content), filtering (removing low-quality or toxic content), and data mixing (getting the right proportions of code, text, math, etc.) are as important as the architecture itself.
+
+<Callout variant="warning" title="Misconception: hallucinations are bugs">
+They're not. Hallucinations are the architecture doing exactly what it was trained to do&mdash;producing plausible-sounding text. The model's loss function rewards generating text that *looks like* real text, not text that *is true*. When it confidently states a fake citation or invents a plausible-sounding API that doesn't exist, it's because that style of confident assertion is extremely common in its training data. The model has learned to produce authoritative-sounding text, and sometimes it produces authoritative-sounding text about things that don't exist. This isn't a bug to fix. It's a fundamental property of next-token prediction.
+</Callout>
+
+There's an active debate about whether we're running out of high-quality training data&mdash;the "data wall." The internet is big, but it's not infinite, and a lot of it is low-quality or duplicated. Synthetic data generation is the leading proposed solution: use existing models to generate training data for the next generation of models. Whether this actually works at scale without collapsing in on itself (training on AI-generated text creating a feedback loop of mediocrity) is one of the open questions in the field.
+
+## Supervised Fine-Tuning (SFT)
+
+After pretraining, you have a very capable text completer that has no idea how to be an assistant. Give it a question and it'll complete the text by generating more questions, or by continuing in the style of whatever document the question looks like it came from.
+
+SFT fixes this. The dataset is thousands to tens of thousands of high-quality (instruction, response) pairs: "Explain photosynthesis in simple terms" → "Photosynthesis is the process by which plants convert sunlight..."
+
+<Tabs labels={["Before SFT (base model)", "After SFT"]}>
+<TabPanel>
+**Prompt**: "What is photosynthesis?"
+
+**Output**: "What is the difference between photosynthesis and chemosynthesis? What role does chlorophyll play in the process? These are some of the most frequently asked questions in introductory biology courses..."
+
+The base model treats this as text to continue. It has seen this question in textbooks and Q&A lists, so it continues generating more questions and contextual text. It doesn't answer because it was never trained to answer&mdash;it was trained to predict what text comes next.
+</TabPanel>
+
+<TabPanel>
+**Prompt**: "What is photosynthesis?"
+
+**Output**: "Photosynthesis is the process by which plants, algae, and some bacteria convert light energy (usually from the sun) into chemical energy stored in glucose. The process uses water and carbon dioxide as inputs, and produces oxygen as a byproduct..."
+
+Same model weights, same architecture. The only difference is a few thousand examples of the instruction-following format. The model learned the *pattern*: question → answer, and now it follows that pattern.
+</TabPanel>
+</Tabs>
+
+<Callout variant="tip" title="What 'fine-tuning' means in practice">
+When people talk about "fine-tuning" an open-source model on their own data, this is what they're doing: teaching it a new behavioral pattern. The base knowledge comes from pretraining (which they can't afford to redo). SFT just teaches the format. Fine-tune a Llama model on medical Q&A pairs and it'll start responding like a medical assistant&mdash;not because it learned new medical knowledge, but because it learned to surface the medical knowledge it already had in the right format.
+</Callout>
+
+## RLHF: Reinforcement Learning from Human Feedback
+
+SFT produces a model that follows instructions, but it has no sense of what makes a *good* response versus a *bad* one. It might follow instructions perfectly and still produce a harmful, biased, or misleading response.
+
+RLHF adds a preference layer on top.
+
+<Steps>
+<Step title="Collect human preferences">
+Show human raters two different model responses to the same prompt. They pick which one is better. Collect thousands of these comparisons.
+</Step>
+
+<Step title="Train a reward model">
+Train a separate model to predict the human preference. Given a prompt and a response, it outputs a score representing how much a human would like this response. This is trained on the preference data from step 1.
+
+The math uses the Bradley-Terry model:
+$$P(y_1 \succ y_2) = \sigma(r(x, y_1) - r(x, y_2))$$
+where $r$ is the reward model's score and $\sigma$ is the sigmoid function.
+</Step>
+
+<Step title="Optimize the LLM against the reward model">
+Use PPO (Proximal Policy Optimization) to fine-tune the LLM to generate responses that score highly on the reward model, while staying close to its original behavior (to prevent "reward hacking"&mdash;the model finding degenerate outputs that score high but are useless).
+</Step>
+</Steps>
+
+<Callout variant="intuition" title="The picky editor">
+RLHF is like having a picky editor. The model writes drafts (generates responses). The reward model rates them (scores each response). The model learns to write drafts the editor likes (optimizes for high scores). Over time, it internalizes the editor's preferences&mdash;being helpful, being honest, avoiding harmful content, staying on topic, admitting uncertainty.
+</Callout>
+
+<Callout variant="remark" title="Hot take: the alignment tax is real">
+RLHF makes models safer. It also makes them more cautious. This is the "alignment tax"&mdash;the performance you give up in exchange for safety.
+
+Post-RLHF models refuse more requests, hedge more in their answers, and are generally less willing to engage with edgy or unconventional prompts. Some of this is good (not helping people build bombs). Some of it is annoying (refusing to write a fictional villain's dialogue because it contains bad words). The balance is genuinely hard to get right, and every lab calibrates it differently.
+
+The "lobotomy" discourse&mdash;people claiming RLHF makes models dumber&mdash;has a kernel of truth. Heavy RLHF *can* reduce performance on benchmarks, especially in creative and open-ended tasks. But the alternative (an unaligned model that answers everything indiscriminately) is worse for most use cases. The question is calibration, not whether alignment is worthwhile.
+</Callout>
+
+<Callout variant="warning" title="Misconception: jailbreaks reveal the 'real' model">
+When someone jailbreaks a model, they're not revealing a hidden personality or the model's "true beliefs." They're bypassing the behavioral layer that RLHF added on top of the pretrained capabilities. The base model already knew how to generate harmful content&mdash;it learned that from its training data. RLHF taught it to refuse. Jailbreaks bypass the refusal. There's no conspiracy here, just two layers of training with different objectives.
+</Callout>
+
+## Modern alternatives
+
+RLHF works but it's expensive and complex (three models: the LLM, the reward model, and the reference model for PPO). Several simpler alternatives have emerged:
+
+**DPO (Direct Preference Optimization)** skips the reward model entirely. Instead of training a separate reward model and then optimizing against it, DPO directly optimizes the LLM on preference pairs. It's simpler, cheaper, and empirically competitive. Most open-source fine-tuning uses DPO now.
+
+<Spoiler title="The DPO loss function">
+$$\mathcal{L}_{\text{DPO}} = -\mathbb{E}\left[\log\sigma\left(\beta\log\frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta\log\frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)\right]$$
+
+Where $y_w$ is the preferred response, $y_l$ is the dispreferred response, $\pi_\theta$ is the model being trained, $\pi_\text{ref}$ is the reference model (the starting checkpoint), and $\beta$ controls how much the model can deviate from the reference. This implicitly defines a reward model through the log-probability ratio, without ever explicitly training one.
+</Spoiler>
+
+**RLAIF (RL from AI Feedback)** replaces human raters with another AI model. Cheaper to scale, but you're limited by the quality of the AI rater.
+
+**Constitutional AI** (Anthropic's approach) gives the model a constitution&mdash;a set of principles like "be helpful" and "be honest"&mdash;and has it critique and revise its own responses. It's a form of self-improvement guided by explicit rules.
+
+<Aside>
+The specifics here change fast. By the time you read this, there's probably a new preference optimization method that's simpler and better than DPO. The important thing is the concept: models are trained to match human preferences, and the details of how that matching is done are an active research area.
+</Aside>
+
+## Post-training: quantization, LoRA, and distillation
+
+A few more concepts that matter for practical usage:
+
+**Quantization** reduces the precision of model weights. Instead of storing each weight as a 32-bit floating-point number, you use 16-bit, 8-bit, or even 4-bit representations. This makes the model smaller (less RAM) and faster (less computation) at the cost of some quality.
+
+<Callout variant="tip" title="Reading Hugging Face model names">
+When you see "Llama-3-70B-Q4_K_M" on Hugging Face, here's what you're looking at:
+- **Llama-3**: the model family (Meta's open-weight model)
+- **70B**: 70 billion parameters (the model size)
+- **Q4**: quantized to 4-bit precision (each weight stored in 4 bits instead of 16)
+- **K_M**: the quantization method (K-quant, medium quality)
+
+A 70B model at full precision needs ~140GB of memory. At 4-bit quantization, it needs ~35GB. That's the difference between "requires a cluster" and "runs on a gaming PC." The quality loss at 4-bit is noticeable but often acceptable for most tasks.
+</Callout>
+
+**LoRA (Low-Rank Adaptation)** is an efficient fine-tuning method. Instead of updating all 70 billion parameters during fine-tuning, you freeze the original weights and add small trainable matrices (rank-decomposed) to each layer. You might only train 0.1% of the total parameters, but it's enough to teach new behaviors. **QLoRA** combines this with quantization for even lower memory requirements.
+
+**Distillation** trains a small model to mimic a large model. The large model generates outputs, and the small model is trained to match them. This is why small models are getting surprisingly good&mdash;they're learning from the behavior of much larger models, not from scratch.
+
+---
+
+You now understand the full training pipeline: pretraining on trillions of tokens gives the model knowledge and language ability, SFT teaches it to follow instructions, and RLHF/DPO aligns it with human preferences. The result is what you interact with when you use ChatGPT or Claude.
+
+But why does making models bigger keep making them smarter? And what's this about models that "think" before answering? That's next.

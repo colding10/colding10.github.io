@@ -1,0 +1,165 @@
+---
+title: 'Why It Keeps Getting Better'
+description: 'scaling laws, Mixture of Experts, emergent abilities, and inference-time compute'
+date: 2026-04-15
+order: 4
+tags: ['blog', 'ai', 'explainer']
+authors: ['cold']
+---
+
+import Callout from '@/components/Callout.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import LinkCard from '@/components/mdx/LinkCard.astro'
+import Spoiler from '@/components/mdx/Spoiler.astro'
+
+# Why It Keeps Getting Better
+
+The most surprising thing about LLMs isn't the architecture. It's that making them bigger *keeps working*. There's no obvious ceiling. Every time someone doubles the compute budget, the model gets meaningfully better. This has been true for years, and it shows no signs of stopping.
+
+Understanding *why* this happens and *how* labs exploit it is the key to understanding the current pace of AI progress.
+
+## Scaling laws
+
+In 2020, researchers at OpenAI published a remarkable finding: the loss of a language model follows a smooth, predictable power law with respect to the amount of compute, the number of parameters, and the amount of training data.
+
+<Callout variant="intuition" title="What the scaling laws say">
+More compute → better model. More parameters → better model. More data → better model. The relationship is smooth and predictable&mdash;you can estimate how good a model will be before you train it, just by plugging numbers into the scaling curve. There's a floor you can never get below (natural language has inherent uncertainty&mdash;you can't predict every next token perfectly because humans themselves are unpredictable), but above that floor, performance improves reliably with scale.
+</Callout>
+
+The practical breakthrough came in 2022 with the "Chinchilla" paper from DeepMind. They showed that most models at the time were *undertrained*&mdash;too many parameters, not enough data. The optimal strategy is to balance model size and data: a smaller model trained on more data beats a larger model trained on less data, at the same compute budget.
+
+<Callout variant="example" title="The Chinchilla insight in practice">
+GPT-3 has 175 billion parameters and was trained on ~300 billion tokens. By Chinchilla's optimal ratio, it should have been trained on about 3.5 *trillion* tokens&mdash;more than 10x what it got.
+
+Llama 2 (70B parameters) was trained on 2 trillion tokens. Llama 3 (70B) pushed that to 15 trillion. Same architecture, same parameter count, 7.5x more training data, dramatically better model. The Chinchilla insight in action.
+</Callout>
+
+This is why the "data wall" debate matters. If scaling laws hold and data is the bottleneck, then whoever has access to the most high-quality training data wins. And there's a finite amount of high-quality human-written text on the internet.
+
+## Mixture of Experts (MoE)
+
+Here's a question: does "bigger model" have to mean "more expensive to run"?
+
+No. And understanding why is important for practical model selection.
+
+<Callout variant="definition" title="Mixture of Experts">
+An MoE model has many "expert" sub-networks (typically in the FFN layers), but only activates a few of them for each token. A learned routing network decides which experts to use for each token. The model has a lot of total parameters, but the active parameters per forward pass are much smaller.
+</Callout>
+
+<Callout variant="intuition" title="The specialist analogy">
+Imagine a hospital with 100 doctors, each specializing in different areas. When a patient arrives, a triage nurse routes them to the 2-3 most relevant specialists. The hospital has the combined knowledge of 100 doctors, but each patient only consults a few. That's MoE.
+</Callout>
+
+Mixtral 8x7B, for example, has 8 expert networks of ~7B parameters each (~47B total), but only 2 experts are active for each token (~13B active parameters). It has the knowledge of a 47B model but runs at roughly the speed and cost of a 13B model.
+
+GPT-4 is widely believed (though not officially confirmed by OpenAI) to be an MoE model. This would explain how it can be so capable while still being affordable to run at scale.
+
+<Callout variant="warning" title="Misconception: bigger model = smarter">
+Not necessarily. A 47B MoE model with 13B active parameters might be smarter than a dense 20B model while being cheaper to run. And a well-distilled 7B model trained on outputs from a 70B model might outperform a 13B model trained from scratch. "Model size" is a misleading metric. What matters is: how much knowledge is in the model (total parameters), how much compute it uses per token (active parameters), and how well it was trained (data quality and training recipe).
+</Callout>
+
+This is why you shouldn't just look at parameter count when choosing a model. Check the active parameter count and the benchmark results. A well-designed MoE model gives you more intelligence per dollar.
+
+## Emergent abilities
+
+Some capabilities appear suddenly as models scale. At small sizes, the model can't do the task at all. At some critical size, it suddenly can. This is called **emergence**, and it's one of the most debated phenomena in AI research.
+
+The classic examples: chain-of-thought reasoning, multi-step arithmetic, complex code generation, and multi-hop logical deduction all appear to have thresholds&mdash;model sizes below which performance is near-zero and above which it jumps dramatically.
+
+<Callout variant="example" title="Scaling in action">
+Consider a multi-step word problem: "Alice has 3 apples. Bob gives her 2 more. She gives half to Charlie. How many does she have?"
+
+- **Small model (~1B params)**: "She has 5 apples" (ignores the last step)
+- **Medium model (~7B params)**: Gets it right sometimes, inconsistent
+- **Large model (~70B+ params)**: Reliably correct, can show work
+
+The step from "can't do it" to "nails it" often happens over a relatively narrow range of model sizes. It looks less like gradual improvement and more like a phase transition.
+</Callout>
+
+<Callout variant="remark" title="Hot take: emergence is real, but the measurement matters">
+A 2023 paper by Schaeffer et al. argued that "emergent abilities" are partly an artifact of how we measure performance. If you use accuracy (right/wrong), performance looks like a sudden phase transition. If you use log-likelihood (how close the model is to the right answer), the improvement looks gradual and predictable.
+
+Both sides have a point. The Schaeffer paper is correct that our choice of metric can create the *appearance* of sudden jumps when the underlying improvement is smooth. But it's also true that for practical purposes, there's a real difference between "the model assigns 30% probability to the right answer" and "the model reliably outputs the right answer." For end users, the phase transition from "doesn't work" to "works" is real and meaningful, even if the underlying probability shift was gradual.
+
+I lean toward: emergence is a real phenomenon, but it's less magical and more predictable than the early hype suggested. The capabilities are there in smaller models in embryonic form&mdash;scale just makes them reliable.
+</Callout>
+
+## Inference-time compute: thinking harder
+
+There's a newer scaling axis that's changing the game: instead of only making models bigger, give them more time to *think* at inference time.
+
+<Callout variant="intuition" title="Why chain-of-thought works">
+A transformer has a fixed depth&mdash;a fixed number of layers. Each layer is one "step" of computation. For simple tasks, this is plenty. For hard problems, it's not enough steps.
+
+Chain-of-thought prompting is a hack around this: by asking the model to write out its reasoning step by step, each generated token gets another full forward pass through the entire model. The intermediate tokens serve as external working memory. It's like giving the model scratch paper.
+
+"Think step by step" literally works because you're giving the model more compute to solve the problem. It's not a magic incantation. It's extra computation.
+</Callout>
+
+This insight led to a new class of models: **reasoning models** (OpenAI's o3/o4-mini, DeepSeek-R1, Claude with extended thinking). These are trained to produce long internal chains of thought before answering. They "think" for hundreds or thousands of tokens, exploring different approaches, catching their own mistakes, and building toward an answer.
+
+The results are dramatic. On hard math and coding problems, reasoning models significantly outperform standard models of the same size. The tradeoff: they're slower and more expensive per query, because they generate all those thinking tokens.
+
+<Callout variant="tip" title="When to use reasoning models">
+Use reasoning models for:
+- Hard math and logic problems
+- Complex multi-step coding tasks
+- Problems where getting the wrong answer is costly and you want higher reliability
+
+Don't use them for:
+- Simple questions with obvious answers
+- Creative writing (thinking tokens add latency for no benefit)
+- High-volume, low-stakes tasks (the extra cost isn't worth it)
+
+"Think step by step" in your prompt gets you ~80% of the benefit of a reasoning model, for free, with any model.
+</Callout>
+
+## Compute economics
+
+Training a frontier model costs $50-100M+. But training is a one-time cost. **Inference**&mdash;actually running the model for users&mdash;is the ongoing cost, and it's where the real economics play out.
+
+Some numbers to build intuition:
+- Running GPT-4-class inference at scale costs the provider fractions of a cent per query for simple tasks, but dollars per query for long, complex generations
+- API pricing reflects this: input tokens are cheaper than output tokens (input just needs a forward pass; output needs one forward pass *per token generated*)
+- The cost of serving a model is dominated by GPU memory (the model has to fit) and compute (attention is quadratic in context length)
+
+This is why there's been a massive push toward:
+- **Smaller, more efficient models**: distillation and MoE let you get more intelligence per GPU-dollar
+- **Quantization**: 4-bit inference costs ~4x less than 16-bit for roughly the same output quality
+- **Inference optimization**: FlashAttention, speculative decoding, KV-cache compression, and other tricks to make each forward pass faster
+
+<Callout variant="example" title="Why small open models keep getting better">
+Llama 3 8B rivals models that were 65B+ two years ago. Not because 8B parameters is somehow enough to encode all knowledge (it's not), but because:
+1. It was trained on much more data (Chinchilla-optimal)
+2. Its training data was higher quality (better filtering)
+3. It was distilled from larger models (learning from their behavior)
+4. Post-training (SFT, DPO) has gotten much more efficient
+
+The implication: for most practical tasks, you don't need a frontier model. A well-trained 8-13B model running locally is often good enough, and it's essentially free per query.
+</Callout>
+
+## The bitter lesson
+
+Rich Sutton's 2019 essay "The Bitter Lesson" argues that the history of AI research shows a consistent pattern: general methods that leverage computation (scale) tend to win over clever, hand-engineered approaches in the long run.
+
+<LinkCard
+  title="The Bitter Lesson"
+  description="Rich Sutton, 2019. The most important essay in modern AI."
+  href="http://www.incompleteideas.net/IncIdeas/BitterLesson.html"
+/>
+
+The transformer is the ultimate vindication of this thesis. It's a simple, general architecture. It doesn't have special modules for grammar or reasoning or code. It just does attention and feedforward processing, stacked really deep, trained on really large datasets. And it beats every specialized approach.
+
+<Callout variant="remark" title="What this means for the future">
+If the bitter lesson holds, expect capabilities to continue growing as compute grows. The direction isn't in question&mdash;more compute produces better models. The question is rate: will scaling hit diminishing returns, or will the smooth power-law curves continue?
+
+My take: the people claiming "we've hit a wall" are probably wrong. Every time someone makes that claim, a new scaling axis opens up (more data, MoE, inference-time compute, synthetic data, better training recipes). But the people claiming AGI is 6 months away are also probably wrong. The gap between "impressively capable at defined tasks" and "generally intelligent" is larger than the hype suggests.
+
+The truth is boring compared to both extremes: progress is fast, real, and will continue, but the timeline for truly transformative capabilities is uncertain, and anyone who gives you a confident date is selling something.
+</Callout>
+
+---
+
+Now you understand not just how models work, but why they keep getting better. Scale, data, and training recipes drive capability improvements. MoE and inference-time compute open new scaling axes beyond raw parameter count. And the trend line points up.
+
+Next: the payoff. How does all of this translate into practical advice for using LLMs?

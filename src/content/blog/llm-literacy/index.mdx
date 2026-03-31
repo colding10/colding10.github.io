@@ -1,0 +1,60 @@
+---
+title: 'LLM Literacy'
+description: 'everything you need to actually understand LLMs, from attention to RLHF to why your prompts suck'
+date: 2026-04-15
+tags: ['blog', 'ai', 'explainer']
+authors: ['cold']
+image: ./logo.png
+---
+
+import Callout from '@/components/Callout.astro'
+import Aside from '@/components/mdx/Aside.astro'
+import LinkCard from '@/components/mdx/LinkCard.astro'
+
+# Introduction
+
+Everyone has opinions about AI. Almost nobody knows how it works.
+
+People use ChatGPT, Claude, Gemini every day&mdash;for coding, writing, research, brainstorming&mdash;and most of them couldn't tell you what a token is. They don't know why "think step by step" helps, why the model invents fake citations, or why the same prompt gives different answers each time. They're using the most powerful tool they've ever had access to with the understanding of someone who thinks their microwave works because of tiny elves.
+
+This is the problem I want to fix. Not by turning you into an ML researcher. Not by walking you through backpropagation from scratch. But by giving you the mental models you need to actually understand what's happening when you talk to an LLM, so you can use it better, evaluate it honestly, and form opinions that aren't vibes.
+
+<Callout variant="important" title="The thesis">
+Every technical concept in this series maps to a practical implication. The architecture isn't trivia&mdash;it's the reason your prompt works or doesn't, the reason the model hallucinates, the reason "just make it bigger" keeps working. When you understand how the model sees your input, you write better inputs.
+</Callout>
+
+## Who this is for
+
+Smart people who use LLMs but feel like they're cargo-culting. You've probably read a "how transformers work" blog post or two, maybe watched a 3Blue1Brown video. You came away with a vague sense that attention is important and matrices are involved, but you still couldn't explain it to a friend in a way that clicks.
+
+This isn't a paper. It's not a tutorial. It's a mental model. I want you to finish this series and feel like you understand *why* things work the way they do, not just *that* they work.
+
+## What we'll cover
+
+1. **[From Words to Vectors](/blog/llm-literacy/foundations)** &mdash; A speedrun through NLP history, then the stuff that actually matters: tokenization, embeddings, and positional encoding. How text becomes numbers.
+
+2. **[The Transformer](/blog/llm-literacy/attention)** &mdash; Self-attention, multi-head attention, the full transformer block, and next-token prediction. The core machinery. This is the part most people get wrong or hand-wave past.
+
+3. **[How Models Are Trained](/blog/llm-literacy/training)** &mdash; Pretraining, supervised fine-tuning, RLHF, and the alignment tax. Why a pretrained model is a babbling text completer and how it becomes an assistant.
+
+4. **[Why It Keeps Getting Better](/blog/llm-literacy/scaling)** &mdash; Scaling laws, Mixture of Experts, emergent abilities, and inference-time compute. The "bitter lesson" and what it means for the future.
+
+5. **[Practical LLM Literacy](/blog/llm-literacy/using-llms)** &mdash; The payoff. Why prompting techniques work (mechanistically), hallucinations as an architectural inevitability, RAG, agents, and when to fine-tune vs prompt vs retrieve.
+
+6. **[The State of AI in 2026](/blog/llm-literacy/landscape)** &mdash; Who builds what, what's overrated, what's underrated, and where this is actually going. Hot takes included.
+
+<Callout variant="tip" title="How to read this">
+If you're technical (STEM background, comfortable with math), read straight through. The equations are there for you.
+
+If you're not, that's fine too&mdash;every equation is preceded by a plain-English intuition in a callout box. Read those, skip the math, and you'll still come away with a solid understanding. The math is supporting evidence, not the main argument.
+
+Either way: read Part 1 through Part 5 in order the first time. Part 6 (landscape) you can jump to whenever.
+</Callout>
+
+## Prerequisites
+
+You need to know what a matrix is (a grid of numbers) and what a function is (input goes in, output comes out). That's it. No ML background. No linear algebra fluency. No CS degree. If you got through high school math, you're fine.
+
+Everything else, I'll build up from scratch.
+
+Let's go.
