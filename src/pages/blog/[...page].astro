@@ -49,21 +49,37 @@ const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
 			}
 		</div>
 
-		{page.lastPage > 1 && (
-			<nav class="mt-auto flex items-center justify-center gap-1 pt-12" aria-label="Pagination">
-				{Array.from({ length: page.lastPage }, (_, i) => i + 1).map((pageNum) => (
-					<a
-						href={pageNum === 1 ? '/blog/' : `/blog/${pageNum}`}
-						class={pageNum === page.currentPage
-							? "inline-flex items-center justify-center size-9 rounded-md bg-primary text-primary-foreground text-sm font-medium"
-							: "inline-flex items-center justify-center size-9 rounded-md border border-border bg-background text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-						}
-						aria-current={pageNum === page.currentPage ? "page" : undefined}
-					>
-						{pageNum}
-					</a>
-				))}
-			</nav>
-		)}
+		{
+			page.lastPage > 1 && (
+				<nav
+					class="mt-auto flex items-center justify-center gap-1 pt-12"
+					aria-label="Pagination"
+				>
+					{Array.from({ length: page.lastPage }, (_, i) => i + 1).map(
+						(pageNum) => (
+							<a
+								href={
+									pageNum === 1
+										? '/blog/'
+										: `/blog/${pageNum}`
+								}
+								class={
+									pageNum === page.currentPage
+										? 'bg-primary text-primary-foreground inline-flex size-9 items-center justify-center rounded-md text-sm font-medium'
+										: 'border-border bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-9 items-center justify-center rounded-md border text-sm transition-colors'
+								}
+								aria-current={
+									pageNum === page.currentPage
+										? 'page'
+										: undefined
+								}
+							>
+								{pageNum}
+							</a>
+						),
+					)}
+				</nav>
+			)
+		}
 	</div>
 </Layout>

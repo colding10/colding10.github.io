@@ -4,7 +4,6 @@ import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 import { getSortedTags } from '@/lib/data-utils'
-import { Icon } from 'astro-icon/components'
 
 const sortedTags = await getSortedTags()
 ---
@@ -28,9 +27,7 @@ const sortedTags = await getSortedTags()
 						class="text-muted-foreground hover:text-foreground text-sm transition-colors duration-200"
 					>
 						#{tag}
-						<span class="ml-0.5 opacity-40">
-							{count}
-						</span>
+						<span class="ml-0.5 opacity-40">{count}</span>
 					</Link>
 				))
 			}

@@ -9,7 +9,13 @@ interface Props {
 	class?: string
 }
 
-const { href, title, description, external = false, class: className } = Astro.props
+const {
+	href,
+	title,
+	description,
+	external = false,
+	class: className,
+} = Astro.props
 ---
 
 <a
@@ -23,9 +29,22 @@ const { href, title, description, external = false, class: className } = Astro.p
 >
 	<div class="flex items-center justify-between gap-4">
 		<div>
-			<div class="font-medium transition-colors duration-200 group-hover:text-primary">{title}</div>
-			{description && <div class="text-muted-foreground mt-1 text-sm">{description}</div>}
+			<div
+				class="group-hover:text-primary font-medium transition-colors duration-200"
+			>
+				{title}
+			</div>
+			{
+				description && (
+					<div class="text-muted-foreground mt-1 text-sm">
+						{description}
+					</div>
+				)
+			}
 		</div>
-		<span class="text-muted-foreground shrink-0 transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+		<span
+			class="text-muted-foreground shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+			>&rarr;</span
+		>
 	</div>
 </a>

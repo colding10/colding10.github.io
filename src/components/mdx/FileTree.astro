@@ -26,7 +26,28 @@ const icons: Record<string, string> = {
 	lock: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
 }
 
-const codeExts = ['py', 'js', 'ts', 'c', 'cpp', 'h', 'rs', 'go', 'rb', 'java', 'sh', 'sage', 'html', 'css', 'jsx', 'tsx', 'astro', 'mdx', 'php', 'sql']
+const codeExts = [
+	'py',
+	'js',
+	'ts',
+	'c',
+	'cpp',
+	'h',
+	'rs',
+	'go',
+	'rb',
+	'java',
+	'sh',
+	'sage',
+	'html',
+	'css',
+	'jsx',
+	'tsx',
+	'astro',
+	'mdx',
+	'php',
+	'sql',
+]
 const configExts = ['json', 'yaml', 'yml', 'toml', 'ini', 'env', 'cfg']
 const textExts = ['txt', 'md', 'log', 'csv']
 const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']
@@ -34,9 +55,15 @@ const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']
 function getIcon(name: string, isDir: boolean): string {
 	if (isDir) return icons.folder
 	const lower = name.toLowerCase()
-	if (lower === 'dockerfile' || lower.startsWith('docker-compose')) return icons.docker
+	if (lower === 'dockerfile' || lower.startsWith('docker-compose'))
+		return icons.docker
 	if (lower.includes('flag')) return icons.lock
-	if (lower === 'requirements.txt' || lower === 'package.json' || lower === 'cargo.toml') return icons.config
+	if (
+		lower === 'requirements.txt' ||
+		lower === 'package.json' ||
+		lower === 'cargo.toml'
+	)
+		return icons.config
 	const ext = lower.split('.').pop() || ''
 	if (codeExts.includes(ext)) return icons.code
 	if (configExts.includes(ext)) return icons.config
@@ -67,7 +94,18 @@ for (const entry of entries) {
 }
 ---
 
-<div class={cn('not-prose my-6 rounded-md bg-secondary/40 p-4 text-sm font-mono', className)}>
-	{title && <div class="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">{title}</div>}
+<div
+	class={cn(
+		'not-prose my-6 rounded-md bg-secondary/40 p-4 text-sm font-mono',
+		className,
+	)}
+>
+	{
+		title && (
+			<div class="text-muted-foreground mb-3 text-xs font-medium tracking-wider uppercase">
+				{title}
+			</div>
+		)
+	}
 	<div set:html={treeHtml} />
 </div>

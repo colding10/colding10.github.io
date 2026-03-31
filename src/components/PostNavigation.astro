@@ -3,7 +3,8 @@ import Link from '@/components/Link.astro'
 import { cn } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 
-const btnOutline = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-auto px-4 py-3"
+const btnOutline =
+	'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-auto px-4 py-3'
 
 const { newerPost, olderPost, parentPost } = Astro.props
 const isSubpost = !!parentPost

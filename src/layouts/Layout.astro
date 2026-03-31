@@ -10,9 +10,9 @@ import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  class?: string
-  shellClass?: string
-  decorativeGrid?: boolean
+	class?: string
+	shellClass?: string
+	decorativeGrid?: boolean
 }
 
 const { class: className, shellClass, decorativeGrid = false } = Astro.props
@@ -21,37 +21,42 @@ const resolvedShellClass = shellClass ?? className ?? 'max-w-3xl'
 
 <!doctype html>
 <html class="bg-background text-foreground" lang={SITE.locale}>
-  <Head>
-    <slot name="head" />
-  </Head>
-  <body>
-    <div class="flex min-h-screen flex-col font-mono">
-      <div
-        class="border-border/30 bg-background sticky top-0 z-40 border-b [contain:layout_style_paint]"
-      >
-        <Header className={resolvedShellClass} />
-        <slot name="subposts-navigation" />
-        <slot name="table-of-contents" />
-      </div>
-      <main class="grow py-6">
-        <div class={cn('mx-auto flex grow flex-col gap-y-6 px-6', className)}>
-          <slot />
-        </div>
-      </main>
-      {
-        decorativeGrid && (
-          <div
-            class={cn(
-              'pointer-events-none mx-auto w-full px-6 select-none',
-              resolvedShellClass,
-            )}
-            aria-hidden="true"
-          >
-            <DecorativeArtifact />
-          </div>
-        )
-      }
-      <Footer className={resolvedShellClass} />
-    </div>
-  </body>
+	<Head>
+		<slot name="head" />
+	</Head>
+	<body>
+		<div class="flex min-h-screen flex-col font-mono">
+			<div
+				class="border-border/30 bg-background sticky top-0 z-40 border-b [contain:layout_style_paint]"
+			>
+				<Header className={resolvedShellClass} />
+				<slot name="subposts-navigation" />
+				<slot name="table-of-contents" />
+			</div>
+			<main class="grow py-6">
+				<div
+					class={cn(
+						'mx-auto flex grow flex-col gap-y-6 px-6',
+						className,
+					)}
+				>
+					<slot />
+				</div>
+			</main>
+			{
+				decorativeGrid && (
+					<div
+						class={cn(
+							'pointer-events-none mx-auto w-full px-6 select-none',
+							resolvedShellClass,
+						)}
+						aria-hidden="true"
+					>
+						<DecorativeArtifact />
+					</div>
+				)
+			}
+			<Footer className={resolvedShellClass} />
+		</div>
+	</body>
 </html>

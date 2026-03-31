@@ -5,12 +5,7 @@ interface Props {
 const { class: className } = Astro.props
 ---
 
-<div
-	class:list={[
-		'not-prose my-6 space-y-6 [counter-reset:step]',
-		className,
-	]}
->
+<div class:list={['not-prose my-6 space-y-6 [counter-reset:step]', className]}>
 	<slot />
 </div>
 
