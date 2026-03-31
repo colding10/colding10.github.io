@@ -17,11 +17,11 @@ import Spoiler from '@/components/mdx/Spoiler.astro'
 
 # Practical LLM Literacy
 
-This is the payoff. Everything from the previous four parts&mdash;attention, training, scaling&mdash;all of it cashes in here. Every practical tip in this section has a mechanistic explanation rooted in the architecture. That's the whole point of this series: understanding *why* things work, not just *that* they work.
+Everything from the previous four parts (attention, training, scaling) cashes in here. Every practical tip in this section has a mechanistic explanation rooted in the architecture, and that's the whole point of this series: understanding *why* things work, not just *that* they work.
 
 ## Prompting is programming
 
-Your prompt is the model's input. The quality of the input determines the quality of the output. This isn't mystical&mdash;it follows directly from the architecture.
+Your prompt is the model's input, and the quality of that input determines the quality of the output. This follows directly from the architecture.
 
 <Callout variant="important" title="The core insight">
 The model doesn't "understand" your intent. It predicts what text is most likely to follow your prompt. Writing good prompts means writing text that, when continued, naturally produces the output you want. If your prompt is vague, there are many plausible continuations and the model picks one at random. If your prompt is specific, there are fewer plausible continuations and they're all closer to what you want.
@@ -29,20 +29,20 @@ The model doesn't "understand" your intent. It predicts what text is most likely
 
 ## Why prompting techniques work
 
-Every common prompting technique has a mechanistic explanation. Here's what's actually happening under the hood:
+Every common prompting technique has a mechanistic explanation rooted in how the architecture processes tokens.
 
 <Steps>
 <Step title="Be specific, not vague">
-Vague prompts produce flat probability distributions&mdash;many tokens are plausible continuations. Specific prompts produce peaked distributions&mdash;fewer, better continuations.
+Vague prompts produce flat probability distributions where many tokens are plausible continuations; specific prompts produce peaked distributions with fewer, better continuations.
 
 **Bad**: "Write code."
 **Good**: "Write a Python function that takes a list of integers and returns the second largest unique value. Raise ValueError if the list has fewer than 2 unique elements. Include type hints."
 
-The second prompt constrains the output space so much that there's basically only one reasonable continuation: a correct implementation. The first prompt could go anywhere.
+The second prompt constrains the output space so tightly that there's basically only one reasonable continuation: a correct implementation. The first prompt could go anywhere.
 </Step>
 
 <Step title="Provide examples (few-shot)">
-When you give examples in your prompt, the model's attention mechanism identifies the pattern and continues it. This isn't prompt magic&mdash;it's the same pattern-matching that makes language understanding work. The model literally attends to your examples to figure out the format and style you want.
+When you give examples in your prompt, the attention mechanism picks up the pattern and continues it. This is the same pattern-matching that makes language understanding work in the first place; the model attends to your examples to figure out the format and style you want.
 
 ```
 Convert these to snake_case:
@@ -51,33 +51,31 @@ setMaxRetries → set_max_retries
 handleHTTPError →
 ```
 
-The model sees the pattern (camelCase → snake_case) through attention, and continues it. The more examples, the less ambiguity about the pattern.
+The model sees the pattern (camelCase → snake_case) through attention and continues it. The more examples you give, the less ambiguity remains about the pattern.
 </Step>
 
 <Step title="Ask for reasoning (chain-of-thought)">
-Each generated token is another full forward pass through the model. When you ask for step-by-step reasoning, you're giving the model more compute to solve the problem. The intermediate tokens serve as external working memory&mdash;scratch paper the model can "read" in later tokens through attention.
-
-This isn't a trick. It's allocating more computation to the problem.
+Each generated token is another full forward pass through the model. When you ask for step-by-step reasoning, you're giving the model more compute to work with. The intermediate tokens serve as external working memory (scratch paper the model can "read" in later tokens through attention), so chain-of-thought is really just a way of allocating more computation to the problem.
 </Step>
 
 <Step title="Set the format explicitly">
-The model has seen millions of examples of specific formats (JSON, markdown, bullet points, tables) in its training data. Specifying the format activates those patterns. "Return the result as JSON" immediately constrains the output to valid JSON syntax, because the model has extremely strong priors about what valid JSON looks like.
+The model has seen millions of examples of specific formats (JSON, markdown, bullet points, tables) in its training data, and specifying the format activates those patterns. "Return the result as JSON" immediately constrains the output to valid JSON syntax, because the model has extremely strong priors about what valid JSON looks like.
 </Step>
 
 <Step title="System prompts work because of attention">
-The system prompt is just text at the beginning of the context. Attention patterns naturally give high weight to the beginning and end of the context (more on this below). By placing instructions at the start, you ensure they get strong attention from every generated token. This is why system prompts are effective at setting behavior&mdash;it's just positional attention bias.
+The system prompt is just text at the beginning of the context. Attention patterns naturally give high weight to the beginning and end of the context (more on this below), so by placing instructions at the start, you ensure they get strong attention from every generated token. System prompts are effective at setting behavior because of positional attention bias.
 </Step>
 </Steps>
 
-## Try this: chain-of-thought
+## Chain-of-thought in practice
 
-Here's a concrete example. Try this with any LLM:
+Try this with any LLM:
 
 **Without CoT**:
 ```
 A farmer has 17 sheep. All but 9 die. How many sheep does the farmer have left?
 ```
-Many models answer "8" (17 - 9 = 8). That's wrong. The answer is 9 ("all but 9 die").
+Many models answer "8" (17 - 9 = 8), which is wrong; the answer is 9 ("all but 9 die").
 
 **With CoT**:
 ```
@@ -86,7 +84,7 @@ Think through this step by step.
 ```
 Now the model writes out: "All but 9 die means 9 survived. So the farmer has 9 sheep." Correct.
 
-Why does this work? Without CoT, the model sees a math-like word problem and its strongest pattern is "subtract the numbers." With CoT, it generates tokens that spell out the meaning of "all but," and those tokens give it the information it needs to avoid the trap. The reasoning tokens are doing real computational work.
+Without CoT, the model sees a math-like word problem and its strongest pattern is "subtract the numbers." With CoT, it generates tokens that spell out the meaning of "all but," and those tokens give it the information it needs to avoid the trap. The reasoning tokens are doing real computational work.
 
 ## The context window
 
@@ -94,14 +92,14 @@ Why does this work? Without CoT, the model sees a math-like word problem and its
 It doesn't. Every time you send a message, the entire conversation history is fed into the model from scratch. There's no persistent memory between turns. The "memory" is just the conversation being re-read in full every time. This is why long conversations slow down (more tokens to process) and why models can "forget" earlier context in very long conversations (the context window fills up and old messages get truncated).
 </Callout>
 
-The context window is better understood as a **whiteboard**: everything the model can see during a single forward pass. It's not memory in the human sense. Nothing persists across API calls. The "memory" features in ChatGPT and Claude are separate systems that summarize and inject past context, not the model actually remembering.
+The context window is better understood as a **whiteboard**: everything the model can see during a single forward pass. Nothing persists across API calls. The "memory" features in ChatGPT and Claude are separate systems that summarize and inject past context, not the model actually remembering.
 
-Context window sizes in 2026: 1M tokens (GPT-5.4, Claude Opus 4.6), 1M+ (Gemini 3), 10M claimed (Llama 4 Scout). These sound enormous, but remember: attention is quadratic. A 1M-token context is ~1000x more expensive to process than a 1K-token context.
+Context window sizes in 2026: 1M tokens (GPT-5.4, Claude Opus 4.6), 1M+ (Gemini 3), 10M claimed (Llama 4 Scout). These sound enormous, but attention is quadratic; a 1M-token context costs roughly 1000x more to process than a 1K-token context.
 
 <Callout variant="tip" title="The 'lost in the middle' problem">
-Research shows models attend most strongly to the beginning and end of the context. Information buried in the middle gets less attention&mdash;literally, the attention weights are lower for middle positions. This is a consequence of how attention patterns form during training.
+Research shows models attend most strongly to the beginning and end of the context. Information buried in the middle gets less attention (the attention weights are literally lower for middle positions), a consequence of how attention patterns form during training.
 
-**Practical rule**: put your most important information at the top of the prompt. If you have a long document followed by a question, the question at the end gets strong attention, and the beginning of the document gets strong attention, but the middle of the document is at a disadvantage. If a key fact is in paragraph 15 of 30, the model might miss it.
+**Practical rule**: put your most important information at the top of the prompt. If you have a long document followed by a question, the question at the end gets strong attention, and the beginning of the document gets strong attention, but the middle of the document is at a disadvantage. If a key fact sits in paragraph 15 of 30, the model might miss it.
 </Callout>
 
 <Callout variant="example" title="Try this: buried instruction">
@@ -127,18 +125,18 @@ $$P(x_i) = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 <TabPanel>
 Instead of sampling from the full vocabulary, only consider the smallest set of tokens whose cumulative probability exceeds $p$.
 
-**Top-p = 0.9** means: sort tokens by probability, keep adding tokens until their probabilities sum to 0.9, then sample from only those tokens. This automatically adapts to the model's confidence&mdash;when the model is very sure (one token has 95% probability), top-p effectively picks just that token. When the model is uncertain (many tokens with similar probability), top-p allows more variety.
+**Top-p = 0.9** means: sort tokens by probability, keep adding tokens until their probabilities sum to 0.9, then sample from only those. This adapts to the model's confidence; when the model is very sure (one token has 95% probability), top-p effectively picks just that token, and when the model is uncertain (many tokens with similar probability), top-p allows more variety.
 </TabPanel>
 
 <TabPanel>
 Simply: only consider the $k$ most likely tokens and sample from those. **Top-k = 40** means the model only considers the top 40 tokens, regardless of their probabilities.
 
-Simpler than top-p but less adaptive. If the model has one 99% token, you're still sampling from 40 candidates (though the 99% one will almost always win). If the model has 100 equally-likely tokens, you're arbitrarily cutting off at 40.
+This is simpler than top-p but less adaptive. If the model has one 99% token, you're still sampling from 40 candidates (though the 99% one will almost always win). If the model has 100 equally-likely tokens, you're cutting off at 40 for no principled reason.
 </TabPanel>
 </Tabs>
 
 <Callout variant="warning" title="Misconception: temperature = creativity">
-Temperature is randomness, not creativity. High temperature doesn't make the model more creative&mdash;it makes it more random. Sometimes randomness looks creative (unexpected word choices, novel combinations). Often it just produces nonsense. True "creativity" from an LLM comes from the model's training&mdash;the patterns it learned&mdash;not from cranking up the randomness dial.
+Temperature is randomness, not creativity. High temperature doesn't make the model more creative; it makes it more random. Sometimes randomness looks creative (unexpected word choices, novel combinations), but often it just produces nonsense. Genuine "creativity" from an LLM comes from patterns learned during training, not from cranking up the randomness dial.
 </Callout>
 
 <Callout variant="tip" title="Practical settings">
@@ -146,19 +144,19 @@ Temperature is randomness, not creativity. High temperature doesn't make the mod
 - **General conversation**: temperature 0.5-0.7, top-p 0.95
 - **Creative writing / brainstorming**: temperature 0.8-1.0, top-p 0.95
 
-If outputs are repetitive or boring, raise the temperature. If they're incoherent, lower it. It's literally a knob on the randomness of sampling. There's no magic here.
+If outputs are repetitive or boring, raise the temperature; if they're incoherent, lower it. It's a knob on the randomness of sampling.
 </Callout>
 
 ## Hallucinations
 
-The model is trained to produce plausible text, not truthful text. These are not the same thing. Hallucinations aren't a bug to be patched. They're a fundamental property of next-token prediction.
+The model is trained to produce plausible text, not truthful text, and these are not the same thing. Hallucinations aren't a bug to be patched; they're a fundamental property of next-token prediction.
 
 <Callout variant="example" title="A real hallucination pattern">
 Ask a model: "What is the `parse_nested_json()` function in Python's json module?"
 
 There is no such function. But the model might confidently describe it: "The `parse_nested_json()` function recursively parses nested JSON structures, handling circular references and custom decoders..."
 
-Why? Because:
+This happens because:
 1. Python's `json` module exists and has many functions
 2. "parse_nested_json" *sounds like* a real function name
 3. The training data is full of confident descriptions of Python functions
@@ -168,7 +166,7 @@ The model generates the most plausible continuation. A plausible description of 
 </Callout>
 
 <Callout variant="warning" title="The golden rule">
-Never trust an LLM's factual claims without verification. This isn't about the model being "bad." It's about the architecture. The loss function optimizes for plausibility, not truth. Use the model as a starting point, not an oracle.
+Never trust an LLM's factual claims without verification. The architecture optimizes for plausibility, not truth; the loss function has no way to distinguish between the two. Use the model as a starting point, not an oracle.
 </Callout>
 
 Mitigation strategies:
@@ -191,7 +189,7 @@ The pattern:
 3. You include the top results in the prompt: "Given the following documents, answer the question..."
 4. The model answers based on the retrieved documents
 
-This works because the model is very good at extracting and synthesizing information from its context window. By giving it real, verified documents to work with, you get the model's language and reasoning abilities without relying on its potentially-wrong training-time knowledge.
+This works because the model is very good at pulling out and combining information from its context window. By giving it real, verified documents to work with, you get the model's language and reasoning abilities without relying on its potentially-wrong training-time knowledge.
 
 <Callout variant="tip" title="When to use RAG">
 Use RAG when:
@@ -208,7 +206,7 @@ Don't use RAG when:
 
 ## Fine-tune vs. prompt vs. RAG
 
-These are the three main approaches for customizing LLM behavior. Most people should default to prompting and only escalate when it's not enough.
+These are the three main approaches for customizing LLM behavior, and most people should default to prompting and only escalate when it falls short.
 
 <Tabs labels={["Prompting", "RAG", "Fine-tuning"]}>
 <TabPanel>
@@ -244,15 +242,15 @@ These are the three main approaches for customizing LLM behavior. Most people sh
 
 <Callout variant="tip" title="The decision flow">
 1. **Try prompting first.** System prompt + few-shot examples solve 90% of problems.
-2. **If the model needs specific knowledge → add RAG.** Don't try to fine-tune facts into the model. Give it documents.
-3. **If you need a consistent complex behavior at scale → consider fine-tuning.** But only after you've maxed out what prompting can do.
+2. **If the model needs specific knowledge, add RAG.** Don't try to fine-tune facts into the model. Give it documents.
+3. **If you need a consistent complex behavior at scale, consider fine-tuning.** But only after you've maxed out what prompting can do.
 
-Most people jump to fine-tuning too early. It's expensive, it's hard to get right, and it locks you to a specific model version. Start simple.
+Most people jump to fine-tuning too early. It's expensive, hard to get right, and locks you to a specific model version.
 </Callout>
 
 ## Tool use and agents
 
-Here's the biggest shift in how LLMs are used: they don't just generate text anymore. They call functions, execute code, search the web, and operate other tools.
+The biggest shift in how LLMs are used is that they don't just generate text anymore; they call functions, execute code, search the web, and operate other tools.
 
 The pattern is simple:
 1. The model decides it needs to use a tool (a calculator, a web search, a code interpreter)
@@ -263,16 +261,16 @@ The pattern is simple:
 This closes the loop on the model's weaknesses. Can't do math? Call a calculator. Don't know current events? Search the web. Need to test code? Run it.
 
 <Callout variant="tip" title="Understanding agents">
-An "agent" is just an LLM in a loop: think → act (tool call) → observe (read result) → think again → act again → ... until done.
+An "agent" is just an LLM in a loop: think, act (tool call), observe (read result), think again, act again, and so on until done.
 
-Claude Code, Cursor, GitHub Copilot in agent mode, Codex&mdash;these all follow this pattern. The LLM handles reasoning and planning. The tools handle execution. The LLM is the brain; the tools are the hands.
+Claude Code, Cursor, GitHub Copilot in agent mode, Codex (these all follow the same pattern). The LLM handles reasoning and planning while the tools handle execution.
 
-When you understand this, the capabilities of coding agents make sense. They're not magic. They're a capable reasoner (the LLM) with access to the right tools (file reading, code execution, shell commands, web search) running in a loop until the task is done.
+When you understand this, the capabilities of coding agents make sense. They're a capable reasoner (the LLM) with access to the right tools (file reading, code execution, shell commands, web search) running in a loop until the task is done.
 </Callout>
 
-## Try this: prompt restructuring
+## Prompt restructuring in practice
 
-Here's an experiment that connects the theory to practice. Take this prompt:
+Take this prompt and compare two versions:
 
 **Version A**:
 ```
@@ -297,12 +295,10 @@ Output: Summary statistics (mean, median, count) grouped by city
 Use pandas.
 ```
 
-Both prompts ask for the same thing. Version B consistently produces better code. Why?
-
-The structured format in Version B creates clear attention anchors. Each line is a distinct instruction that the model can attend to independently. In Version A, the instructions are tangled in a prose paragraph, and the model has to parse them out&mdash;which it sometimes does imperfectly. Structured prompts don't just look cleaner; they align with how attention processes information.
+Both prompts ask for the same thing, but Version B consistently produces better code. The structured format creates clear attention anchors; each line is a distinct instruction that the model can attend to independently. In Version A, the instructions are tangled in a prose paragraph, and the model has to parse them out (which it sometimes does imperfectly). Structured prompts don't just look cleaner; they align with how attention processes information.
 
 ---
 
-You now have the practical toolkit. Every tip in this section connects back to the architecture: attention patterns explain why prompt structure matters, next-token prediction explains hallucinations, the quadratic cost explains context window behavior, and the training pipeline explains why RLHF'd models sometimes refuse reasonable requests.
+You now have the practical toolkit. Every tip here connects back to the architecture: attention patterns explain why prompt structure matters, next-token prediction explains hallucinations, the quadratic cost explains context window behavior, and the training pipeline explains why RLHF'd models sometimes refuse reasonable requests.
 
 One section left: who's building what, what's overrated, and where this is all going.

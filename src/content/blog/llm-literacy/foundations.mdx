@@ -14,53 +14,49 @@ import Spoiler from '@/components/mdx/Spoiler.astro'
 
 # From Words to Vectors
 
-Before we can talk about transformers, we need to talk about the problem they solve. Computers don't understand words. They understand numbers. So the entire history of NLP is, at its core, the history of people figuring out increasingly clever ways to turn words into numbers while preserving what the words actually mean.
+Before we can talk about transformers, we need to talk about the problem they solve. Computers don't understand words; they understand numbers. The whole history of NLP is really the history of people finding cleverer ways to turn words into numbers while keeping what the words mean.
 
 ## Previously, on NLP
 
 <Aside>
-This is the CliffsNotes version. If you already know about bag-of-words and RNNs, skip to [Tokens](#tokens). If you don't, you're not missing much&mdash;the pre-transformer era is mostly interesting as context for why transformers were such a big deal.
+This is the CliffsNotes version. If you already know about bag-of-words and RNNs, skip to [Tokens](#tokens). If you don't, you're not missing much; the pre-transformer era is mostly useful as background for why transformers mattered so much.
 </Aside>
 
-The earliest approach was embarrassingly simple: count the words. "Bag-of-words" throws every word in a document into a bag, counts the frequencies, and calls it a representation. TF-IDF is the same thing but slightly smarter&mdash;it weights words by how rare they are across documents.
+The earliest approach was embarrassingly simple: count the words. "Bag-of-words" throws every word in a document into a bag, counts the frequencies, and calls it a representation. TF-IDF is the same thing but slightly smarter, weighting words by how rare they are across documents.
 
 <Callout variant="example" title="Why counting words doesn't work">
 "The dog bit the man" and "the man bit the dog" produce identical bag-of-words vectors. Same words, same counts, opposite meanings. Word order is thrown away completely.
 </Callout>
 
-This is basically what keyword search does. When Google works well, it's bag-of-words plus PageRank plus a lot of engineering. When it fails badly, it's because meaning requires more than word frequency.
+This is basically what keyword search does. When Google works well, it's bag-of-words plus PageRank plus a lot of engineering; when it fails badly, it's because meaning needs more than word frequency.
 
-Then in 2013, Word2Vec changed everything. The idea: represent each word as a dense vector (a list of, say, 300 numbers) in a space where proximity means similarity. Train it by predicting neighboring words in a sentence&mdash;words that appear in similar contexts end up with similar vectors.
+Then in 2013, Word2Vec changed everything. The idea was to represent each word as a dense vector (a list of, say, 300 numbers) in a space where nearness means likeness. You train it by predicting neighboring words in a sentence, so words that show up in similar contexts end up with similar vectors.
 
 <Callout variant="intuition" title="Why Word2Vec works">
 If "cat" and "dog" constantly appear near the same words ("pet," "food," "vet"), they end up at nearby points in vector space. The model doesn't know what cats or dogs are. It just knows they're used similarly. That's enough.
 </Callout>
 
-The famous result: $\text{king} - \text{man} + \text{woman} \approx \text{queen}$. The vector arithmetic captures semantic relationships. I know, I know, every Word2Vec explainer uses this example. It's a cliche. The more interesting thing is where it breaks.
+The famous result: $\text{king} - \text{man} + \text{woman} \approx \text{queen}$. The vector arithmetic captures semantic relationships, and yes, every Word2Vec explainer uses this example because it's a cliche. The more interesting thing is where it breaks.
 
 <Callout variant="example" title="Where embeddings fail">
-Try $\text{doctor} - \text{man} + \text{woman}$. In many embedding spaces, you don't get "doctor"&mdash;you get "nurse." The model learned the biases in its training data, not ground truth. This isn't a minor issue. Static embeddings bake in every bias present in the corpus, and there's no way to fix it per-query because every word gets exactly one vector regardless of context.
+Try $\text{doctor} - \text{man} + \text{woman}$. In many embedding spaces, you don't get "doctor" (you get "nurse"). The model learned the biases in its training data, not ground truth. Static embeddings bake in every bias present in the corpus, and there's no way to fix it per-query because every word gets exactly one vector regardless of context.
 </Callout>
 
-That's the bigger problem: one vector per word, period. "I went to the bank to deposit money" and "I sat on the river bank" give "bank" the same vector. No context sensitivity at all.
+That's the bigger problem: one vector per word, period. "I went to the bank to deposit money" and "I sat on the river bank" give "bank" the same vector, with no context sensitivity at all.
 
-Then came RNNs and LSTMs. These process words one at a time, maintaining a hidden state that theoretically carries context forward. In practice, the information decays exponentially&mdash;by the time you're 50 words into a sentence, the model has essentially forgotten the beginning. They were also painfully slow because you can't parallelize sequential processing.
+Then came RNNs and LSTMs. These process words one at a time, keeping a hidden state that should carry context forward. In practice, the information decays exponentially; by the time you're 50 words into a sentence, the model has essentially forgotten the beginning. They were also painfully slow because you can't parallelize sequential processing.
 
-This is why pre-2017 chatbots had such terrible memory. It wasn't a design choice. It was a physics constraint of the architecture.
-
-Then attention showed up.
+This is why pre-2017 chatbots had such terrible memory: it wasn't a design choice but a hard constraint of the architecture.
 
 ## The attention breakthrough
 
-In 2014, Bahdanau et al. had a simple but powerful idea for machine translation: instead of compressing the entire input sentence into a single hidden state vector, let the decoder look back at all the encoder states and decide which ones matter for each word it's generating.
+In 2014, Bahdanau et al. had a simple but powerful idea for machine translation: instead of compressing the whole input sentence into a single hidden state vector, let the decoder look back at all the encoder states and decide which ones matter for each word it's generating.
 
 <Callout variant="intuition" title="The translation analogy">
-Imagine translating a long sentence from French to English. You don't memorize the whole sentence and then translate from memory. You glance back at the relevant part for each word you write. That's attention&mdash;a mechanism that lets the model dynamically focus on different parts of the input.
+Imagine translating a long sentence from French to English. You don't memorize the whole sentence and then translate from memory. You glance back at the relevant part for each word you write. Attention is a mechanism that lets the model dynamically focus on different parts of the input.
 </Callout>
 
-This worked incredibly well, but it was still combined with the slow sequential processing of RNNs. The breakthrough came in 2017, when Vaswani et al. asked: what if we *only* use attention? No recurrence. No sequential processing. Just attention, all the way down.
-
-That paper was called "Attention Is All You Need," and it introduced the transformer.
+This worked very well, but it was still coupled with the slow sequential processing of RNNs. The real breakthrough came in 2017, when Vaswani et al. asked: what if we *only* use attention? No recurrence, no sequential processing, just attention all the way down. That paper, "Attention Is All You Need," introduced the transformer.
 
 <LinkCard
   title="Attention Is All You Need"
@@ -69,22 +65,20 @@ That paper was called "Attention Is All You Need," and it introduced the transfo
 />
 
 <Callout variant="remark" title="Hot take: is the pre-transformer era worth knowing?">
-Honestly? The intuitions from embeddings are worth keeping&mdash;the idea that words can be represented as points in a space, and that geometry in that space captures meaning. That's foundational.
+The intuitions from embeddings are worth keeping (the idea that words can be represented as points in a space, and that geometry in that space captures meaning). That's foundational.
 
-But the RNN/LSTM mechanics? Not really. You don't need to understand vanishing gradients to use or reason about modern LLMs. Most "history of NLP" content is padding to make the explainer feel comprehensive. I included a speedrun here because context helps, but if you forgot everything above this line, you'd be fine.
+But the RNN/LSTM mechanics? Not really. You don't need to understand vanishing gradients to use or reason about modern LLMs. Most "history of NLP" content is padding to make the explainer feel thorough. I included a speedrun here because context helps, but if you forgot everything above this line, you'd be fine.
 </Callout>
-
-Now let's talk about the stuff that actually matters for understanding modern LLMs.
 
 ## Tokens
 
-Here's something that surprises most people: LLMs don't see words. They see **tokens**.
+Something that surprises most people: LLMs don't see words. They see **tokens**.
 
 <Callout variant="definition" title="Token">
-A token is the fundamental unit of text that an LLM processes. It's not a word, not a character, not a sentence. It's a chunk produced by a tokenizer&mdash;typically a subword unit generated by Byte Pair Encoding (BPE) or a similar algorithm. Common words might be a single token. Uncommon words get split into multiple tokens. Punctuation is usually its own token.
+A token is the fundamental unit of text that an LLM processes. It's not a word, not a character, not a sentence. It's a chunk produced by a tokenizer (typically a subword unit generated by Byte Pair Encoding or a similar algorithm). Common words might be a single token; uncommon words get split into multiple tokens. Punctuation is usually its own token.
 </Callout>
 
-Here's what tokenization actually looks like:
+Here's what tokenization looks like in practice:
 
 ```python title="tokenization_demo.py"
 import tiktoken
@@ -107,31 +101,31 @@ print([enc.decode([t]) for t in tokens])
 # ['123', '456', '789']
 ```
 
-Look at "strawberry." It becomes two tokens: "str" and "awberry." The model literally cannot see the individual letters. When you ask "how many r's are in strawberry?" and it gets it wrong, this is why. It's not being dumb. It's working with a representation that doesn't contain the information you're asking about. It would be like asking you to count the pixels in a word while looking at it from across the room.
+Look at "strawberry." It becomes two tokens: "str" and "awberry." The model literally cannot see the individual letters, so when you ask "how many r's are in strawberry?" and it gets it wrong, the representation it works with simply doesn't contain the information you're asking about. It would be like asking you to count the pixels in a word while looking at it from across the room.
 
 <Callout variant="warning" title="Misconception: LLMs understand characters">
-They don't. They understand tokens. This is why they fail at character-level tasks (letter counting, anagram solving, precise spelling) even when they can handle much harder reasoning problems. The architecture literally doesn't have access to character-level information.
+They don't. They understand tokens. This is why they fail at character-level tasks (letter counting, anagram solving, precise spelling) even when they can handle much harder reasoning problems. The architecture doesn't have access to character-level information.
 </Callout>
 
-Numbers are weird too. "123456789" becomes three tokens: "123", "456", "789." The model doesn't see this as one number&mdash;it sees three chunks. This is partly why LLMs struggle with precise arithmetic on large numbers.
+Numbers are strange too. "123456789" becomes three tokens: "123", "456", "789." The model doesn't see this as one number; it sees three chunks, which is partly why LLMs struggle with precise arithmetic on large numbers.
 
-The practical implication: when you're working with LLMs and hitting character-level failures, it's not a fixable bug. It's a fundamental representation limitation. The model would need to be retrained with character-level tokenization to fix it, which would make every other task worse because you'd need way more tokens to represent the same text.
+When you're working with LLMs and hitting character-level failures, it's not a fixable bug but a fundamental representation limitation. The model would need to be retrained with character-level tokenization to fix it, which would make every other task worse because you'd need far more tokens to represent the same text.
 
 ## Embeddings
 
-Once text is split into tokens, each token gets turned into a vector&mdash;a list of numbers. This is the **embedding**.
+Once text is split into tokens, each token gets turned into a vector (a list of numbers). This is the **embedding**.
 
-Every token in the model's vocabulary has a learned embedding vector. For GPT-4, these are probably 12,288-dimensional vectors (12,288 numbers per token). The model learned these during training&mdash;they started random and were adjusted billions of times until tokens with similar meanings ended up at similar points in this high-dimensional space.
+Every token in the model's vocabulary has a learned embedding vector. For GPT-4, these are probably 12,288-dimensional vectors (12,288 numbers per token). The model learned these during training: they started random and were adjusted billions of times until tokens with similar meanings ended up at similar points in this high-dimensional space.
 
 <Callout variant="intuition" title="What's an embedding, intuitively?">
-It's a lookup table. Token ID 4523 maps to a specific list of 12,288 numbers. That's it. No computation, no neural network magic at this stage&mdash;just a table lookup. The magic is that training made the table entries meaningful: similar tokens have similar vectors.
+It's a lookup table. Token ID 4523 maps to a specific list of 12,288 numbers. No computation, no neural network magic at this stage; just a table lookup. The magic is that training made the table entries meaningful, so similar tokens have similar vectors.
 </Callout>
 
-The embedding dimensions don't have human-interpretable meanings (it's not like dimension 47 means "how formal is this word"). The meaning emerges from the relationships between vectors, not from individual dimensions.
+The embedding dimensions don't have human-readable meanings (it's not like dimension 47 means "how formal is this word"). The meaning comes from the relationships between vectors, not from individual dimensions.
 
 ## Positional encoding: where are you in the sequence?
 
-Here's a subtle problem. A transformer processes all tokens simultaneously&mdash;that's what makes it fast (unlike RNNs, which process one at a time). But that means it has no inherent sense of word order. "The cat sat on the mat" and "mat the on sat cat the" would look identical to a position-unaware transformer.
+There's a subtle problem here. A transformer processes all tokens at once (that's what makes it fast, unlike RNNs which go one at a time), but that means it has no built-in sense of word order. "The cat sat on the mat" and "mat the on sat cat the" would look the same to a position-unaware transformer.
 
 We fix this by adding **positional encoding** to each token's embedding. The original transformer used sinusoidal functions:
 
@@ -139,19 +133,19 @@ $$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)$$
 $$PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)$$
 
 <Callout variant="intuition" title="The clock analogy">
-Think of a clock with many hands, each spinning at a different speed. The second hand moves fast, the minute hand moves slowly, the hour hand barely moves. At any given time, the combination of all hand positions is unique. That's what positional encoding does&mdash;each position in the sequence gets a unique fingerprint made of sines and cosines at different frequencies. The model learns to read this fingerprint to figure out where each token sits.
+Think of a clock with many hands, each spinning at a different speed. The second hand moves fast, the minute hand moves slowly, the hour hand barely moves. At any given time, the combination of all hand positions is unique. Positional encoding works the same way: each position in the sequence gets a unique fingerprint made of sines and cosines at different frequencies, and the model learns to read this fingerprint to figure out where each token sits.
 </Callout>
 
 <Spoiler title="More on modern positional encodings">
 Most modern models don't actually use the sinusoidal scheme from the original paper. They use either learned positional embeddings (just learn a vector for each position, like token embeddings) or **RoPE** (Rotary Position Embeddings), which encode relative position through rotation matrices applied to the query and key vectors in attention. RoPE is more elegant because it naturally handles relative distances between tokens rather than absolute positions, and it extends more gracefully to longer sequences.
 
-The key insight of RoPE: instead of adding position information, you *rotate* the embedding based on position. Tokens close together in the sequence have their vectors rotated similarly, so their dot product (which drives attention) is higher. Tokens far apart are rotated differently, making their relationship reflect the distance between them.
+RoPE's core idea is that instead of adding position information, you *rotate* the embedding based on position. Tokens close together in the sequence have their vectors rotated similarly, so their dot product (which drives attention) is higher. Tokens far apart are rotated differently, making their relationship reflect the distance between them.
 </Spoiler>
 
-Here's the practical connection that matters: **context window limits come from positional encoding.** The model was trained with positions up to some maximum $N$. It has never seen position $N + 1$. It doesn't know what that position means. This is why context windows have hard limits, and why extending them is an active research problem. The model literally doesn't have a representation for "the 130,000th token" if it was trained with a 128K context window.
+The practical upshot is that **context window limits come from positional encoding.** The model was trained with positions up to some maximum $N$, and it has never seen position $N + 1$; it doesn't know what that position means. This is why context windows have hard limits and why extending them is an active research problem. The model has no representation for "the 130,000th token" if it was trained with a 128K context window.
 
 ---
 
-At this point, you understand how an LLM gets from raw text to a sequence of vectors. Text → tokens (via BPE) → embeddings (via lookup table) → embeddings + position (via positional encoding). The result is a sequence of vectors, one per token, that encode both what the token means and where it sits in the sequence.
+At this point, you understand how an LLM gets from raw text to a sequence of vectors. Text goes to tokens (via BPE), then to embeddings (via lookup table), then to embeddings plus position (via positional encoding). The result is a sequence of vectors, one per token, that encode both what the token means and where it sits in the sequence.
 
-This is the input to the transformer. Next, we'll look at what the transformer actually does with it.
+This is the input to the transformer; next, we'll look at what the transformer actually does with it.
