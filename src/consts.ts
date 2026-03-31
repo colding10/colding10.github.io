@@ -1,64 +1,64 @@
 import type { IconMap, SocialLink, Site } from '@/types'
 
 export const SITE: Site = {
-    title: "cold's blog",
-    description: 'some very cold ctf writeups and other stuff',
-    href: 'colds.dev',
-    author: 'cold',
-    locale: 'en-US',
-    featuredPostCount: 3,
-    postsPerPage: 3,
+	title: "cold's blog",
+	description: 'some very cold ctf writeups and other stuff',
+	href: 'colds.dev',
+	author: 'cold',
+	locale: 'en-US',
+	featuredPostCount: 3,
+	postsPerPage: 3,
 }
 
 export const NAV_LINKS: SocialLink[] = [
-    {
-        href: '/about',
-        label: 'about',
-    },
-    {
-        href: '/blog',
-        label: 'blog',
-    },
-    {
-        href: '/history',
-        label: 'history',
-    },
-    {
-        href: '/tags',
-        label: 'tags',
-    },
+	{
+		href: '/about',
+		label: 'about',
+	},
+	{
+		href: '/blog',
+		label: 'blog',
+	},
+	{
+		href: '/history',
+		label: 'history',
+	},
+	{
+		href: '/tags',
+		label: 'tags',
+	},
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [
-    {
-        href: 'https://ctftime.org/user/218696',
-        label: 'CTFTime',
-    },
-    {
-        href: 'https://github.com/colding10',
-        label: 'GitHub',
-    },
-    {
-        href: 'colin@colds.dev',
-        label: 'Email',
-    },
-    {
-        href: '/rss.xml',
-        label: 'RSS',
-    },
-    {
-        href: '/colin.asc',
-        label: 'PGP',
-    },
+	{
+		href: 'https://ctftime.org/user/218696',
+		label: 'CTFTime',
+	},
+	{
+		href: 'https://github.com/colding10',
+		label: 'GitHub',
+	},
+	{
+		href: 'mailto:colin@colds.dev',
+		label: 'Email',
+	},
+	{
+		href: '/rss.xml',
+		label: 'RSS',
+	},
+	{
+		href: '/colin.asc',
+		label: 'PGP',
+	},
 ]
 
 export const ICON_MAP: IconMap = {
-    CTFTime: 'lucide:flag',
-    Website: 'lucide:globe',
-    GitHub: 'lucide:github',
-    LinkedIn: 'lucide:linkedin',
-    Twitter: 'lucide:twitter',
-    Email: 'lucide:mail',
-    RSS: 'lucide:rss',
-    PGP: 'lucide:key',
+	CTFTime: 'lucide:flag',
+	Website: 'lucide:globe',
+	GitHub: 'lucide:github',
+	LinkedIn: 'lucide:linkedin',
+	Twitter: 'lucide:twitter',
+	Email: 'lucide:mail',
+	RSS: 'lucide:rss',
+	PGP: 'lucide:key',
 }
