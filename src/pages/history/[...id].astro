@@ -33,7 +33,7 @@ const data = entry.data
 	/>
 
 	<section>
-		<div class="rounded-lg border p-5">
+		<div class="rounded-lg border border-border p-5">
 			<div class="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 class="font-serif text-3xl font-bold">{data.name}</h1>
@@ -119,7 +119,7 @@ const data = entry.data
 				data.wouldPlayAgain !== undefined) && (
 				<div class="mt-6 grid gap-4 sm:grid-cols-2">
 					{data.quality !== undefined && (
-						<div class="rounded-lg border p-5">
+						<div class="rounded-lg border border-border p-5">
 							<div class="text-muted-foreground text-sm">
 								Quality
 							</div>
@@ -129,7 +129,7 @@ const data = entry.data
 						</div>
 					)}
 					{data.wouldPlayAgain !== undefined && (
-						<div class="rounded-lg border p-5">
+						<div class="rounded-lg border border-border p-5">
 							<div class="text-muted-foreground text-sm">
 								Would play again
 							</div>
@@ -146,7 +146,7 @@ const data = entry.data
 			(data.review || data.notes) && (
 				<div class="mt-6 grid gap-6 md:grid-cols-2">
 					{data.review && (
-						<div class="rounded-lg border p-5">
+						<div class="rounded-lg border border-border p-5">
 							<h2 class="font-serif text-xl font-bold">
 								Review
 							</h2>
@@ -160,7 +160,7 @@ const data = entry.data
 						</div>
 					)}
 					{data.notes && (
-						<div class="rounded-lg border p-5">
+						<div class="rounded-lg border border-border p-5">
 							<h2 class="font-serif text-xl font-bold">
 								Notes
 							</h2>
